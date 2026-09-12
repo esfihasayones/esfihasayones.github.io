@@ -1,0 +1,10 @@
+# artefatos de ferramenta / sistema
+.playwright-mcp/
+.DS_Store
+Thumbs.db
+*.log
+
+# editores
+.vscode/
+.idea/
+*.swp
