@@ -11,24 +11,35 @@ HTML/CSS/JS puro, sem build e sem servidor. Roda direto no GitHub Pages.
 | `index.html`   | O site inteiro (HTML + CSS + JS num arquivo só)                |
 | `logo.svg`     | Logo horizontal — use no Instagram, cardápio impresso, etiqueta |
 | `favicon.svg`  | Ícone da aba do navegador / selo quadrado                       |
+| `og.png`       | Imagem 1200×630 do preview ao mandar o link no WhatsApp/Insta   |
 | `.nojekyll`    | Faz o GitHub Pages servir os arquivos sem processar             |
 
 ## Publicar no GitHub Pages
 
+O repositório já está iniciado (`main`) com o primeiro commit feito.
+Falta só criar o repo remoto e dar push:
+
 ```bash
-git init
-git add .
-git commit -m "site da Esfihas Sayones"
-git branch -M main
+# cria o repo na sua conta e já faz o push
+gh repo create esfihas-sayones --public --source=. --push
+
+# ligar o Pages
+gh api -X POST repos/:owner/esfihas-sayones/pages -f "source[branch]=main" -f "source[path]=/"
+```
+
+Ou pelo site: crie o repositório vazio no GitHub e então
+
+```bash
 git remote add origin https://github.com/SEU-USUARIO/esfihas-sayones.git
 git push -u origin main
 ```
 
-Depois, no GitHub: **Settings → Pages → Source: Deploy from a branch → `main` / `(root)` → Save**.
+Depois: **Settings → Pages → Source: Deploy from a branch → `main` / `(root)` → Save**.
 Em 1–2 minutos o site está no ar em `https://SEU-USUARIO.github.io/esfihas-sayones/`.
 
 Assim que souber a URL, abra o `index.html` e troque a linha do `<link rel="canonical">`
-(está marcada com um comentário no topo do arquivo).
+(está marcada com um comentário no topo do arquivo). Ela e as tags `og:` são o que
+o WhatsApp lê pra montar o preview quando você mandar o link.
 
 ## Mudar preços, sabores e WhatsApp
 
