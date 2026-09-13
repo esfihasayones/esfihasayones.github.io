@@ -689,5 +689,75 @@
     });
   });
 
+  teste("Layout", "cabe em tela de 320px sem estourar", function (c) {
+    return c.redimensionar(320, 720).then(function () {
+      var vw = c.doc.documentElement.clientWidth;
+      var culpados = [].slice.call(c.doc.querySelectorAll("main *, header *, footer *"))
+        .filter(function (el) {
+          if (el.closest(".nav")) return false;
+          var r = el.getBoundingClientRect();
+          return r.width > 0 && (r.right > vw + 1 || r.left < -1);
+        })
+        .map(function (el) {
+          return el.tagName.toLowerCase() + "." + (String(el.className).split(" ")[0] || "");
+        });
+      // minmax(Npx,1fr) estoura quando a tela é menor que N; o certo é min(Npx,100%)
+      igual([].slice.call(new Set(culpados)).slice(0, 4).join(" | "), "", "passando da tela em 320px");
+    });
+  });
+
+  teste("Layout", "as grades não usam mínimo fixo maior que a tela", function (c) {
+    var suspeitas = [];
+    [".sabores", ".faixas", ".passos", ".preparos", ".depos"].forEach(function (sel) {
+      var el = c.doc.querySelector(sel);
+      if (!el) return;
+      var colunas = c.win.getComputedStyle(el).gridTemplateColumns.split(" ").length;
+      var cabe = el.scrollWidth <= el.clientWidth + 1;
+      if (!cabe) suspeitas.push(sel + " (" + colunas + " colunas)");
+    });
+    igual(suspeitas.join(", "), "", "grades estourando");
+  });
+
+  teste("Layout", "os botões de toque têm pelo menos 32px em tela pequena", function (c) {
+    return c.redimensionar(320, 720).then(function () {
+      var miudos = [].slice.call(c.doc.querySelectorAll("button, a"))
+        .filter(function (el) {
+          var r = el.getBoundingClientRect();
+          return r.width > 0 && (r.height < 32 || r.width < 32);
+        })
+        .map(function (el) {
+          var r = el.getBoundingClientRect();
+          return (el.textContent || el.getAttribute("aria-label") || "?").trim().slice(0, 16) +
+                 " " + Math.round(r.width) + "x" + Math.round(r.height);
+        });
+      igual(miudos.join(" | "), "", "alvos pequenos demais para o dedo");
+    });
+  });
+
+  // auto-fit relata faixas vazias como "0px"; só as com largura valem
+  function colunasReais(c, sel) {
+    return c.win.getComputedStyle(c.doc.querySelector(sel)).gridTemplateColumns
+      .split(" ").filter(function (t) { return parseFloat(t) > 0; }).length;
+  }
+
+  teste("Layout", "no tablet em pé os sabores ficam em coluna única", function (c) {
+    return c.redimensionar(768, 1024).then(function () {
+      igual(colunasReais(c, ".sabores"), 1,
+            "duas colunas deixariam um card órfão embaixo");
+    });
+  });
+
+  teste("Layout", "no desktop os três sabores ficam lado a lado", function (c) {
+    return c.redimensionar(1100, 900).then(function () {
+      igual(colunasReais(c, ".sabores"), 3);
+    });
+  });
+
+  teste("Layout", "os quatro combos ficam lado a lado no desktop", function (c) {
+    return c.redimensionar(1280, 900).then(function () {
+      igual(colunasReais(c, ".faixas"), 4);
+    });
+  });
+
   global.SUITE = { testes: testes, A: A };
 })(window);
