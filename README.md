@@ -10,6 +10,7 @@ HTML/CSS/JS puro, sem build e sem servidor. Roda direto no GitHub Pages.
 |----------------|----------------------------------------------------------------|
 | `index.html`   | O site inteiro (HTML + CSS + JS num arquivo só)                |
 | `logo.svg`     | Logo horizontal — use no Instagram, cardápio impresso, etiqueta |
+| —              | O desenho da esfiha é SVG gerado; para mexer, edite os `<path>` do `<symbol id="ic-esfiha">` |
 | `favicon.svg`  | Ícone da aba do navegador / selo quadrado                       |
 | `og.png`       | Imagem 1200×630 do preview ao mandar o link no WhatsApp/Insta   |
 | `.nojekyll`    | Faz o GitHub Pages servir os arquivos sem processar             |
@@ -66,21 +67,34 @@ var FAIXAS  = [ ... ];            // combos: quantidade mínima e preço por uni
 Não é caixa fechada: o cliente mistura os sabores à vontade e o preço do combo
 entra sozinho quando o **total** do pedido chega em 4, 8 ou 12 unidades.
 
-### Entrega
+### Pontos de retirada
 
-Rota fixa, uma saída por dia — é o que cabe numa operação caseira sem
-depender de aplicativo:
+**Não existe delivery porta a porta.** Em cada dia levamos as encomendas a um
+ponto do bairro e o cliente passa lá pra pegar — por isso não há taxa de entrega.
 
-| Dia                  | Bairros                   |
-|----------------------|---------------------------|
-| Quinta, 18h30–20h30  | Trindade e UFSC           |
-| Sexta, 18h30–20h30   | Itacorubi e Centro        |
-| Sábado, 14h–17h      | Todos os bairros          |
-| Retirada             | Qualquer dia, a combinar  |
+| Ponto      | Dia     | Janela         |
+|------------|---------|----------------|
+| Trindade   | Quinta  | 18h30 – 20h30  |
+| Itacorubi  | Sexta   | 18h30 – 20h30  |
+| Centro     | Sábado  | 14h – 17h      |
 
-Sem taxa a partir de 8 unidades; abaixo disso, R$ 5 de deslocamento.
-Isso está escrito na seção "Entrega e horários" do `index.html` — mude lá e no
-`openingHoursSpecification` do JSON-LD se as rotas mudarem.
+Os pontos vivem em **dois lugares** do `index.html`, que precisam andar juntos:
+
+1. a seção "Entrega e horários" (o que o visitante lê);
+2. o array `PONTOS` no JavaScript (o que alimenta o seletor do pedido);
+
+e o `openingHoursSpecification` do JSON-LD, se as janelas mudarem.
+
+```js
+var PONTOS = [
+  { nome:"Trindade", dia:4, diaNome:"quinta", janela:"18h30 às 20h30" },
+  // dia: 0 = domingo … 6 = sábado
+  { nome:"Combinar outro ponto", dia:null }
+];
+```
+
+Ao escolher um ponto, o site já sugere a próxima data daquele dia da semana
+respeitando as 24h de antecedência.
 
 ### Adicionar um sabor novo
 
@@ -104,7 +118,8 @@ depois sem perder o que escolheu.
 
 ## Coisas para ajustar quando o negócio andar
 
-- **Rotas e horários** (seção "Entrega e horários" e o `openingHoursSpecification` no JSON-LD)
+- **Pontos e horários** (ver acima — três lugares pra manter em sincronia)
+- **Endereço exato de cada ponto** — hoje o site diz que é combinado no WhatsApp
 - **Depoimentos** — hoje são exemplos; troque por elogios reais de clientes
 - **Instagram** — o link aponta para `@esfihasayones`; crie o perfil ou corrija a URL
 - **Fotos** — os cards usam ilustração SVG. Quando tiver foto boa, troque o
