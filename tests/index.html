@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testes · Esfihas Sayones</title>
+<style>
+:root{
+  --fundo:#12100E; --painel:#1C1916; --borda:#2F2A25; --texto:#E8DFD3;
+  --suave:#9C9086; --verde:#5FCE84; --vermelho:#FF7A66; --dourado:#E0A33C;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--texto);
+  font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+header{position:sticky;top:0;z-index:5;background:var(--painel);
+  border-bottom:1px solid var(--borda);padding:16px 22px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+h1{margin:0;font-size:16px;font-weight:700;letter-spacing:.02em}
+h1 small{display:block;font-weight:400;color:var(--suave);font-size:12px;margin-top:3px}
+.placar{display:flex;gap:16px;margin-left:auto;align-items:center;flex-wrap:wrap}
+.placar b{font-size:20px;font-variant-numeric:tabular-nums}
+.passou b{color:var(--verde)} .falhou b{color:var(--vermelho)} .tempo b{color:var(--dourado)}
+.placar span{color:var(--suave);font-size:11px;text-transform:uppercase;letter-spacing:.12em;display:block}
+button{font:inherit;background:var(--dourado);color:#241B10;border:0;border-radius:7px;
+  padding:9px 16px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+main{padding:18px 22px 60px;max-width:1000px}
+.grupo{margin-bottom:26px}
+.grupo h2{font-size:12px;text-transform:uppercase;letter-spacing:.16em;color:var(--suave);
+  margin:0 0 9px;padding-bottom:7px;border-bottom:1px solid var(--borda)}
+.t{display:flex;gap:11px;padding:7px 9px;border-radius:7px;align-items:flex-start}
+.t:hover{background:var(--painel)}
+.t .marca{flex:0 0 auto;width:17px;text-align:center;font-weight:700}
+.t.ok .marca{color:var(--verde)} .t.erro .marca{color:var(--vermelho)}
+.t.rodando .marca{color:var(--dourado)}
+.t .nome{flex:1 1 auto}
+.t .ms{color:var(--suave);font-size:11.5px;font-variant-numeric:tabular-nums}
+.t pre{margin:7px 0 0;padding:11px 13px;background:#241512;border-left:3px solid var(--vermelho);
+  border-radius:0 7px 7px 0;color:#FFC9BD;font-size:12.5px;white-space:pre-wrap;overflow-x:auto}
+#palco{position:fixed;left:-9999px;top:0;width:1200px;height:900px;border:0}
+.barra{height:3px;background:var(--borda);border-radius:3px;overflow:hidden;margin-top:12px;width:100%}
+.barra i{display:block;height:100%;background:var(--dourado);width:0;transition:width .2s}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Testes · Esfihas Sayones<small id="alvo">carregando…</small></h1>
+  <div class="placar">
+    <div class="passou"><span>passou</span><b id="nPassou">0</b></div>
+    <div class="falhou"><span>falhou</span><b id="nFalhou">0</b></div>
+    <div class="tempo"><span>tempo</span><b id="nTempo">0s</b></div>
+    <button id="rodar">Rodar de novo</button>
+  </div>
+  <div class="barra"><i id="progresso"></i></div>
+</header>
+
+<main id="saida"></main>
+<iframe id="palco" title="site em teste"></iframe>
+
+<script src="suite.js"></script>
+<script>
+(function(){
+  "use strict";
+  var ALVO = "../index.html";
+  var palco = document.getElementById("palco");
+  var saida = document.getElementById("saida");
+  document.getElementById("alvo").textContent = ALVO;
+
+  /* Carrega o site num iframe limpo e devolve um contexto com atalhos. */
+  function carregar(preservarArmazenamento){
+    if (!preservarArmazenamento) { try { localStorage.clear(); } catch(e){} }
+    return new Promise(function(resolve){
+      var erros = [];
+      palco.onload = function(){
+        var win = palco.contentWindow, doc = palco.contentDocument;
+        win.addEventListener("error", function(e){ erros.push(e.message); });
+        win.addEventListener("unhandledrejection", function(e){ erros.push(String(e.reason)); });
+        resolve(montarContexto(win, doc, erros));
+      };
+      palco.src = ALVO + "?t=" + Date.now();
+    });
+  }
+
+  function montarContexto(win, doc, erros){
+    var c = { win: win, doc: doc, erros: erros };
+
+    c.el = function(sel){ return doc.querySelector(sel); };
+    c.texto = function(sel){ return (doc.querySelector(sel) || {}).textContent || ""; };
+    c.card = function(sabor){ return doc.querySelector('.card[data-sabor="' + sabor + '"]'); };
+    c.qtd = function(sabor){ return parseInt(c.card(sabor).querySelector(".conta").value, 10) || 0; };
+
+    c.mais = function(sabor){ c.card(sabor).querySelector('[data-op="1"]').click(); };
+    c.menos = function(sabor){ c.card(sabor).querySelector('[data-op="-1"]').click(); };
+
+    c.definir = function(sabor, n){
+      var campo = c.card(sabor).querySelector(".conta");
+      campo.focus();
+      campo.value = String(n);
+      campo.dispatchEvent(new win.Event("input", { bubbles: true }));
+      campo.blur();
+    };
+    c.digitar = function(campo, texto){
+      campo.focus();
+      campo.value = texto;
+      campo.dispatchEvent(new win.Event("input", { bubbles: true }));
+    };
+
+    c.abrirGaveta = function(){ doc.querySelector("[data-abrir-pedido]").click(); };
+
+    /* Envia e devolve a mensagem (ou null se a validação barrou). */
+    c.enviar = function(){
+      var capturado = null, original = win.open;
+      win.open = function(u){ capturado = u; return null; };
+      doc.getElementById("btnEnviar").click();
+      win.open = original;
+      if (!capturado) return null;
+      return decodeURIComponent(capturado.split("text=")[1]);
+    };
+    c.enviarUrl = function(){
+      var capturado = null, original = win.open;
+      win.open = function(u){ capturado = u; return null; };
+      doc.getElementById("btnEnviar").click();
+      win.open = original;
+      return capturado;
+    };
+    /* Preenche o mínimo e envia; estoura se a validação barrar. */
+    c.enviarValido = function(){
+      if (!doc.getElementById("fNome").value) doc.getElementById("fNome").value = "Breno";
+      var msg = c.enviar();
+      if (!msg) throw new Error("o envio foi barrado: " + c.texto("#aviso"));
+      return msg;
+    };
+    c.pedidoCompleto = function(){
+      c.abrirGaveta();
+      doc.getElementById("fNome").value = "Breno";
+      return c.enviarValido();
+    };
+
+    c.iso = function(d){
+      return d.getFullYear() + "-" +
+        String(d.getMonth() + 1).padStart(2, "0") + "-" +
+        String(d.getDate()).padStart(2, "0");
+    };
+
+    c.recarregar = function(){ return carregar(true); };
+
+    c.dormir = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+
+    /* Espera uma condição virar verdadeira (para scroll suave, animação etc). */
+    c.esperar = function(cond, limite){
+      var fim = Date.now() + (limite || 1500);
+      return new Promise(function(resolve, reject){
+        (function checa(){
+          if (cond()) return resolve();
+          if (Date.now() > fim) return reject(new Error("tempo esgotado"));
+          win.requestAnimationFrame(checa);
+        })();
+      });
+    };
+
+    c.redimensionar = function(l, a){
+      palco.style.width = l + "px";
+      palco.style.height = a + "px";
+      win.dispatchEvent(new win.Event("resize"));
+      return new Promise(function(r){ win.requestAnimationFrame(function(){ win.requestAnimationFrame(r); }); });
+    };
+
+    return c;
+  }
+
+  function elementoTeste(t){
+    var li = document.createElement("div");
+    li.className = "t rodando";
+    li.innerHTML = '<span class="marca">•</span><span class="nome"></span><span class="ms"></span>';
+    li.querySelector(".nome").textContent = t.nome;
+    return li;
+  }
+
+  async function rodar(){
+    var botao = document.getElementById("rodar");
+    botao.disabled = true;
+    saida.innerHTML = "";
+    var testes = window.SUITE.testes;
+    var grupos = {}, elementos = [];
+    testes.forEach(function(t){
+      if (!grupos[t.grupo]){
+        var bloco = document.createElement("section");
+        bloco.className = "grupo";
+        bloco.innerHTML = "<h2>" + t.grupo + "</h2>";
+        saida.appendChild(bloco);
+        grupos[t.grupo] = bloco;
+      }
+      var el = elementoTeste(t);
+      grupos[t.grupo].appendChild(el);
+      elementos.push(el);
+    });
+
+    var passou = 0, falhou = 0, comeco = performance.now();
+    var falhas = [];
+
+    for (var i = 0; i < testes.length; i++){
+      var t = testes[i], el = elementos[i], t0 = performance.now();
+      try {
+        palco.style.width = "1200px"; palco.style.height = "900px";
+        var ctx = await carregar(false);
+        await t.fn(ctx);
+        el.className = "t ok";
+        el.querySelector(".marca").textContent = "✓";
+        passou++;
+      } catch (e){
+        el.className = "t erro";
+        el.querySelector(".marca").textContent = "✕";
+        var pre = document.createElement("pre");
+        pre.textContent = (e && e.message) || String(e);
+        el.appendChild(pre);
+        falhou++;
+        falhas.push({ grupo: t.grupo, nome: t.nome, erro: (e && e.message) || String(e) });
+      }
+      el.querySelector(".ms").textContent = Math.round(performance.now() - t0) + "ms";
+      document.getElementById("nPassou").textContent = passou;
+      document.getElementById("nFalhou").textContent = falhou;
+      document.getElementById("progresso").style.width = ((i + 1) / testes.length * 100) + "%";
+    }
+
+    var segundos = ((performance.now() - comeco) / 1000).toFixed(1);
+    document.getElementById("nTempo").textContent = segundos + "s";
+    botao.disabled = false;
+
+    window.RESULTADO = {
+      total: testes.length, passou: passou, falhou: falhou,
+      segundos: Number(segundos), falhas: falhas, pronto: true
+    };
+    document.title = (falhou ? "✕ " + falhou + " falha(s)" : "✓ tudo passou") + " · Testes";
+  }
+
+  window.RESULTADO = { pronto: false };
+  document.getElementById("rodar").addEventListener("click", rodar);
+  rodar();
+})();
+</script>
+</body>
+</html>

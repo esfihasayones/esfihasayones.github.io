@@ -114,6 +114,25 @@ cores do recheio.
 Cada sabor tem seu próprio desenho, definido em `icone`. Use `veg:true` para
 ganhar o selo "Vegetariana".
 
+## Testes
+
+Abra `tests/index.html` no navegador e a suíte roda sozinha. Não precisa
+instalar nada: ela carrega o site num iframe limpo, um teste por vez, e
+mostra o que passou e o que quebrou.
+
+```bash
+python3 -m http.server 8791
+# depois: http://127.0.0.1:8791/tests/index.html
+```
+
+São 72 testes cobrindo preço por combo, carrinho, formulário de retirada,
+mensagem do WhatsApp, persistência, acessibilidade e layout no celular.
+Os casos ficam em `tests/suite.js`, em português e sem dependência nenhuma.
+
+Vale rodar depois de mexer em preço, sabor ou ponto de retirada: os testes
+conferem, por exemplo, se o valor anunciado em cada combo bate com o que o
+carrinho realmente cobra.
+
 ## Como o pedido chega até você
 
 Não existe backend. O cliente monta o pedido no site, o JavaScript escreve a
