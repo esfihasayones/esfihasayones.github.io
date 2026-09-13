@@ -245,16 +245,53 @@
     igual(botao.getAttribute("aria-expanded"), "false");
   });
 
-  teste("Carrinho", "fechar a observação apaga o que estava escrito", function (c) {
+  teste("Carrinho", "clicar de novo em Observação não apaga o que foi escrito", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
     var linha = c.doc.querySelector('#linhas [data-sabor="calabresa"]');
     linha.querySelector(".linha-acao.obs").click();
     c.digitar(linha.querySelector(".obs-item"), "sem azeitona");
+    linha.querySelector(".linha-acao.obs").click();   // clique distraído
+    igual(linha.querySelector(".obs-item").value, "sem azeitona",
+          "um clique não pode apagar texto sem avisar");
+    ok(!linha.querySelector(".obs-item").hidden, "com texto dentro, o campo continua à vista");
+  });
+
+  teste("Carrinho", "a observação vazia se recolhe sozinha ao sair do campo", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    var linha = c.doc.querySelector('#linhas [data-sabor="calabresa"]');
+    var botao = linha.querySelector(".linha-acao.obs");
+    botao.click();
+    var campo = linha.querySelector(".obs-item");
+    ok(!campo.hidden, "deveria abrir");
+    campo.dispatchEvent(new c.win.FocusEvent("focusout", { bubbles: true }));
+    ok(campo.hidden, "sem texto, recolhe ao sair");
+    igual(botao.getAttribute("aria-expanded"), "false");
+  });
+
+  teste("Carrinho", "apagar a quantidade na gaveta não derruba a linha nem a observação", function (c) {
+    c.definir("calabresa", 5);
+    c.definir("carne", 2);
+    c.abrirGaveta();
+    var linha = c.doc.querySelector('#linhas [data-sabor="calabresa"]');
     linha.querySelector(".linha-acao.obs").click();
-    igual(linha.querySelector(".obs-item").value, "");
-    var msg = c.enviarValido();
-    naoContem(msg, "sem azeitona", "a observação apagada não pode ir na mensagem");
+    c.digitar(linha.querySelector(".obs-item"), "sem azeitona");
+
+    var campo = linha.querySelector(".conta");
+    campo.focus();
+    campo.value = "";                                  // apaga pra redigitar
+    campo.dispatchEvent(new c.win.Event("input", { bubbles: true }));
+
+    ok(c.doc.contains(campo), "o campo em que a pessoa digita não pode sair do DOM");
+    igual(c.doc.activeElement, campo, "o foco tem que continuar no campo");
+    ok(c.doc.querySelector('#linhas [data-sabor="calabresa"]'), "a linha não pode sumir");
+
+    campo.value = "12";
+    campo.dispatchEvent(new c.win.Event("input", { bubbles: true }));
+    igual(c.qtd("calabresa"), 12);
+    igual(c.doc.querySelector('#linhas [data-sabor="calabresa"] .obs-item').value,
+          "sem azeitona", "a observação tinha que sobreviver");
   });
 
   teste("Carrinho", "tirar o item pela lixeira também descarta a observação dele", function (c) {
@@ -554,11 +591,37 @@
     });
   });
 
+  // Se o script estourar na inicialização, os cards não são montados: isso é
+  // uma verificação de verdade, diferente de escutar "error" depois do load.
+  function paginaInicializou(c) {
+    igual(c.doc.querySelectorAll(".card").length, 3, "os cards não foram montados");
+    igual(c.doc.querySelectorAll(".faixa").length, 4, "os combos não foram montados");
+    ok(c.doc.querySelector("#fPonto").options.length >= 3, "os pontos não foram montados");
+  }
+
   teste("Persistência", "dado corrompido no armazenamento não quebra a página", function (c) {
     global.localStorage.setItem("sayones-pedido-v2", "{isso não é json");
     return c.recarregar().then(function (c2) {
+      paginaInicializou(c2);
       igual(c2.texto("#barraTotal"), "R$ 0,00", "deveria abrir com o carrinho zerado");
-      igual(c2.erros.length, 0, "não deveria estourar erro: " + c2.erros.join(" | "));
+    });
+  });
+
+  teste("Persistência", "armazenamento com formato inesperado não quebra a página", function (c) {
+    global.localStorage.setItem("sayones-pedido-v2", "null");
+    return c.recarregar().then(function (c2) {
+      paginaInicializou(c2);
+      igual(c2.texto("#barraTotal"), "R$ 0,00");
+    });
+  });
+
+  teste("Persistência", "quantidade absurda guardada é ignorada", function (c) {
+    global.localStorage.setItem("sayones-pedido-v2",
+      JSON.stringify({ qtds: { calabresa: 99999, carne: -3 }, obs: {} }));
+    return c.recarregar().then(function (c2) {
+      paginaInicializou(c2);
+      ok(c2.qtd("calabresa") <= 200, "veio " + c2.qtd("calabresa"));
+      igual(c2.qtd("carne"), 0, "quantidade negativa não pode entrar");
     });
   });
 
@@ -756,6 +819,151 @@
   teste("Layout", "os quatro combos ficam lado a lado no desktop", function (c) {
     return c.redimensionar(1280, 900).then(function () {
       igual(colunasReais(c, ".faixas"), 4);
+    });
+  });
+
+  teste("Acessibilidade", "quem pede menos movimento não vê animação", function (c) {
+    var regra = null;
+    [].slice.call(c.doc.styleSheets).forEach(function (folha) {
+      try {
+        [].slice.call(folha.cssRules).forEach(function (r) {
+          if (r.media && String(r.media.mediaText).indexOf("prefers-reduced-motion") !== -1) regra = r;
+        });
+      } catch (e) {}
+    });
+    ok(regra, "falta o bloco @media prefers-reduced-motion");
+    var dentro = [].slice.call(regra.cssRules).map(function (r) { return r.cssText; }).join(" ");
+    contem(dentro, "transition-duration", "as transições precisam ser neutralizadas");
+    contem(dentro, "animation-duration", "as animações precisam ser neutralizadas");
+    contem(dentro, "scroll-behavior", "o scroll suave precisa ser desligado");
+  });
+
+  teste("Acessibilidade", "o scroll do JavaScript também respeita a preferência", function (c) {
+    // scrollTo({behavior:"smooth"}) ignora o CSS, então o código tem que checar
+    var js = c.doc.querySelector("script:not([type])").textContent;
+    contem(js, "prefers-reduced-motion", "o script precisa consultar a preferência");
+    var fixos = (js.match(/behavior:\s*"smooth"/g) || []).length;
+    ok(fixos <= 1, "ainda há " + fixos + " scrolls com 'smooth' fixo no código");
+  });
+
+  /* =========================================================
+     REGRESSÕES APONTADAS NO CODE REVIEW
+     ========================================================= */
+  teste("Regressões", "digitar acima do teto corrige o campo na hora", function (c) {
+    var campo = c.card("calabresa").querySelector(".conta");
+    campo.focus();
+    campo.value = "999";
+    campo.dispatchEvent(new c.win.Event("input", { bubbles: true }));
+    // antes o campo mostrava 999 enquanto o carrinho já tinha cortado pra 200
+    igual(campo.value, "200", "o campo não pode exibir número diferente do cobrado");
+    igual(c.texto("#barraTotal"), "R$ 900,00");
+  });
+
+  teste("Regressões", "segurar o mais para no teto", function (c) {
+    c.definir("calabresa", 198);
+    var mais = c.card("calabresa").querySelector('[data-op="1"]');
+    mais.dispatchEvent(new c.win.PointerEvent("pointerdown", { bubbles: true }));
+    return c.dormir(900).then(function () {
+      c.win.dispatchEvent(new c.win.PointerEvent("pointerup", { bubbles: true }));
+      igual(c.qtd("calabresa"), 200, "deveria travar no teto");
+    });
+  });
+
+  teste("Regressões", "segurar até zerar não engole a próxima tecla", function (c) {
+    c.definir("calabresa", 2);
+    c.definir("carne", 1);
+    c.abrirGaveta();
+    var menos = c.doc.querySelector('#linhas [data-sabor="calabresa"] [data-op="-1"]');
+    menos.dispatchEvent(new c.win.PointerEvent("pointerdown", { bubbles: true }));
+    return c.dormir(900).then(function () {
+      c.win.dispatchEvent(new c.win.PointerEvent("pointerup", { bubbles: true }));
+      igual(c.qtd("calabresa"), 0, "precondição: tinha que zerar");
+      return c.dormir(300).then(function () {
+        // ativação por teclado, sem pointerdown antes
+        var maisCarne = c.doc.querySelector('#linhas [data-sabor="carne"] [data-op="1"]');
+        maisCarne.click();
+        igual(c.qtd("carne"), 2, "a ativação seguinte não pode ser descartada");
+      });
+    });
+  });
+
+  teste("Regressões", "a lixeira devolve o foco para dentro da gaveta", function (c) {
+    c.definir("calabresa", 3);
+    c.definir("carne", 2);
+    c.abrirGaveta();
+    var botao = c.doc.querySelector('#linhas [data-sabor="calabresa"] .linha-acao.remover');
+    botao.focus();
+    botao.click();
+    var agora = c.doc.activeElement;
+    ok(agora && agora !== c.doc.body, "o foco caiu no body, fora da janela aberta");
+    ok(c.el("#gaveta").contains(agora), "o foco tem que ficar dentro da gaveta");
+  });
+
+  teste("Regressões", "o campo de quantidade anuncia o valor para leitor de tela", function (c) {
+    var campo = c.card("calabresa").querySelector(".conta");
+    igual(campo.getAttribute("role"), "spinbutton");
+    igual(campo.getAttribute("aria-valuenow"), "0");
+    igual(campo.getAttribute("aria-valuemax"), "200", "o teto precisa ser anunciado");
+    c.mais("calabresa");
+    igual(campo.getAttribute("aria-valuenow"), "1", "mudar por botão tem que refletir no aria");
+    contem(campo.getAttribute("aria-valuetext"), "Calabresa");
+  });
+
+  teste("Regressões", "o esmaecido da tira de menu some quando chega no fim", function (c) {
+    return c.redimensionar(390, 844).then(function () {
+      var nav = c.doc.querySelector(".nav");
+      ok(nav.classList.contains("tem-depois"), "no começo, deveria avisar que há mais à direita");
+      ok(!nav.classList.contains("tem-antes"), "no começo, não há nada à esquerda");
+      nav.scrollLeft = nav.scrollWidth;
+      nav.dispatchEvent(new c.win.Event("scroll"));
+      ok(!nav.classList.contains("tem-depois"),
+         "no fim da tira, o último item não pode ficar borrado");
+      ok(nav.classList.contains("tem-antes"), "no fim, deveria avisar que há mais à esquerda");
+    });
+  });
+
+  teste("Regressões", "o clique na marca não estoura quando a origem é restrita", function (c) {
+    // Em file:// o Chrome trata a origem como "null" e replaceState estoura.
+    var original = c.win.history.replaceState;
+    c.win.history.replaceState = function(){ throw new Error("SecurityError simulado"); };
+    try {
+      c.doc.querySelector(".marca").click();          // não pode propagar o erro
+    } finally {
+      c.win.history.replaceState = original;
+    }
+    ok(true, "o clique sobreviveu ao replaceState bloqueado");
+  });
+
+  teste("Regressões", "a gravação não acontece a cada tecla", function (c) {
+    var escritas = 0;
+    var original = c.win.localStorage.setItem.bind(c.win.localStorage);
+    c.win.localStorage.setItem = function(k, v){ escritas++; return original(k, v); };
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    var linha = c.doc.querySelector('#linhas [data-sabor="calabresa"]');
+    linha.querySelector(".linha-acao.obs").click();
+    var campo = linha.querySelector(".obs-item");
+    "sem azeitona por favor".split("").forEach(function (ch, i) {
+      campo.value = campo.value + ch;
+      campo.dispatchEvent(new c.win.Event("input", { bubbles: true }));
+    });
+    var durante = escritas;
+    return c.dormir(400).then(function () {
+      c.win.localStorage.setItem = original;
+      ok(durante <= 3, "22 teclas geraram " + durante + " gravações no disco");
+      ok(escritas > durante, "mas precisa gravar depois que a digitação para");
+    });
+  });
+
+  teste("Regressões", "o texto digitado chega ao armazenamento", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    var linha = c.doc.querySelector('#linhas [data-sabor="calabresa"]');
+    linha.querySelector(".linha-acao.obs").click();
+    c.digitar(linha.querySelector(".obs-item"), "bem assada");
+    return c.dormir(400).then(function () {
+      var guardado = JSON.parse(global.localStorage.getItem("sayones-pedido-v2") || "{}");
+      igual((guardado.obs || {}).calabresa, "bem assada");
     });
   });
 

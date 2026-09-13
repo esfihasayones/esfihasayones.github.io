@@ -67,19 +67,33 @@ main{padding:18px 22px 60px;max-width:1000px}
   var saida = document.getElementById("saida");
   document.getElementById("alvo").textContent = ALVO;
 
-  /* Carrega o site num iframe limpo e devolve um contexto com atalhos. */
-  function carregar(preservarArmazenamento){
-    if (!preservarArmazenamento) { try { localStorage.clear(); } catch(e){} }
+  /* Navega o iframe e resolve quando o documento pedido estiver pronto. */
+  function irPara(url, pronto){
     return new Promise(function(resolve){
-      var erros = [];
       palco.onload = function(){
         var win = palco.contentWindow, doc = palco.contentDocument;
-        win.addEventListener("error", function(e){ erros.push(e.message); });
-        win.addEventListener("unhandledrejection", function(e){ erros.push(String(e.reason)); });
-        resolve(montarContexto(win, doc, erros));
+        // o iframe dispara um load do about:blank inicial; a guarda evita
+        // resolver contra um documento que ainda não é o que a gente pediu
+        if (pronto && (!doc || !pronto(doc))) return;
+        resolve({ win: win, doc: doc });
       };
-      palco.src = ALVO + "?t=" + Date.now();
+      palco.src = url;
     });
+  }
+
+  /* Carrega o site num iframe limpo e devolve um contexto com atalhos. */
+  async function carregar(preservarArmazenamento){
+    // Passa pelo about:blank primeiro: a página anterior grava o carrinho no
+    // pagehide, e se a gente limpasse antes de navegar essa gravação voltaria
+    // depois da limpeza e vazaria estado de um teste pro outro.
+    await irPara("about:blank");
+    if (!preservarArmazenamento) { try { localStorage.clear(); } catch(e){} }
+    var alvo = await irPara(ALVO + "?t=" + Date.now(),
+                            function(doc){ return doc.getElementById("listaSabores"); });
+    var erros = [];
+    alvo.win.addEventListener("error", function(e){ erros.push(e.message); });
+    alvo.win.addEventListener("unhandledrejection", function(e){ erros.push(String(e.reason)); });
+    return montarContexto(alvo.win, alvo.doc, erros);
   }
 
   function montarContexto(win, doc, erros){
@@ -178,6 +192,10 @@ main{padding:18px 22px 60px;max-width:1000px}
   }
 
   async function rodar(){
+    // sem isso, quem automatiza lê o resultado da rodada anterior como se
+    // fosse o desta
+    window.RESULTADO = { pronto: false };
+    document.title = "Rodando… · Testes";
     var botao = document.getElementById("rodar");
     botao.disabled = true;
     saida.innerHTML = "";
