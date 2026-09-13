@@ -115,6 +115,14 @@
     contem(aviso, "Combo 8");
   });
 
+  teste("Preços", "o aviso concorda no singular quando falta uma só", function (c) {
+    c.definir("calabresa", 3);
+    c.abrirGaveta();
+    var aviso = c.texto("#rsProgresso");
+    contem(aviso, "Falta 1 esfiha");
+    naoContem(aviso, "Faltam 1", "verbo no plural com uma unidade");
+  });
+
   teste("Preços", "no maior combo o aviso de progresso some", function (c) {
     c.definir("calabresa", 12);
     c.abrirGaveta();
@@ -884,6 +892,17 @@
         maisCarne.click();
         igual(c.qtd("carne"), 2, "a ativação seguinte não pode ser descartada");
       });
+    });
+  });
+
+  teste("Regressões", "segurar um sabor não bloqueia o toque em outro", function (c) {
+    var mais = c.card("calabresa").querySelector('[data-op="1"]');
+    mais.dispatchEvent(new c.win.PointerEvent("pointerdown", { bubbles: true }));
+    return c.dormir(700).then(function () {
+      c.win.dispatchEvent(new c.win.PointerEvent("pointerup", { bubbles: true }));
+      // logo em seguida, sem esperar, a pessoa toca no + de outro sabor
+      c.card("carne").querySelector('[data-op="1"]').click();
+      igual(c.qtd("carne"), 1, "o toque no outro sabor não pode ser descartado");
     });
   });
 
