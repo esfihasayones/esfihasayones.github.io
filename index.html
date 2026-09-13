@@ -98,8 +98,8 @@ main,header,footer{position:relative;z-index:1}
 .btn:active{transform:translateY(1px)}
 .btn-primario{background:var(--terracota);color:#fff;box-shadow:0 10px 22px -10px rgba(181,74,42,.85)}
 .btn-primario:hover{background:var(--terracota-esc);box-shadow:0 14px 28px -10px rgba(181,74,42,.9);transform:translateY(-2px)}
-.btn-zap{background:#1FA855;color:#fff;box-shadow:0 10px 22px -10px rgba(31,168,85,.8)}
-.btn-zap:hover{background:#188544;transform:translateY(-2px)}
+.btn-zap{background:#1FA855;color:#fff;box-shadow:0 8px 18px -10px rgba(28,110,62,.55)}
+.btn-zap:hover{background:#188544;transform:translateY(-2px);box-shadow:0 12px 22px -10px rgba(28,110,62,.6)}
 .btn-zap:disabled{background:#C3BBB0;box-shadow:none;cursor:not-allowed;transform:none}
 .btn-fantasma{background:transparent;color:var(--carvao);border:2px solid var(--areia-esc)}
 .btn-fantasma:hover{border-color:var(--terracota);color:var(--terracota)}
@@ -330,6 +330,16 @@ main,header,footer{position:relative;z-index:1}
 .rodape ul{list-style:none;padding:0;margin:0;display:grid;gap:9px;font-size:15px}
 .rodape p{font-size:15px;line-height:1.6}
 .rodape .marca-txt b{color:#FFF8EC}
+.rodape .btn-zap-escuro{
+  background:rgba(255,255,255,.05);border:1.5px solid rgba(255,248,236,.2);
+  color:#FFF8EC;box-shadow:none;padding:13px 22px;
+}
+.rodape .btn-zap-escuro svg{color:#4ADE80;transition:color .16s}
+.rodape .btn-zap-escuro:hover{
+  background:#1FA855;border-color:#1FA855;color:#fff;
+  box-shadow:0 10px 20px -10px rgba(28,110,62,.7);
+}
+.rodape .btn-zap-escuro:hover svg{color:#fff}
 .creditos{border-top:1px solid rgba(255,255,255,.11);margin-top:38px;padding-top:22px;
   display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;font-size:13.5px}
 
@@ -857,8 +867,8 @@ main,header,footer{position:relative;z-index:1}
           <b style="font-family:var(--display);font-size:24px;font-weight:900">Esfihas Sayones</b>
         </span>
         <p>Esfiha caseira congelada, feita por encomenda em Florianópolis. Você guarda no freezer e esquenta na air fryer quando quiser.</p>
-        <a class="btn btn-zap" href="https://wa.me/5548988106499" target="_blank" rel="noopener" style="margin-top:8px">
-          <svg width="18" height="18" aria-hidden="true"><use href="#ic-zap"/></svg>
+        <a class="btn btn-zap-escuro" href="https://wa.me/5548988106499" target="_blank" rel="noopener" style="margin-top:12px">
+          <svg width="19" height="19" aria-hidden="true"><use href="#ic-zap"/></svg>
           (48) 98810-6499
         </a>
       </div>
