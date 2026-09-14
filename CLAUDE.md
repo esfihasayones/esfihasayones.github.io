@@ -1,0 +1,132 @@
+# Esfihas Sayones
+
+Site de encomendas de uma esfiharia caseira de verdade, do Breno, em
+Florianópolis. Negócio novo, ainda não lançado. HTML/CSS/JS puro num arquivo
+só, sem build e sem backend, para publicar no GitHub Pages.
+
+## O negócio (decisões tomadas com o dono, não invente outras)
+
+**Só congelada.** Assar e entregar quente exige rota apertada e cliente em
+casa na hora certa. Congelada, ele produz em lote e entrega quando dá. O
+argumento de venda virou "pronta em 6 minutos na air fryer".
+
+**Não existe delivery porta a porta.** Em cada dia ele leva as encomendas a
+um ponto combinado do bairro e o cliente passa lá para pegar. Por isso não
+há taxa de entrega. Nunca escreva "entregamos na sua casa".
+
+**Pontos e dias:** Trindade na quinta (18h30–20h30), Itacorubi na sexta
+(18h30–20h30), Centro no sábado (14h–17h). UFSC não é ponto separado, faz
+parte da Trindade.
+
+**Sabores e receitas** (confirmadas pelo dono):
+- Calabresa: calabresa moída, cebola, azeitona, um pouco de pimenta
+- Carne: carne bovina moída com cebola e tomate
+- Queijo: muçarela com requeijão e orégano
+
+**Preços.** R$ 5,00 avulsa, com combos em 4, 8 e 12. Desconto de propósito
+leve (5%, 8%, 10%): a primeira versão chegava a 22% e o dono achou agressivo
+demais. O combo vale pelo total do pedido, misturando sabores à vontade.
+
+| Combo    | Esfihas | Por unidade | Total    |
+|----------|---------|-------------|----------|
+| Avulsa   | 1 a 3   | R$ 5,00     | (avulsa) |
+| Combo 4  | 4 a 7   | R$ 4,75     | R$ 19,00 |
+| Combo 8  | 8 a 11  | R$ 4,60     | R$ 36,80 |
+| Combo 12 | 12+     | R$ 4,50     | R$ 54,00 |
+
+## Como o texto tem que soar
+
+O dono reconhece e não gosta de texto com cara de IA. Isso não é preferência
+estética, é requisito. O que ele apontou diretamente:
+
+- **Travessão (—) é proibido.** Use vírgula, ponto ou dois-pontos. Existe um
+  teste que falha se voltar a aparecer no texto visível.
+- Nada de antítese ("não é X, é Y", "três sabores, nenhum atalho")
+- Nada de paralelismo bonitinho ("Começou na cozinha. Continua ali.")
+- Nada de tríade ritmada ("massa descansada, recheio à mão, fornada pequena")
+- Nada de muleta: "de verdade", "do jeito certo", "um sopro de", "puxa aquele
+  fio"
+- Nada de manchete de marketing ("Sua próxima fornada pode ser hoje")
+
+O tom certo é português brasileiro direto e concreto, como um vizinho
+falaria. Prefira o fato ao adjetivo.
+
+**Não invente fato sobre o negócio.** O selo do Combo 12 já foi "Mais
+pedido"; virou "Melhor preço" porque a esfiharia está começando e não existe
+pedido mais feito. Quando faltar informação, pergunte.
+
+## Arquitetura
+
+Tudo em `index.html`: markup, CSS e JS num arquivo. É de propósito, para
+publicar sem passo de build. `logo.svg`, `favicon.svg` e `og.png` são
+gerados; `tests/` tem a suíte.
+
+**O bloco de configuração** fica no começo do `<script>`, marcado com
+`CONFIGURAÇÃO`. Preço, sabor e ponto de retirada se mudam ali.
+
+**Os pontos vivem em dois lugares** que precisam andar juntos: a seção
+"Entrega e horários" (o que o visitante lê) e o array `PONTOS` no JS (o que
+alimenta o seletor). O `openingHoursSpecification` do JSON-LD é o terceiro.
+
+**Os desenhos das esfihas** são SVG gerados por script Python, um `<symbol>`
+por sabor (`#ic-calabresa`, `#ic-carne`, `#ic-queijo`). São vistos de
+três-quartos, com a lateral da massa aparecendo: de cima e com rodela de
+calabresa, o desenho lia como pizza. A esfiha é **aberta**, estilo Habib's,
+e a calabresa é **moída**, não em rodela. O ícone da marca usa a de carne.
+
+**A mensagem do WhatsApp** é montada no cliente e aberta via `wa.me`. Não há
+servidor: o pedido chega como conversa normal no (48) 98810-6499.
+
+## Testes
+
+```bash
+python3 -m http.server 8791
+# http://127.0.0.1:8791/tests/index.html
+```
+
+95 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
+iframe limpo, um teste por vez. `window.RESULTADO` expõe o resultado para
+automação.
+
+Rode depois de mexer em preço, sabor ou ponto. Um dos testes confere se o
+valor anunciado em cada combo bate com o que o carrinho realmente cobra.
+
+A suíte foi validada por mutação: alterar preço de combo, remover a lixeira,
+tirar a observação da mensagem, reintroduzir travessão, remover o `inert` da
+gaveta e desfazer a correção do clique na marca fazem ela falhar.
+
+## Armadilhas que já custaram caro aqui
+
+**Ordem das media queries.** Todas usam a mesma especificidade, então vale a
+última declarada. O bloco de 820px precisa vir depois das regras base do
+card, e o de 360px depois do de 820px. Isso já quebrou duas vezes: as regras
+existiam e simplesmente não aplicavam.
+
+**`minmax(Npx, 1fr)` estoura.** Quando a tela é menor que N, o mínimo fixo
+ganha e a coluna passa da viewport. Use sempre `minmax(min(Npx, 100%), 1fr)`.
+
+**`overflow-x: hidden` esconde bug de layout.** Ele mascara o `scrollWidth`,
+então teste de estouro que olha `scrollWidth` passa com a página quebrada. O
+jeito certo é medir `getBoundingClientRect().right` de cada elemento.
+
+**Âncora para elemento grudado não rola.** `href="#topo"` mirando o próprio
+cabeçalho sticky andava só a altura dele a cada clique. O clique na marca é
+interceptado no JS.
+
+**`render()` remonta a lista da gaveta** quando o conjunto de sabores muda.
+Se alguém estiver digitando numa linha, ela não pode sair: há uma exceção
+que segura na lista o sabor cuja linha está em uso.
+
+**No harness de testes, o `pagehide` vazava estado.** A página grava o
+carrinho ao sair, então limpar o `localStorage` antes de navegar não bastava:
+a gravação voltava depois da limpeza. A navegação passa pelo `about:blank`
+primeiro.
+
+## Convenções
+
+- Tudo em português: interface, comentários de código, nomes de variável,
+  mensagem de commit, nome de teste.
+- Mensagem de commit explica **por que**, não o que. A primeira linha é o
+  efeito para quem usa o site.
+- Verifique no navegador antes de dizer que está pronto. Tem Playwright
+  disponível; use.

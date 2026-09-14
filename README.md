@@ -13,33 +13,24 @@ HTML/CSS/JS puro, sem build e sem servidor. Roda direto no GitHub Pages.
 | `favicon.svg`  | Ícone da aba do navegador / selo quadrado                       |
 | `og.png`       | Imagem 1200×630 do preview ao mandar o link no WhatsApp/Insta   |
 | `.nojekyll`    | Faz o GitHub Pages servir os arquivos sem processar             |
+| `tests/`       | Suíte de testes, roda no navegador sem instalar nada            |
+| `CLAUDE.md`    | Contexto do projeto para o Claude Code, incluindo as decisões e as armadilhas já encontradas |
+
+## Ver o site agora
+
+Abra o `index.html` com dois cliques, ou sirva a pasta se quiser testar do
+celular na mesma rede:
+
+```bash
+python3 -m http.server 8791
+# http://127.0.0.1:8791/index.html
+```
 
 ## Publicar no GitHub Pages
 
-O repositório já está iniciado (`main`) com o primeiro commit feito.
-Falta só criar o repo remoto e dar push:
-
-```bash
-# cria o repo na sua conta e já faz o push
-gh repo create esfihas-sayones --public --source=. --push
-
-# ligar o Pages
-gh api -X POST repos/:owner/esfihas-sayones/pages -f "source[branch]=main" -f "source[path]=/"
-```
-
-Ou pelo site: crie o repositório vazio no GitHub e então
-
-```bash
-git remote add origin https://github.com/SEU-USUARIO/esfihas-sayones.git
-git push -u origin main
-```
-
-Depois: **Settings → Pages → Source: Deploy from a branch → `main` / `(root)` → Save**.
-Em 1–2 minutos o site está no ar em `https://SEU-USUARIO.github.io/esfihas-sayones/`.
-
-Assim que souber a URL, abra o `index.html` e troque a linha do `<link rel="canonical">`
-(está marcada com um comentário no topo do arquivo). Ela e as tags `og:` são o que
-o WhatsApp lê pra montar o preview quando você mandar o link.
+O repositório local já está pronto: branch `main`, histórico completo,
+`.nojekyll` no lugar. Falta escolher a conta do GitHub e criar o remoto.
+Os comandos estão em **Próximos passos**, mais abaixo.
 
 ## Mudar preços, sabores e WhatsApp
 
@@ -140,13 +131,76 @@ mensagem e abre o WhatsApp já preenchido. Você recebe como conversa normal.
 O carrinho fica salvo no navegador dele (`localStorage`), então ele pode voltar
 depois sem perder o que escolheu.
 
-## Coisas para ajustar quando o negócio andar
+## Próximos passos
 
-- **Pontos e horários** (ver acima, são três lugares pra manter em sincronia)
-- **Endereço exato de cada ponto**: hoje o site diz que é combinado no WhatsApp
-- **Depoimentos**: hoje são exemplos, troque por elogios reais de clientes
-- **Instagram**: o link aponta para `@esfihasayones`, crie o perfil ou corrija a URL
-- **Fotos**: os cards usam ilustração SVG. Quando tiver foto boa, troque o
-  `<svg class="card-ilu">` por `<img class="card-ilu" src="img/calabresa.jpg" alt="...">`
-- **Google Empresarial**: cadastre o negócio no Google Business Profile.
-  Para busca local ("esfiha florianópolis") isso pesa muito mais que o site.
+Em ordem. Os dois primeiros travam a publicação.
+
+### 1. Decidir a conta do GitHub
+
+O `gh` desta máquina está autenticado como **breno-sayao-ecdt**, que é a
+conta do trabalho. Para um projeto pessoal provavelmente você quer outra.
+
+```bash
+gh auth status                 # ver em qual conta está
+gh auth login                  # entrar com a conta pessoal, se for o caso
+gh auth switch                 # alternar entre contas já autenticadas
+```
+
+Depois de resolver isso, o repositório local já está pronto (branch `main`,
+com histórico). Falta só criar o remoto e publicar:
+
+```bash
+gh repo create esfihas-sayones --public --source=. --push
+gh api -X POST repos/:owner/esfihas-sayones/pages \
+  -f "source[branch]=main" -f "source[path]=/"
+```
+
+### 2. Trocar os depoimentos
+
+Os três da seção "O que os clientes falam" são **inventados**, com nome e
+bairro fictícios. Não publique como se fossem reais. Assim que as primeiras
+encomendas saírem, peça autorização e troque por elogios de verdade.
+
+### 3. Ajustar o canonical
+
+Assim que souber a URL do Pages, troque a linha `<link rel="canonical">` no
+topo do `index.html`. Ela e as tags `og:` são o que o WhatsApp lê para montar
+o preview quando alguém manda o link.
+
+### 4. Criar o perfil no Instagram
+
+O rodapé aponta para `@esfihasayones`, que ainda não existe. Crie ou corrija
+a URL. O `logo.svg` serve de foto de perfil.
+
+### 5. Cadastrar no Google Meu Negócio
+
+Para quem busca "esfiha florianópolis", o Google Business Profile pesa muito
+mais que o site. O site tem o JSON-LD de negócio local pronto para ajudar,
+mas sozinho ele não ranqueia.
+
+### 6. Definir o endereço exato de cada ponto
+
+Hoje o site diz que o ponto é combinado no WhatsApp. Quando os três pontos
+estiverem definidos, vale escrever o endereço direto na página: menos
+mensagem para responder.
+
+## Quando tiver foto boa
+
+Os cards usam ilustração SVG. Para trocar por foto, substitua o
+`<svg class="card-ilu">` de cada sabor por:
+
+```html
+<img class="card-ilu" src="img/calabresa.jpg" alt="Esfiha de calabresa">
+```
+
+Foto quadrada, pelo menos 400×400, fundo claro. Vale trocar o `og.png`
+também: o preview do WhatsApp com foto de verdade rende mais que ilustração.
+
+## Como o texto do site foi escrito
+
+O dono não quer texto com cara de IA, e isso está valendo como regra do
+projeto. Sem travessão (—), sem antítese ("não é X, é Y"), sem tríade
+ritmada, sem "de verdade" e "do jeito certo". Português direto e concreto.
+
+Existe um teste que falha se um travessão voltar ao texto visível. Os
+detalhes estão no `CLAUDE.md`.
