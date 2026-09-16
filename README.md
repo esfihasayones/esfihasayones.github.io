@@ -163,9 +163,9 @@ encomendas saírem, peça autorização e troque por elogios de verdade.
 
 ### 3. Ajustar o canonical
 
-Assim que souber a URL do Pages, troque a linha `<link rel="canonical">` no
-topo do `index.html`. Ela e as tags `og:` são o que o WhatsApp lê para montar
-o preview quando alguém manda o link.
+Feito: o site está em <https://esfihasayones.github.io/> e o `canonical`, o
+`og:url`, o `og:image` e o JSON-LD já apontam pra lá. Se um dia trocar por
+domínio próprio, essas quatro linhas do `index.html` mudam juntas.
 
 ### 4. Criar o perfil no Instagram
 
