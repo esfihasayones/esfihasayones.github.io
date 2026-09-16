@@ -84,7 +84,7 @@ python3 -m http.server 8791
 # http://127.0.0.1:8791/tests/index.html
 ```
 
-95 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
+96 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
 iframe limpo, um teste por vez. `window.RESULTADO` expõe o resultado para
 automação.
 
@@ -112,6 +112,12 @@ jeito certo é medir `getBoundingClientRect().right` de cada elemento.
 **Âncora para elemento grudado não rola.** `href="#topo"` mirando o próprio
 cabeçalho sticky andava só a altura dele a cada clique. O clique na marca é
 interceptado no JS.
+
+**Item de lista em flex parte o texto.** Os `li` dos cards de preparo são
+`display:flex` com marcador no `::before`. Se o `<b>` do rótulo e o texto
+ficarem soltos no `li`, viram itens de flex separados: cada linha começa num
+x diferente e o rótulo longo quebra no meio ("Micro-/ondas:"). O conteúdo do
+`li` tem que estar dentro de um `<span>`.
 
 **`render()` remonta a lista da gaveta** quando o conjunto de sabores muda.
 Se alguém estiver digitando numa linha, ela não pode sair: há uma exceção

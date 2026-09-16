@@ -777,6 +777,20 @@
     });
   });
 
+  teste("Layout", "cada linha dos cards de preparo tem o texto num bloco só", function (c) {
+    // o li é flex: se o <b> e o texto forem itens separados, cada linha começa
+    // num x diferente e o rótulo longo quebra no meio
+    var soltos = [].slice.call(c.doc.querySelectorAll(".preparo li"))
+      .filter(function (li) {
+        var pedacos = [].slice.call(li.childNodes).filter(function (n) {
+          return n.nodeType === 1 || (n.nodeType === 3 && n.textContent.trim() !== "");
+        });
+        return pedacos.length !== 1 || pedacos[0].nodeType !== 1;
+      })
+      .map(function (li) { return li.textContent.trim().slice(0, 28); });
+    igual(soltos.join(" | "), "", "linhas com o texto partido em itens de flex");
+  });
+
   teste("Layout", "as grades não usam mínimo fixo maior que a tela", function (c) {
     var suspeitas = [];
     [".sabores", ".faixas", ".passos", ".preparos", ".depos"].forEach(function (sel) {
