@@ -26,11 +26,24 @@ python3 -m http.server 8791
 # http://127.0.0.1:8791/index.html
 ```
 
-## Publicar no GitHub Pages
+## O site no ar
 
-O repositório local já está pronto: branch `main`, histórico completo,
-`.nojekyll` no lugar. Falta escolher a conta do GitHub e criar o remoto.
-Os comandos estão em **Próximos passos**, mais abaixo.
+<https://esfihasayones.github.io/> desde 16/09/2026.
+
+O repositório é `esfihasayones/esfihasayones.github.io`, de uma conta criada
+só para o negócio. Como o nome do repositório é `<usuário>.github.io`, o
+Pages publica sozinho o que estiver na raiz da `main`, sem configurar nada:
+
+```bash
+git push origin main      # um ou dois minutos depois já está no ar
+```
+
+**Não use o `gh` neste repositório.** O `gh` desta máquina está logado na
+conta do trabalho (`breno-sayao-ecdt`) e não enxerga esta. O push vai por SSH
+no alias `github-esfiharia`, com chave própria (`~/.ssh/id_github_esfiharia`),
+no mesmo padrão do alias `github-econodata` que já existia. Em outra máquina,
+gere uma chave nova, cadastre em github.com/settings/keys logado como
+`esfihasayones` e repita o bloco no `~/.ssh/config`.
 
 ## Mudar preços, sabores e WhatsApp
 
@@ -135,25 +148,10 @@ depois sem perder o que escolheu.
 
 Em ordem. Os dois primeiros travam a publicação.
 
-### 1. Decidir a conta do GitHub
+### 1. Publicar o site
 
-O `gh` desta máquina está autenticado como **breno-sayao-ecdt**, que é a
-conta do trabalho. Para um projeto pessoal provavelmente você quer outra.
-
-```bash
-gh auth status                 # ver em qual conta está
-gh auth login                  # entrar com a conta pessoal, se for o caso
-gh auth switch                 # alternar entre contas já autenticadas
-```
-
-Depois de resolver isso, o repositório local já está pronto (branch `main`,
-com histórico). Falta só criar o remoto e publicar:
-
-```bash
-gh repo create esfihas-sayones --public --source=. --push
-gh api -X POST repos/:owner/esfihas-sayones/pages \
-  -f "source[branch]=main" -f "source[path]=/"
-```
+Feito em 16/09/2026. Está em <https://esfihasayones.github.io/>, na conta
+`esfihasayones`. Como publicar de novo está em **O site no ar**, mais acima.
 
 ### 2. Trocar os depoimentos
 

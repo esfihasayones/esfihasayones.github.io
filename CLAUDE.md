@@ -1,8 +1,22 @@
 # Esfihas Sayones
 
 Site de encomendas de uma esfiharia caseira de verdade, do Breno, em
-Florianópolis. Negócio novo, ainda não lançado. HTML/CSS/JS puro num arquivo
-só, sem build e sem backend, para publicar no GitHub Pages.
+Florianópolis. Negócio novo. HTML/CSS/JS puro num arquivo só, sem build e sem
+backend, servido pelo GitHub Pages.
+
+## Estado (16/09/2026)
+
+No ar em <https://esfihasayones.github.io/>, repositório
+`esfihasayones/esfihasayones.github.io`. O Pages republica sozinho a cada
+push na `main`, porque o nome do repositório é `<usuário>.github.io`.
+
+**O push vai por SSH, nunca pelo `gh`.** O `gh` desta máquina está logado na
+conta do trabalho e não enxerga esta; o remoto usa o alias
+`github-esfiharia` do `~/.ssh/config`, com chave própria.
+
+Falta antes de divulgar: os três depoimentos são inventados e não podem ficar
+no ar como reais, o Instagram `@esfihasayones` do rodapé não existe e o
+Google Meu Negócio não foi cadastrado. Os detalhes estão no `README.md`.
 
 ## O negócio (decisões tomadas com o dono, não invente outras)
 
@@ -73,6 +87,11 @@ por sabor (`#ic-calabresa`, `#ic-carne`, `#ic-queijo`). São vistos de
 três-quartos, com a lateral da massa aparecendo: de cima e com rodela de
 calabresa, o desenho lia como pizza. A esfiha é **aberta**, estilo Habib's,
 e a calabresa é **moída**, não em rodela. O ícone da marca usa a de carne.
+
+**O ícone do botão de pedido** é `#ic-carrinho`, um carrinho de compras. Já
+foi uma sacola, que tinha o mesmo corpo afunilado da lixeira do carrinho e a
+18px o dono leu como lixeira. Ícone novo de ação: compare ampliado e a 18px
+com os outros antes de escolher.
 
 **A mensagem do WhatsApp** é montada no cliente e aberta via `wa.me`. Não há
 servidor: o pedido chega como conversa normal no (48) 98810-6499.
