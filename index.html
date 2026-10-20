@@ -4,18 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Esfihas Sayones | Esfiha caseira em Florianópolis</title>
-<meta name="description" content="Esfiha caseira congelada em Florianópolis: calabresa, carne e queijo. Combos de 4, 8 e 12. Você esquenta na air fryer em 6 minutos. Pontos de retirada na Trindade, Itacorubi e Centro.">
-<meta name="theme-color" content="#B54A2A">
+<meta name="description" content="Esfiha aberta congelada em Florianópolis: calabresa, carne, queijo e marguerita. Combos de 4, 8 e 12, pronta em 6 minutos na air fryer. Retirada na Trindade, Itacorubi e Centro.">
+<meta name="theme-color" content="#F7F6F2">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="Esfihas Sayones | Esfiha caseira em Florianópolis">
-<meta property="og:description" content="Esfiha caseira congelada. Combos de 4, 8 e 12, prontas em 6 minutos na air fryer.">
+<meta property="og:description" content="Esfiha aberta congelada de calabresa, carne, queijo e marguerita. Combos de 4, 8 e 12, pronta em 6 minutos na air fryer.">
 <meta property="og:locale" content="pt_BR">
 <meta name="geo.region" content="BR-SC">
 <meta name="geo.placename" content="Florianópolis">
 <link rel="canonical" href="https://esfihasayones.github.io/">
 <meta property="og:url" content="https://esfihasayones.github.io/">
 <!-- o WhatsApp só lê a imagem se a URL for absoluta -->
-<meta property="og:image" content="https://esfihasayones.github.io/og.png">
+<!-- nome versionado: o WhatsApp guarda a prévia pela URL da imagem -->
+<meta property="og:image" content="https://esfihasayones.github.io/og-v2.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Esfihas Sayones, esfiha caseira congelada em Florianópolis">
@@ -23,33 +24,36 @@
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ---------- tokens ---------- */
 :root{
-  --terracota:#B54A2A;
-  --terracota-esc:#8E3418;
-  --dourado:#DB963A;
-  --dourado-claro:#F5CB86;
-  --creme:#FDF7EC;
-  --areia:#F4E7D2;
-  --areia-esc:#E6D3B5;
-  --carvao:#2E211A;
-  --madeira:#6B4A33;
-  --musgo:#4E6B3F;
-  --texto:#3B2B22;
-  --texto-suave:#7A6555;
-  --branco:#FFFDF8;
-  --sombra:0 1px 2px rgba(46,33,26,.06), 0 8px 24px -8px rgba(46,33,26,.16);
-  --sombra-alta:0 2px 4px rgba(46,33,26,.08), 0 24px 48px -16px rgba(46,33,26,.28);
-  --raio:18px;
-  --raio-sm:12px;
-  --display:"Fraunces",Georgia,"Times New Roman",serif;
-  --corpo:"Nunito Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  /* Identidade de uma tinta só, como na camisa: o selo e o texto em quase
+     preto sobre um branco quebrado. Os nomes antigos ficaram pra não espalhar
+     a troca pelo CSS inteiro; "terracota" hoje é o tom de destaque, a tinta. */
+  --terracota:#121212;
+  --terracota-esc:#000;
+  --dourado:#121212;
+  --dourado-claro:#DCD9D2;
+  --creme:#F7F6F2;
+  --areia:#EEECE7;
+  --areia-esc:#DCD9D2;
+  --carvao:#121212;
+  --madeira:#3D3D3B;
+  --musgo:#2E6B3E;
+  --texto:#1F1F1D;
+  --texto-suave:#6B6A66;
+  --branco:#FFFFFF;
+  --sombra:0 1px 2px rgba(18,18,18,.04), 0 6px 18px -10px rgba(18,18,18,.14);
+  --sombra-alta:0 2px 4px rgba(18,18,18,.05), 0 18px 36px -18px rgba(18,18,18,.22);
+  --raio:14px;
+  --raio-sm:10px;
+  --display:"Unbounded",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --corpo:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
   --max:1160px;
 }
 *,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:88px}
+html{scroll-behavior:smooth;scroll-padding-top:96px}
 body{
   margin:0;
   font-family:var(--corpo);
@@ -61,73 +65,70 @@ body{
   overflow-x:hidden;
 }
 img,svg{max-width:100%}
-h1,h2,h3,h4{font-family:var(--display);line-height:1.12;margin:0;color:var(--carvao);letter-spacing:-.015em}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;line-height:1.12;margin:0;color:var(--carvao);letter-spacing:-.01em}
 p{margin:0 0 1em}
 a{color:var(--terracota)}
 button{font:inherit}
 .wrap{max-width:var(--max);margin:0 auto;padding-inline:20px}
 
-/* textura de fundo sutil */
-body::before{
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.55;
-  background-image:radial-gradient(circle at 1px 1px, rgba(107,74,51,.085) 1px, transparent 0);
-  background-size:30px 30px;
-}
 main,header,footer{position:relative;z-index:1}
 
 /* ---------- utilidades ---------- */
 .olho{
   display:inline-flex;align-items:center;gap:8px;
-  font-size:12.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
   color:var(--terracota);
 }
-.olho::before{content:"";width:26px;height:2px;border-radius:2px;background:var(--dourado)}
+.olho::before{content:"";width:22px;height:1.5px;background:currentColor}
 .secao{padding-block:clamp(56px,8vw,104px)}
-.secao-titulo{font-size:clamp(31px,5vw,50px);font-weight:900;margin:14px 0 14px}
+.secao-titulo{font-size:clamp(26px,3.8vw,40px);font-weight:600;margin:14px 0 14px}
 .secao-sub{max-width:62ch;color:var(--texto-suave);font-size:clamp(16px,2vw,18.5px);margin:0}
 .centro{text-align:center}
 .centro .olho{justify-content:center}
 .centro .secao-sub{margin-inline:auto}
+.secao-sub.cel{display:none}
 
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:9px;
   padding:14px 26px;border-radius:999px;border:0;cursor:pointer;
-  font-weight:800;font-size:16px;letter-spacing:.01em;text-decoration:none;
+  font-weight:600;font-size:16px;letter-spacing:.01em;text-decoration:none;
   transition:transform .16s ease, box-shadow .16s ease, background .16s ease;
   white-space:nowrap;
 }
 .btn:active{transform:translateY(1px)}
-.btn-primario{background:var(--terracota);color:#fff;box-shadow:0 10px 22px -10px rgba(181,74,42,.85)}
-.btn-primario:hover{background:var(--terracota-esc);box-shadow:0 14px 28px -10px rgba(181,74,42,.9);transform:translateY(-2px)}
+.btn-primario{background:var(--terracota);color:#fff}
+.btn-primario:hover{background:#3A3A38}
 .btn-zap{background:#1FA855;color:#fff;box-shadow:0 8px 18px -10px rgba(28,110,62,.55)}
 .btn-zap:hover{background:#188544;transform:translateY(-2px);box-shadow:0 12px 22px -10px rgba(28,110,62,.6)}
 .btn-zap:disabled{background:#C3BBB0;box-shadow:none;cursor:not-allowed;transform:none}
-.btn-fantasma{background:transparent;color:var(--carvao);border:2px solid var(--areia-esc)}
-.btn-fantasma:hover{border-color:var(--terracota);color:var(--terracota)}
+.btn-fantasma{background:transparent;color:var(--carvao);border:1.5px solid var(--carvao)}
+.btn-fantasma:hover{background:var(--carvao);color:#fff}
 
 /* ---------- header ---------- */
 .topo{
   position:sticky;top:0;z-index:60;
-  background:rgba(253,247,236,.82);
+  background:rgba(247,246,242,.86);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid transparent;transition:border-color .2s, box-shadow .2s;
 }
-.topo.grudado{border-bottom-color:var(--areia-esc);box-shadow:0 4px 20px -12px rgba(46,33,26,.4)}
+.topo.grudado{border-bottom-color:var(--areia-esc);box-shadow:0 4px 20px -12px rgba(18,18,18,.4)}
 .topo-in{display:flex;align-items:center;gap:18px;padding-block:12px}
 .marca{display:flex;align-items:center;gap:11px;text-decoration:none;flex:0 0 auto}
-.marca svg{width:42px;height:42px;flex:0 0 auto}
+.marca svg{width:52px;height:52px;flex:0 0 auto;color:var(--carvao)}
 .marca-txt{display:flex;flex-direction:column;line-height:1}
-.marca-txt b{font-family:var(--display);font-size:20px;font-weight:900;color:var(--carvao);letter-spacing:-.01em}
-.marca-txt span{font-size:9.5px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--terracota);margin-top:3px}
+.marca-txt b{font-family:var(--display);font-size:19px;font-weight:600;color:var(--carvao);letter-spacing:.02em}
+.marca-txt span{font-size:10px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:var(--texto-suave);margin-top:4px}
 .nav{display:flex;gap:4px;margin-left:auto}
 .nav a{
   padding:9px 14px;border-radius:999px;text-decoration:none;color:var(--texto);
-  font-weight:700;font-size:15px;transition:background .16s,color .16s;
+  font-weight:500;font-size:15px;transition:background .16s,color .16s;
 }
-.nav a:hover{background:var(--areia);color:var(--terracota)}
-.topo .btn{padding:11px 20px;font-size:15px}
+.nav a:hover{background:var(--areia);color:var(--carvao)}
+.topo .btn{padding:11px 20px;font-size:15px;background:transparent;color:var(--carvao);border:1.5px solid var(--carvao)}
+.topo .btn:hover{background:var(--carvao);color:#fff}
 @media(max-width:900px){
-  html{scroll-padding-top:118px}
+  html{scroll-padding-top:124px}
+  .marca svg{width:44px;height:44px}
   .topo-in{flex-wrap:wrap;gap:10px;padding-bottom:0}
   .topo .btn{margin-left:auto}
   .nav{
@@ -145,54 +146,59 @@ main,header,footer{position:relative;z-index:1}
   .nav.tem-depois{--corte-dir:34px}
   .nav::-webkit-scrollbar{display:none}
   .nav a{flex:0 0 auto;font-size:13.5px;padding:7px 13px;background:var(--areia)}
-  .nav a:hover{background:var(--terracota);color:#fff}
+  .nav a:hover{background:var(--carvao);color:#fff}
 }
 @media(max-width:520px){
   .topo .btn span{display:none}
   .topo .btn{padding:11px 14px}
-  .selos li{font-size:12.5px;padding:6px 11px;gap:5px}
-  .hero-acoes .btn{flex:1 1 100%}
 }
 
 /* ---------- hero ---------- */
-.hero{position:relative;padding-block:clamp(44px,7vw,86px) clamp(52px,8vw,96px);overflow:hidden}
-.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(28px,5vw,64px);align-items:center}
+/* Texto e tabela de combos à esquerda, o selo grande à direita e uma faixa
+   com os sabores embaixo. No celular o selo sobe, a tabela dá lugar aos três
+   números principais e a faixa sai, porque o cardápio vem logo depois. */
+.hero{padding-block:clamp(36px,6vw,72px) clamp(40px,6vw,64px)}
+.hero-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:clamp(28px,5vw,64px);align-items:center}
 .hero-grid>*{min-width:0}
-@media(max-width:900px){.hero-grid{grid-template-columns:1fr;text-align:center}.hero .olho{justify-content:center}.hero-acoes{justify-content:center}.selos{justify-content:center}}
-.hero h1{font-size:clamp(36px,6.6vw,66px);font-weight:900;margin:16px 0 18px}
-.hero h1 em{
-  font-style:normal;color:var(--terracota);
-  background-image:linear-gradient(var(--dourado-claro),var(--dourado-claro));
-  background-repeat:no-repeat;background-size:100% .17em;background-position:0 92%;
-  -webkit-box-decoration-break:clone;box-decoration-break:clone;
+.hero h1{font-size:clamp(30px,3.6vw,42px);font-weight:600;letter-spacing:.02em;text-transform:uppercase;line-height:1.08;margin:16px 0 16px}
+.hero p.lead{font-size:clamp(16px,1.6vw,18px);color:var(--texto-suave);max-width:46ch;margin:0}
+.hero-selo{width:min(460px,100%);aspect-ratio:1;margin-inline:auto;display:block;color:var(--carvao)}
+.combos-hero{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;margin-top:26px;
+  border-top:1px solid var(--areia-esc);border-bottom:1px solid var(--areia-esc)}
+.combos-hero span{padding:12px 14px;line-height:1.3}
+.combos-hero span:first-child{padding-left:0}
+.combos-hero span+span{border-left:1px solid var(--areia-esc)}
+.combos-hero small{display:block;font-size:12.5px;color:var(--texto-suave)}
+.combos-hero b{font-size:19px;font-weight:700;color:var(--carvao);white-space:nowrap}
+.combos-nota{font-size:13px;color:var(--texto-suave);margin:9px 0 0}
+.hero-acoes{display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px;margin-top:26px}
+.link-sutil{color:var(--texto-suave);font-size:15px;text-underline-offset:4px;padding:8px 0;min-height:34px;display:inline-flex;align-items:center}
+.link-sutil:hover{color:var(--carvao)}
+.numeros-hero{display:none}
+.sabores-hero{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);margin-top:clamp(36px,5vw,56px);border-top:1px solid var(--areia-esc)}
+.sabores-hero a{display:flex;align-items:center;gap:12px;padding:18px 16px 4px 0;text-decoration:none;color:inherit;min-width:0}
+.sabores-hero a+a{border-left:1px solid var(--areia-esc);padding-left:16px}
+.sabores-hero svg{width:76px;height:76px;flex:0 0 auto}
+.sabores-hero b{display:block;font-family:var(--display);font-weight:600;font-size:15px;color:var(--carvao)}
+.sabores-hero small{display:block;font-size:12.5px;line-height:1.35;color:var(--texto-suave);margin:3px 0 5px}
+.sabores-hero em{font-style:normal;font-weight:700;font-size:14px;color:var(--carvao)}
+.sabores-hero a:hover b{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr;text-align:center}
+  .hero .olho{justify-content:center}
+  .hero-selo{order:-1;width:min(240px,64vw)}
+  .hero h1{font-size:clamp(22px,6vw,30px);letter-spacing:.1em;margin:12px 0}
+  .hero p.lead{margin-inline:auto}
+  .combos-hero,.combos-nota,.sabores-hero,.link-sutil{display:none}
+  .numeros-hero{display:grid;grid-template-columns:repeat(3,1fr);list-style:none;padding:0;margin:20px 0 0;
+    border-top:1px solid var(--areia-esc);border-bottom:1px solid var(--areia-esc)}
+  .numeros-hero li{padding:11px 4px;line-height:1.25}
+  .numeros-hero li+li{border-left:1px solid var(--areia-esc)}
+  .numeros-hero b{display:block;font-size:17px;color:var(--carvao)}
+  .numeros-hero span{font-size:12.5px;color:var(--texto-suave)}
+  .hero-acoes{justify-content:center;margin-top:20px}
+  .hero-acoes .btn{flex:1 1 100%}
 }
-.hero p.lead{font-size:clamp(17px,2.2vw,20.5px);color:var(--texto-suave);max-width:56ch}
-@media(max-width:900px){.hero p.lead{margin-inline:auto}}
-.hero-acoes{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
-.selos{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px;list-style:none;padding:0}
-.selos li{
-  display:flex;align-items:center;gap:7px;background:var(--branco);border:1px solid var(--areia-esc);
-  padding:7px 14px;border-radius:999px;font-size:13.5px;font-weight:700;color:var(--madeira);
-}
-.selos li svg{width:15px;height:15px;color:var(--musgo);flex:0 0 auto}
-
-/* prato do hero */
-.prato{position:relative;display:grid;place-items:center;aspect-ratio:1;max-width:460px;margin-inline:auto;width:100%}
-.prato::before{
-  content:"";position:absolute;inset:6%;border-radius:50%;
-  background:radial-gradient(circle at 34% 28%, #fff 0%, var(--areia) 62%, var(--areia-esc) 100%);
-  box-shadow:var(--sombra-alta), inset 0 0 0 10px rgba(255,255,255,.6);
-}
-.prato::after{
-  content:"";position:absolute;inset:13%;border-radius:50%;
-  border:1px solid rgba(181,74,42,.10);
-  box-shadow:inset 0 0 40px rgba(181,74,42,.045);
-}
-.prato .esf{position:absolute;width:37%;filter:drop-shadow(0 10px 18px rgba(46,33,26,.22));animation:flutua 6s ease-in-out infinite}
-.prato .e1{top:16%;left:31%;animation-delay:0s}
-.prato .e2{top:43%;left:9%;animation-delay:-2s;width:33%}
-.prato .e3{top:43%;left:56%;animation-delay:-4s;width:33%}
-@keyframes flutua{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
 /* Quem pede menos movimento no sistema não deveria ver nada animar */
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
@@ -201,44 +207,38 @@ main,header,footer{position:relative;z-index:1}
     transition-duration:.01ms!important;scroll-behavior:auto!important;
   }
 }
-.etiqueta{
-  position:absolute;background:var(--branco);border:1px solid var(--areia-esc);border-radius:14px;
-  padding:10px 15px;box-shadow:var(--sombra);font-size:13px;font-weight:800;color:var(--carvao);
-  display:flex;align-items:center;gap:8px;
-}
-.etiqueta b{font-family:var(--display);font-size:19px;color:var(--terracota);font-weight:900}
-.etiqueta.t1{top:4%;right:-2%}
-.etiqueta.t2{bottom:6%;left:-4%}
-@media(max-width:520px){.etiqueta.t1{right:0}.etiqueta.t2{left:0}}
 
 /* ---------- cardápio ---------- */
-.sabores{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:22px;margin-top:44px}
+/* Quatro colunas no desktop e 2x2 no tablet deitado: com auto-fit, entre
+   821 e 1080px cabiam três e a marguerita ficava sozinha embaixo. */
+.sabores{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;margin-top:44px}
+@media(max-width:1080px){.sabores{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .card{
   background:var(--branco);border:1px solid var(--areia-esc);border-radius:var(--raio);
   padding:26px 24px 22px;display:flex;flex-direction:column;gap:4px;
-  box-shadow:var(--sombra);transition:transform .2s ease, box-shadow .2s ease, border-color .2s;
+  transition:border-color .2s, box-shadow .2s;
   position:relative;overflow:hidden;
 }
-.card:hover{transform:translateY(-5px);box-shadow:var(--sombra-alta);border-color:var(--dourado)}
-.card.ativo{border-color:var(--terracota);box-shadow:0 0 0 3px rgba(181,74,42,.13), var(--sombra-alta)}
+.card:hover{border-color:var(--carvao)}
+.card.ativo{border-color:var(--carvao);box-shadow:0 0 0 1px var(--carvao)}
 .card-ilu{width:130px;height:130px;margin:0 auto 10px;display:block}
-.card h3{font-size:26px;font-weight:900;text-align:center}
+.card h3{font-size:21px;font-weight:600;text-align:center}
 .card .desc{font-size:15px;color:var(--texto-suave);text-align:center;margin:8px 0 16px;min-height:3.2em}
 .card .desc.curta{display:none}
 .card-rodape{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;
   border-top:1px dashed var(--areia-esc);padding-top:16px}
-.preco{font-family:var(--display);font-size:27px;font-weight:900;color:var(--carvao);line-height:1}
+.preco{font-family:var(--display);font-size:22px;font-weight:600;color:var(--carvao);line-height:1}
 .preco small{font-family:var(--corpo);font-size:12.5px;font-weight:700;color:var(--texto-suave);display:block;margin-top:3px}
 .stepper{display:flex;align-items:center;gap:4px;background:var(--areia);border-radius:999px;padding:4px}
 .stepper button{
   width:36px;height:36px;border-radius:50%;border:0;background:var(--branco);color:var(--terracota);
-  font-size:20px;font-weight:800;cursor:pointer;display:grid;place-items:center;line-height:1;
-  box-shadow:0 1px 3px rgba(46,33,26,.12);transition:background .15s,color .15s,transform .12s;
+  font-size:20px;font-weight:700;cursor:pointer;display:grid;place-items:center;line-height:1;
+  box-shadow:0 1px 3px rgba(18,18,18,.12);transition:background .15s,color .15s,transform .12s;
 }
 .stepper button:hover{background:var(--terracota);color:#fff}
 .stepper button:disabled{opacity:.38;cursor:not-allowed;background:var(--branco);color:var(--terracota)}
 .stepper .conta{
-  width:40px;text-align:center;font:inherit;font-weight:800;font-size:17px;
+  width:40px;text-align:center;font:inherit;font-weight:700;font-size:17px;
   font-variant-numeric:tabular-nums;border:0;background:transparent;color:var(--carvao);
   padding:7px 0;min-height:34px;border-radius:9px;-moz-appearance:textfield;
 }
@@ -246,7 +246,7 @@ main,header,footer{position:relative;z-index:1}
 .stepper .conta::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .stepper .conta:focus{outline:0;background:var(--branco);box-shadow:0 0 0 2px var(--terracota)}
 .tag-veg{position:absolute;top:14px;right:14px;background:var(--musgo);color:#fff;font-size:10.5px;
-  font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:999px}
+  font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:999px}
 
 /* ---------- faixas de preço ---------- */
 .faixas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:16px;margin-top:44px}
@@ -254,16 +254,16 @@ main,header,footer{position:relative;z-index:1}
   background:var(--branco);border:1px solid var(--areia-esc);border-radius:var(--raio);
   padding:24px 20px;text-align:center;position:relative;transition:transform .2s,border-color .2s,box-shadow .2s;
 }
-.faixa:hover{transform:translateY(-4px);box-shadow:var(--sombra)}
-.faixa.destaque{border-color:var(--terracota);background:linear-gradient(180deg,#fff,#FFF6E9);box-shadow:var(--sombra)}
+.faixa:hover{border-color:var(--carvao)}
+.faixa.destaque{border-color:var(--carvao);box-shadow:0 0 0 1px var(--carvao)}
 .faixa .fita{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--terracota);
-  color:#fff;font-size:11px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;padding:5px 14px;border-radius:999px;white-space:nowrap}
-.faixa .qtd{font-family:var(--display);font-size:19px;font-weight:700;color:var(--madeira);margin-bottom:6px}
-.faixa .un{font-family:var(--display);font-size:38px;font-weight:900;color:var(--terracota);line-height:1}
+  color:#fff;font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;padding:5px 14px;border-radius:999px;white-space:nowrap}
+.faixa .qtd{font-family:var(--display);font-size:16px;font-weight:500;color:var(--madeira);margin-bottom:8px}
+.faixa .un{font-family:var(--display);font-size:32px;font-weight:600;color:var(--carvao);line-height:1}
 .faixa .un sup{font-size:17px;vertical-align:super;margin-right:1px}
 .faixa .un-lbl{font-size:13px;font-weight:700;color:var(--texto-suave);margin-top:5px}
 .faixa .eco{margin-top:12px;display:inline-block;background:var(--areia);color:var(--madeira);
-  font-size:12px;font-weight:800;padding:4px 12px;border-radius:999px}
+  font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px}
 .nota{margin-top:22px;font-size:14.5px;color:var(--texto-suave);text-align:center}
 
 /* ---------- passos ---------- */
@@ -271,9 +271,9 @@ main,header,footer{position:relative;z-index:1}
 .passo{background:var(--branco);border:1px solid var(--areia-esc);border-radius:var(--raio);padding:26px 22px;counter-increment:p}
 .passo::before{
   content:counter(p);display:grid;place-items:center;width:44px;height:44px;border-radius:14px;
-  background:var(--terracota);color:#fff;font-family:var(--display);font-size:22px;font-weight:900;margin-bottom:14px;
+  background:var(--carvao);color:#fff;font-family:var(--display);font-size:19px;font-weight:600;margin-bottom:14px;
 }
-.passo h3{font-size:19.5px;font-weight:700;margin-bottom:7px}
+.passo h3{font-size:17px;font-weight:600;margin-bottom:7px}
 .passo p{font-size:15px;color:var(--texto-suave);margin:0}
 
 /* ---------- blocos de congelada / como esquentar ---------- */
@@ -282,83 +282,78 @@ main,header,footer{position:relative;z-index:1}
   border-radius:var(--raio);padding:28px 26px;border:1px solid var(--areia-esc);background:var(--branco);
   display:flex;flex-direction:column;gap:10px;
 }
-.preparo.fria{background:linear-gradient(160deg,#F3F7F1,#FFFDF8);border-color:#CBDCC2}
+.preparo.fria{background:var(--branco)}
 .preparo .ico{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:var(--areia);color:var(--terracota)}
-.preparo.fria .ico{background:#E2EEDC;color:var(--musgo)}
-.preparo h3{font-size:22px;font-weight:900}
+.preparo.fria .ico{background:var(--areia);color:var(--carvao)}
+.preparo h3{font-size:19px;font-weight:600}
 .preparo p{margin:0;font-size:15.5px;color:var(--texto-suave)}
 .preparo ul{margin:4px 0 0;padding-left:0;list-style:none;display:grid;gap:8px}
 .preparo li{display:flex;gap:9px;font-size:14.5px;color:var(--madeira);align-items:flex-start}
 .preparo li::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--dourado);margin-top:8px;flex:0 0 auto}
-.preparo.fria li::before{background:var(--musgo)}
+.preparo.fria li::before{background:var(--carvao)}
 
 /* ---------- entrega ---------- */
 .entrega-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:44px}
 @media(max-width:820px){.entrega-grid{grid-template-columns:1fr}}
 .painel{background:var(--branco);border:1px solid var(--areia-esc);border-radius:var(--raio);padding:30px 28px}
-.painel h3{font-size:23px;font-weight:900;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.painel h3{font-size:19px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;gap:10px}
 .painel h3 svg{width:22px;height:22px;color:var(--terracota)}
 .bairros{display:flex;flex-wrap:wrap;gap:9px;list-style:none;padding:0;margin:0}
 .bairros li{background:var(--areia);border-radius:10px;padding:9px 15px;font-weight:700;font-size:15px;color:var(--madeira)}
 .taxa{display:flex;gap:14px;align-items:center;margin-top:22px;padding:16px 18px;border-radius:var(--raio-sm);
-  background:linear-gradient(140deg,#F3F7F1,#FFFDF8);border:1px solid #CBDCC2}
-.taxa .cifra{font-family:var(--display);font-size:30px;font-weight:900;color:var(--musgo);line-height:1;flex:0 0 auto}
+  background:var(--areia);border:1px solid var(--areia-esc)}
+.taxa .cifra{font-family:var(--display);font-size:26px;font-weight:600;color:var(--carvao);line-height:1;flex:0 0 auto}
 .taxa b{display:block;font-size:15px;color:var(--carvao)}
 .taxa span{font-size:13.5px;color:var(--texto-suave);line-height:1.4}
 .horarios{list-style:none;padding:0;margin:0;display:grid;gap:2px}
 .horarios li{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px dashed var(--areia-esc);font-size:15.5px}
 .horarios li:last-child{border-bottom:0}
-.horarios b{font-weight:800;color:var(--carvao)}
+.horarios b{font-weight:700;color:var(--carvao)}
 .horarios span{color:var(--texto-suave);text-align:right}
 .horarios li.off span{font-style:italic}
 
 /* ---------- sobre ---------- */
-.sobre{background:var(--carvao);color:#F0E4D6;border-radius:28px;padding:clamp(34px,5vw,66px);position:relative;overflow:hidden}
-.sobre::after{
-  content:"";position:absolute;right:-90px;bottom:-90px;width:330px;height:330px;border-radius:50%;
-  background:radial-gradient(circle,rgba(219,150,58,.26),transparent 68%);
-}
-.sobre h2,.sobre h3{color:#FFF8EC}
-.sobre .olho{color:var(--dourado-claro)}
-.sobre .olho::before{background:var(--dourado)}
-.sobre p{color:#D8C7B5;max-width:66ch;font-size:clamp(16px,2vw,18.5px)}
+.sobre{background:var(--carvao);color:#EDEDEA;border-radius:22px;padding:clamp(34px,5vw,66px);position:relative;overflow:hidden}
+.sobre h2,.sobre h3{color:#FFF}
+.sobre .olho{color:#BDBDB8}
+.sobre p{color:#C9C9C4;max-width:66ch;font-size:clamp(16px,2vw,18.5px)}
 .numeros{display:flex;flex-wrap:wrap;gap:36px;margin-top:34px;position:relative;z-index:1}
-.numeros div b{display:block;font-family:var(--display);font-size:40px;font-weight:900;color:var(--dourado-claro);line-height:1}
-.numeros div span{font-size:14px;color:#C2AF9B;font-weight:600}
+.numeros div b{display:block;font-family:var(--display);font-size:34px;font-weight:600;color:#FFF;line-height:1}
+.numeros div span{font-size:14px;color:#A9A9A4;font-weight:500}
 
 /* ---------- depoimentos ---------- */
 .depos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:20px;margin-top:44px}
 .depo{background:var(--branco);border:1px solid var(--areia-esc);border-radius:var(--raio);padding:26px 24px;
   display:flex;flex-direction:column;gap:14px}
 .estrelas{color:var(--dourado);font-size:17px;letter-spacing:2px}
-.depo blockquote{margin:0;font-family:var(--display);font-size:18.5px;font-weight:500;line-height:1.5;color:var(--carvao)}
+.depo blockquote{margin:0;font-size:17.5px;font-weight:500;line-height:1.55;color:var(--carvao)}
 .depo footer{display:flex;align-items:center;gap:11px;margin-top:auto}
 .avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--areia);
-  font-weight:800;color:var(--terracota);font-size:15px;flex:0 0 auto}
+  font-weight:700;color:var(--terracota);font-size:15px;flex:0 0 auto}
 .depo footer b{font-size:14.5px;display:block}
 .depo footer small{color:var(--texto-suave);font-size:13px}
 
 /* ---------- CTA final ---------- */
-.cta-final{text-align:center;background:linear-gradient(165deg,#FFF3E0,#FBE6CC);border:1px solid var(--areia-esc);
-  border-radius:28px;padding:clamp(38px,6vw,72px) 24px}
-.cta-final h2{font-size:clamp(29px,4.6vw,46px);font-weight:900;margin-bottom:14px}
+.cta-final{text-align:center;background:var(--branco);border:1px solid var(--areia-esc);
+  border-radius:22px;padding:clamp(38px,6vw,72px) 24px}
+.cta-final h2{font-size:clamp(26px,3.8vw,38px);font-weight:600;margin-bottom:14px}
 .cta-final p{color:var(--madeira);max-width:52ch;margin-inline:auto;font-size:17.5px}
 
 /* ---------- rodapé ---------- */
-.rodape{background:var(--carvao);color:#BCA894;padding-block:54px 30px;margin-top:clamp(56px,8vw,96px)}
+.rodape{background:var(--carvao);color:#A9A9A4;padding-block:54px 30px;margin-top:clamp(56px,8vw,96px)}
 .rodape-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:36px}
 @media(max-width:760px){.rodape-grid{grid-template-columns:1fr;gap:28px}}
-.rodape h4{color:#FFF8EC;font-size:16px;font-weight:700;margin-bottom:14px;letter-spacing:.02em}
-.rodape a{color:#BCA894;text-decoration:none;transition:color .15s}
-.rodape a:hover{color:var(--dourado-claro)}
+.rodape h4{color:#FFF;font-size:15px;font-weight:600;margin-bottom:14px;letter-spacing:.02em}
+.rodape a{color:#A9A9A4;text-decoration:none;transition:color .15s}
+.rodape a:hover{color:#FFF}
 .rodape ul{list-style:none;padding:0;margin:0;display:grid;gap:2px;font-size:15px}
 .rodape ul li{display:flex}
 .rodape ul a{display:inline-flex;align-items:center;gap:7px;padding:6px 0;min-height:34px}
 .rodape p{font-size:15px;line-height:1.6}
-.rodape .marca-txt b{color:#FFF8EC}
+.rodape .marca-txt b{color:#FFF}
 .rodape .btn-zap-escuro{
-  background:rgba(255,255,255,.05);border:1.5px solid rgba(255,248,236,.2);
-  color:#FFF8EC;box-shadow:none;padding:13px 22px;
+  background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.22);
+  color:#FFF;box-shadow:none;padding:13px 22px;
 }
 .rodape .btn-zap-escuro svg{color:#4ADE80;transition:color .16s}
 .rodape .btn-zap-escuro:hover{
@@ -374,30 +369,30 @@ main,header,footer{position:relative;z-index:1}
   position:fixed;left:50%;bottom:18px;transform:translate(-50%,calc(100% + 40px));
   z-index:70;width:min(560px,calc(100vw - 28px));
   background:var(--carvao);color:#fff;border-radius:999px;padding:10px 10px 10px 24px;
-  display:flex;align-items:center;gap:14px;box-shadow:0 18px 44px -14px rgba(46,33,26,.68);
+  display:flex;align-items:center;gap:14px;box-shadow:0 18px 44px -14px rgba(18,18,18,.68);
   transition:transform .32s cubic-bezier(.2,.9,.3,1.2);
 }
 .barra.visivel{transform:translate(-50%,0)}
 .barra-info{display:flex;flex-direction:column;line-height:1.25;min-width:0}
-.barra-info b{font-size:16.5px;font-weight:800}
-.barra-info span{font-size:12.5px;color:#C2AF9B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.barra .btn{margin-left:auto;padding:12px 22px;font-size:15px}
+.barra-info b{font-size:16.5px;font-weight:700}
+.barra-info span{font-size:12.5px;color:#B5B5B0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.barra .btn{margin-left:auto;padding:12px 22px;font-size:15px;background:#FFF;color:var(--carvao)}
 @media(max-width:420px){.barra{padding-left:18px;gap:10px}.barra .btn{padding:12px 16px}}
 
 /* ---------- gaveta do pedido ---------- */
-.veu{position:fixed;inset:0;background:rgba(46,33,26,.5);backdrop-filter:blur(3px);z-index:80;opacity:0;
+.veu{position:fixed;inset:0;background:rgba(18,18,18,.5);backdrop-filter:blur(3px);z-index:80;opacity:0;
   pointer-events:none;transition:opacity .28s}
 .veu.aberta{opacity:1;pointer-events:auto}
 .gaveta{
   position:fixed;top:0;right:0;height:100dvh;width:min(460px,100vw);z-index:90;
-  background:var(--creme);box-shadow:-18px 0 50px -18px rgba(46,33,26,.5);
+  background:var(--creme);box-shadow:-18px 0 50px -18px rgba(18,18,18,.5);
   transform:translateX(102%);transition:transform .34s cubic-bezier(.3,.9,.3,1);
   display:flex;flex-direction:column;
 }
 .gaveta.aberta{transform:translateX(0)}
 .gaveta-topo{display:flex;align-items:center;gap:12px;padding:20px 22px;border-bottom:1px solid var(--areia-esc);
   background:var(--branco);flex:0 0 auto}
-.gaveta-topo h2{font-size:22px;font-weight:900;margin-right:auto}
+.gaveta-topo h2{font-size:19px;font-weight:600;margin-right:auto}
 .fechar{width:38px;height:38px;border-radius:50%;border:1px solid var(--areia-esc);background:var(--creme);
   cursor:pointer;font-size:19px;color:var(--madeira);display:grid;place-items:center;line-height:1}
 .fechar:hover{background:var(--terracota);color:#fff;border-color:var(--terracota)}
@@ -421,17 +416,17 @@ main,header,footer{position:relative;z-index:1}
 }
 .linha-acao svg{width:15px;height:15px;flex:0 0 auto}
 .linha-acao:hover{background:var(--areia);color:var(--carvao)}
-.linha-acao.ativa{color:var(--terracota)}
+.linha-acao.ativa{color:var(--carvao)}
 .linha-acao.remover{margin-left:auto;color:#A33A28}
 .linha-acao.remover:hover{background:#FBE9E5;color:#8A2C1C}
 .obs-item{
   width:100%;margin-top:8px;padding:9px 11px;border:1.5px solid var(--areia-esc);
   border-radius:9px;background:var(--creme);font:inherit;font-size:13.5px;color:var(--texto);
 }
-.obs-item:focus{outline:0;border-color:var(--terracota);box-shadow:0 0 0 3px rgba(181,74,42,.13)}
+.obs-item:focus{outline:0;border-color:var(--terracota);box-shadow:0 0 0 3px rgba(18,18,18,.13)}
 .linha-topo > svg{width:40px;height:40px;flex:0 0 auto}
 .linha .linha-txt{min-width:0;flex:1 1 auto}
-.linha .nome{display:block;font-weight:800;font-size:15.5px;line-height:1.2}
+.linha .nome{display:block;font-weight:700;font-size:15.5px;line-height:1.2}
 .linha .sub{display:block;font-size:12.5px;color:var(--texto-suave)}
 .linha .stepper{margin-left:auto;padding:3px}
 .linha .stepper button{width:32px;height:32px;font-size:17px}
@@ -439,14 +434,14 @@ main,header,footer{position:relative;z-index:1}
 
 .resumo{background:var(--branco);border:1px solid var(--areia-esc);border-radius:var(--raio-sm);padding:15px 16px;margin-bottom:20px}
 .resumo div{display:flex;justify-content:space-between;gap:12px;font-size:15px;padding:4px 0}
-.resumo .total{border-top:1px dashed var(--areia-esc);margin-top:8px;padding-top:11px;font-size:20px;font-weight:800}
-.resumo .total b{font-family:var(--display);font-size:25px;font-weight:900;color:var(--terracota)}
-.resumo .economia{color:var(--musgo);font-weight:800}
+.resumo .total{border-top:1px dashed var(--areia-esc);margin-top:8px;padding-top:11px;font-size:20px;font-weight:700}
+.resumo .total b{font-family:var(--display);font-size:22px;font-weight:600;color:var(--carvao)}
+.resumo .economia{color:var(--musgo);font-weight:700}
 .resumo .progresso{display:block;margin-top:12px;font-size:13.5px;line-height:1.45;color:var(--madeira);background:var(--areia);border-radius:10px;padding:10px 13px}
-.progresso b{color:var(--terracota-esc)}
+.progresso b{color:var(--carvao)}
 
 .campo{margin-bottom:15px}
-.campo label{display:block;font-weight:800;font-size:13.5px;margin-bottom:6px;color:var(--carvao)}
+.campo label{display:block;font-weight:700;font-size:13.5px;margin-bottom:6px;color:var(--carvao)}
 .campo input,.campo select,.campo textarea{
   width:100%;padding:12px 14px;border:1.5px solid var(--areia-esc);border-radius:var(--raio-sm);
   background:var(--branco);font:inherit;font-size:15.5px;color:var(--texto);transition:border-color .15s,box-shadow .15s;
@@ -455,21 +450,21 @@ main,header,footer{position:relative;z-index:1}
 .dica{font-size:12.5px;line-height:1.4;color:var(--texto-suave);margin:-8px 0 15px}
 .dica.ok{color:var(--musgo);font-weight:700}
 .campo input:focus,.campo select:focus,.campo textarea:focus{
-  outline:0;border-color:var(--terracota);box-shadow:0 0 0 3px rgba(181,74,42,.14)}
+  outline:0;border-color:var(--terracota);box-shadow:0 0 0 3px rgba(18,18,18,.14)}
 .campo input.erro,.campo select.erro{border-color:#C9402F;box-shadow:0 0 0 3px rgba(201,64,47,.13)}
 .aviso{display:none;background:#FDECE9;border:1px solid #F2C2B9;color:#9A2D1E;border-radius:var(--raio-sm);
   padding:10px 13px;font-size:13.5px;font-weight:700;margin-bottom:14px}
 .aviso.on{display:block}
 .zap-nota{text-align:center;font-size:12.5px;color:var(--texto-suave);margin:10px 0 0}
 
-/* No celular e no tablet em pé os 3 sabores viram linhas compactas: cabem
-   numa tela só e evitam o 2 em cima + 1 órfão embaixo */
+/* No celular e no tablet em pé os sabores viram linhas compactas e cabem
+   numa tela só */
 @media(max-width:820px){
-  .sabores{grid-template-columns:1fr;gap:11px;margin-top:26px}
+  .sabores{grid-template-columns:1fr;gap:9px;margin-top:16px}
   .card{
     display:grid;grid-template-columns:60px 1fr auto;
     grid-template-areas:"ilu nome passo" "ilu desc passo" "ilu preco passo";
-    align-items:center;column-gap:13px;row-gap:1px;padding:12px 13px;
+    align-items:center;column-gap:13px;row-gap:1px;padding:10px 13px;
   }
   .card:hover{transform:none}
   .card-ilu{grid-area:ilu;width:60px;height:60px;margin:0;align-self:center}
@@ -491,9 +486,13 @@ main,header,footer{position:relative;z-index:1}
      stepper passava da tela em aparelhos estreitos */
   .card > *{min-width:0}
   .secao{padding-block:44px}
-  .secao-titulo{font-size:29px;margin:10px 0 10px}
+  .secao-titulo{font-size:24px;margin:10px 0 10px}
   .secao-sub{font-size:15.5px}
-  #cardapio .secao-sub{font-size:14.5px}
+  /* com quatro sabores o texto longo empurrava o último card pra fora da
+     tela; no celular fica só a frase do combo, que é o que importa ali */
+  #cardapio .secao-sub{display:none}
+  #cardapio .secao-sub.cel{display:block;font-size:14px}
+  #cardapio{padding-top:28px}
 }
 
 /* iPhone SE e afins */
@@ -515,7 +514,7 @@ main,header,footer{position:relative;z-index:1}
   "@context": "https://schema.org",
   "@type": "FoodEstablishment",
   "name": "Esfihas Sayones",
-  "description": "Esfiha caseira congelada, feita por encomenda em Florianópolis. Calabresa, carne e queijo em combos de 4, 8 e 12 unidades, retirados em pontos na Trindade, Itacorubi e Centro.",
+  "description": "Esfiha aberta congelada, feita por encomenda em Florianópolis. Calabresa, carne, queijo e marguerita em combos de 4, 8 e 12 unidades, retirados em pontos na Trindade, Itacorubi e Centro.",
   "servesCuisine": ["Esfiha", "Árabe", "Salgados"],
   "priceRange": "R$",
   "telephone": "+5548988106499",
@@ -539,7 +538,8 @@ main,header,footer{position:relative;z-index:1}
       "hasMenuItem": [
         { "@type": "MenuItem", "name": "Esfiha de calabresa congelada", "description": "Calabresa moída, cebola caramelizada, azeitona e pimenta. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.00", "priceCurrency": "BRL" } },
         { "@type": "MenuItem", "name": "Esfiha de carne congelada", "description": "Carne bovina moída com cebola e tomate. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.00", "priceCurrency": "BRL" } },
-        { "@type": "MenuItem", "name": "Esfiha de queijo congelada", "description": "Muçarela com requeijão cremoso e orégano. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.00", "priceCurrency": "BRL" } }
+        { "@type": "MenuItem", "name": "Esfiha de queijo congelada", "description": "Muçarela com requeijão cremoso e orégano. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.00", "priceCurrency": "BRL" } },
+        { "@type": "MenuItem", "name": "Esfiha de marguerita congelada", "description": "Muçarela, tomate e manjericão. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.00", "priceCurrency": "BRL" } }
       ]
     }]
   }
@@ -676,7 +676,26 @@ main,header,footer{position:relative;z-index:1}
       <ellipse cx="50" cy="45.8" rx="26.5" ry="17" fill="#F8ECBE"/>
       <ellipse cx="46.5" cy="44.2" rx="18" ry="10.5" fill="#FCF4D4" opacity=".72"/>
     </symbol>
-    <symbol id="ic-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <!-- selo da marca, igual ao da camisa: letreiro e esfiha já em curva,
+         então não depende da fonte carregar. Pinta com a cor do texto. -->
+    <symbol id="ic-selo" viewBox="0 0 200 200">
+      <path fill="currentColor" d="M36.9 53.05 40.13 54.99 33.08 66.75 29.85 64.81ZM33.28 62.76 39.11 67.68 36.01 68.27 43.39 55.95 46.99 58.11 38.03 73.06 30.72 67.02 21.95 63.43 30.84 48.58 34.45 50.74 27.13 62.95 26.19 59.93ZM46.82 48.87 50.93 45.58Q51.51 46.11 52.34 46.19Q53.17 46.26 54.15 45.87Q55.14 45.48 56.21 44.62Q57.7 43.43 58.25 42.36Q58.79 41.29 58.2 40.56Q57.76 40 57.02 40.07Q56.28 40.15 54.78 41.12L51.86 43.04Q48.6 45.2 46.36 45.18Q44.12 45.17 42.62 43.28Q41.4 41.76 41.45 40Q41.49 38.24 42.67 36.41Q43.84 34.59 46 32.86Q48.11 31.18 50.23 30.47Q52.34 29.77 54.18 30.08Q56.01 30.4 57.26 31.78L53.15 35.07Q52.65 34.6 51.94 34.56Q51.22 34.51 50.32 34.88Q49.43 35.25 48.41 36.06Q47.05 37.15 46.54 38.15Q46.03 39.15 46.59 39.85Q47 40.36 47.72 40.29Q48.44 40.23 49.8 39.36L52.95 37.31Q55.18 35.84 56.82 35.32Q58.46 34.8 59.69 35.19Q60.92 35.57 61.93 36.83Q63.15 38.36 63.15 40.24Q63.15 42.13 62 44.09Q60.85 46.05 58.64 47.81Q56.36 49.63 54.13 50.36Q51.9 51.1 49.99 50.73Q48.09 50.35 46.82 48.87ZM70.23 27.62 83.14 23.32 84.53 27.48 71.62 31.78ZM81.15 15.9 82.54 20.06 69.35 24.45 70.93 21.31 76.25 37.29 71.33 38.93 65.4 21.14ZM92.13 14.57 97.31 14.25 98.47 32.97 93.29 33.29ZM109.79 14.23 114.85 15.41 110.58 33.67 105.53 32.49ZM124.18 17.59 129.23 18.77 124.96 37.03 119.91 35.85ZM111.04 21.64 124.69 24.83 123.64 29.29 110 26.1ZM136.58 39.25 139.05 35.9 149.45 43.55 146.98 46.9ZM153.58 32.96 149.34 53.12 144.88 49.84 148.92 32.28 150.13 33.17 134.56 42.25 130.11 38.97 148.1 28.93ZM157.37 53.62 160.12 58.11Q159.52 58.62 159.34 59.43Q159.17 60.24 159.43 61.27Q159.69 62.3 160.41 63.47Q161.41 65.1 162.4 65.77Q163.39 66.44 164.2 65.95Q164.8 65.58 164.82 64.84Q164.84 64.09 164.06 62.49L162.53 59.35Q160.79 55.84 161.09 53.62Q161.38 51.4 163.44 50.15Q165.1 49.13 166.84 49.39Q168.58 49.66 170.25 51.05Q171.91 52.45 173.35 54.8Q174.76 57.11 175.2 59.3Q175.63 61.48 175.09 63.26Q174.55 65.05 173.02 66.11L170.27 61.62Q170.8 61.19 170.93 60.48Q171.07 59.77 170.81 58.84Q170.56 57.91 169.88 56.8Q168.97 55.31 168.04 54.68Q167.11 54.05 166.35 54.52Q165.79 54.86 165.77 55.58Q165.74 56.3 166.44 57.76L168.08 61.14Q169.25 63.54 169.57 65.23Q169.88 66.92 169.34 68.09Q168.8 69.27 167.43 70.11Q165.75 71.13 163.89 70.9Q162.02 70.66 160.22 69.28Q158.42 67.89 156.94 65.48Q155.42 62.99 154.97 60.69Q154.52 58.38 155.13 56.54Q155.74 54.7 157.37 53.62Z"/>
+      <path fill="currentColor" d="M29.3 137.3 32.3 141.64Q31.73 142.18 31.6 143Q31.47 143.82 31.8 144.83Q32.12 145.84 32.9 146.97Q33.99 148.54 35.02 149.15Q36.05 149.77 36.82 149.23Q37.41 148.83 37.38 148.08Q37.36 147.33 36.49 145.78L34.78 142.73Q32.84 139.33 33.01 137.1Q33.18 134.87 35.16 133.49Q36.76 132.38 38.51 132.55Q40.26 132.71 42.01 134.01Q43.75 135.3 45.32 137.57Q46.87 139.79 47.42 141.95Q47.98 144.11 47.54 145.92Q47.11 147.73 45.64 148.89L42.64 144.56Q43.14 144.1 43.23 143.38Q43.33 142.67 43.02 141.75Q42.71 140.83 41.97 139.77Q40.98 138.33 40.01 137.76Q39.05 137.18 38.31 137.69Q37.78 138.07 37.79 138.79Q37.81 139.51 38.59 140.92L40.42 144.2Q41.73 146.53 42.14 148.2Q42.55 149.87 42.08 151.07Q41.61 152.28 40.29 153.2Q38.68 154.32 36.8 154.19Q34.92 154.06 33.04 152.78Q31.17 151.5 29.55 149.17Q27.89 146.78 27.31 144.5Q26.73 142.22 27.23 140.35Q27.73 138.48 29.3 137.3ZM45.49 161.47 48 158.14 58.31 165.9 55.8 169.23ZM62.56 155.37 58.09 175.48 53.67 172.15 57.91 154.63 59.11 155.53 43.44 164.44 39.02 161.11 57.12 151.27ZM71.05 180.49 73.87 171.81 78.81 173.42 75.98 182.1ZM68.5 159.94 73.95 161.72 77.73 172.05 75.53 171.33 84.66 165.21 90.11 166.98 77.09 175.7 73.89 174.71ZM101.43 185.9Q98.09 185.95 95.57 184.77Q93.04 183.59 91.61 181.41Q90.18 179.23 90.13 176.3Q90.08 173.37 91.44 171.15Q92.8 168.92 95.28 167.65Q97.77 166.39 101.1 166.33Q104.44 166.28 106.97 167.46Q109.49 168.64 110.92 170.82Q112.36 173 112.4 175.93Q112.45 178.86 111.1 181.08Q109.74 183.31 107.25 184.58Q104.76 185.84 101.43 185.9ZM101.35 181.27Q103.18 181.24 104.49 180.59Q105.8 179.95 106.49 178.78Q107.19 177.61 107.17 176.02Q107.14 174.42 106.4 173.28Q105.67 172.13 104.34 171.53Q103.01 170.93 101.18 170.96Q99.37 170.99 98.05 171.63Q96.74 172.28 96.04 173.45Q95.34 174.62 95.37 176.21Q95.39 177.81 96.13 178.95Q96.87 180.1 98.2 180.7Q99.54 181.3 101.35 181.27ZM135.03 174.33 133.65 175.18 128.28 160.7 132.99 158.95 139.52 176.53 133.4 178.8 117.87 168.11 119.24 167.26 124.72 182.03 120 183.78 113.48 166.2 119.77 163.86ZM152.22 153.35 154.56 156.31 143.8 164.82 141.46 161.86ZM145.4 161.15 149.12 167.82 146 167.27 157.26 158.36 159.87 161.66 146.2 172.47 141.5 164.24 134.56 157.77 148.13 147.03 150.74 150.32 139.58 159.16 139.76 156ZM159.72 153.14 162.72 148.81Q163.43 149.15 164.25 148.98Q165.06 148.82 165.89 148.16Q166.73 147.51 167.51 146.38Q168.6 144.81 168.81 143.63Q169.03 142.45 168.25 141.91Q167.67 141.51 166.98 141.79Q166.29 142.07 165.14 143.43L162.88 146.1Q160.38 149.11 158.23 149.73Q156.08 150.36 154.1 148.99Q152.5 147.88 152.04 146.18Q151.58 144.48 152.18 142.39Q152.78 140.3 154.35 138.04Q155.9 135.81 157.72 134.53Q159.55 133.25 161.4 133.03Q163.24 132.8 164.84 133.77L161.84 138.1Q161.23 137.8 160.53 137.96Q159.83 138.12 159.07 138.73Q158.32 139.34 157.59 140.4Q156.59 141.84 156.39 142.94Q156.19 144.05 156.93 144.56Q157.46 144.93 158.13 144.66Q158.8 144.39 159.85 143.17L162.28 140.3Q164 138.26 165.42 137.29Q166.85 136.32 168.14 136.34Q169.43 136.36 170.75 137.27Q172.37 138.39 172.9 140.2Q173.44 142 172.9 144.21Q172.36 146.41 170.75 148.74Q169.09 151.13 167.16 152.48Q165.23 153.82 163.3 154.01Q161.37 154.19 159.72 153.14Z"/>
+      <path fill="currentColor" fill-rule="evenodd" d="M156.68 100L156.43 102.96L155.98 105.88L155.36 108.77L154.61 111.61L153.77 114.41L152.87 117.18L151.91 119.93L150.89 122.66L149.78 125.36L148.55 128.03L147.18 130.64L145.62 133.14L143.86 135.52L141.91 137.74L139.79 139.79L137.52 141.67L135.13 143.39L132.67 144.97L130.16 146.44L127.62 147.83L125.04 149.15L122.43 150.39L119.78 151.54L117.08 152.58L114.33 153.49L111.53 154.23L108.68 154.8L105.8 155.2L102.9 155.43L100 155.53L97.09 155.51L94.18 155.4L91.26 155.2L88.32 154.93L85.38 154.55L82.44 154.03L79.53 153.33L76.66 152.42L73.88 151.26L71.22 149.85L68.7 148.19L66.35 146.32L64.15 144.27L62.11 142.08L60.2 139.8L58.39 137.47L56.66 135.1L55 132.69L53.42 130.25L51.93 127.75L50.54 125.2L49.29 122.58L48.2 119.88L47.28 117.13L46.53 114.33L45.93 111.49L45.48 108.64L45.13 105.77L44.87 102.89L44.68 100L44.59 97.1L44.59 94.18L44.74 91.25L45.06 88.32L45.59 85.42L46.35 82.57L47.35 79.79L48.57 77.1L49.99 74.52L51.56 72.03L53.24 69.64L55.01 67.31L56.82 65.03L58.68 62.8L60.59 60.59L62.57 58.43L64.65 56.35L66.84 54.36L69.16 52.51L71.62 50.84L74.19 49.35L76.88 48.07L79.65 46.98L82.48 46.06L85.34 45.3L88.24 44.68L91.16 44.18L94.1 43.81L97.04 43.59L100 43.53L102.95 43.66L105.89 44.01L108.78 44.58L111.61 45.38L114.37 46.37L117.05 47.51L119.66 48.77L122.22 50.1L124.73 51.47L127.22 52.86L129.7 54.26L132.18 55.71L134.64 57.23L137.05 58.85L139.39 60.61L141.62 62.53L143.7 64.61L145.62 66.86L147.36 69.25L148.92 71.75L150.34 74.35L151.61 77.02L152.76 79.75L153.8 82.52L154.71 85.34L155.49 88.21L156.1 91.12L156.51 94.06L156.71 97.03ZM56 100a44 44 0 1 0 88 0a44 44 0 1 0 -88 0Z"/>
+      <path fill="currentColor" d="M80.81 111.16L80.06 109.11L81.29 106.59L84.22 107.42L84.4 110.06L83.06 112.15ZM77.31 121.25L74.03 119.86L74.44 115.91L78.09 114.53L81.19 116.76L80.07 120.09ZM111.03 65.44L114.15 63.85L116.6 65.04L117.08 68.83L112.93 68.88ZM95.09 99.44L93.82 101.93L91.24 101.67L89.79 99.72L91.25 97.98L93.67 96.89ZM69.95 84.27L66.48 83.71L65.02 80.23L67.75 77.67L70.59 79.06L72.59 81.77ZM105.02 76.69L106.81 75.2L109.01 75.81L111.49 77.77L109.79 80.68L106.87 80.54L104.54 79.27ZM130.16 95.72L132.27 98.11L129.89 100.67L126.74 99.97L125.74 97.09L127.62 94.81ZM134.42 110.76L132.71 106.89L135.8 103.75L139.25 105.53L140.29 108.6L138.09 111.1ZM121.38 94.52L123.92 96.12L124.85 98.89L121.87 99.39L120.09 97.42ZM139.32 112.45L136.93 115.12L132.57 114.96L133.81 110.77L137.2 109.02ZM118.07 114.04L119.89 116.26L118.09 118.41L116 118.52L113.6 117.99L114.02 115.5L115.73 114.3ZM104.59 136.5L100.9 137.28L98.27 135.79L99.42 132.53L103.18 132.5ZM96.11 101.64L93.9 100.98L93.71 98.4L96 97.92L98.67 98.03L98.49 100.97ZM73.25 104.58L71.85 103.3L71.62 101.23L73.36 99.61L75.08 101.07L75.67 102.55L75.48 104.72ZM91.03 70L93.49 70.87L95.56 72.06L95.07 74.62L92.85 76.28L90.6 74.76L90.57 72.56ZM86.67 96.03L87.28 92.45L91.02 91.98L93.23 94.72L92.58 98.48L88.84 98.42ZM96.75 124L94.84 126.13L91.84 125L90.4 121.81L93.2 119.97L96.07 118.93L97.74 121.58ZM96.41 136.67L99.15 133.7L102.39 135.15L102.12 138.32L98.91 140.08ZM93.39 73.72L95.53 73.33L96.98 74.18L97.95 75.81L96.58 77.22L94.5 77.89L93.48 75.93ZM104.7 129.59L102.33 129.29L102 126.5L104.69 125.83L105.88 127.85ZM91.21 75.21L92.36 72.63L94.5 71.86L97.52 71.68L97.3 74.72L95.95 76.69L93.39 77.15ZM84.38 65.43L87.12 67.37L85.06 70.16L81.61 71.51L80.43 68.01L80.99 64.46ZM116.85 87.36L116.6 87.55L116.3 87.67L115.98 87.7L115.66 87.65L115.36 87.53L115.11 87.32L112.54 84.66L112.35 84.4L112.23 84.1L112.19 83.78L112.24 83.47L112.37 83.17L112.57 82.92L115.23 80.35L115.49 80.15L115.79 80.04L116.11 80L116.43 80.05L116.72 80.18L116.98 80.38L119.55 83.04L119.74 83.3L119.86 83.6L119.89 83.92L119.85 84.24L119.72 84.53L119.52 84.78ZM82.62 93.01L82.44 93.28L82.19 93.5L81.9 93.65L81.57 93.71L81.25 93.69L80.94 93.59L77.55 91.94L77.28 91.76L77.06 91.51L76.91 91.22L76.85 90.9L76.87 90.57L76.97 90.26L78.62 86.87L78.8 86.6L79.05 86.38L79.34 86.23L79.66 86.17L79.99 86.19L80.3 86.29L83.69 87.94L83.96 88.12L84.18 88.37L84.33 88.66L84.39 88.98L84.37 89.31L84.27 89.62ZM97.11 78.78L96.78 78.87L96.44 78.87L96.11 78.79L95.81 78.62L95.57 78.38L95.39 78.08L93.86 74.47L93.77 74.14L93.76 73.8L93.85 73.47L94.02 73.17L94.26 72.93L94.55 72.75L98.17 71.22L98.5 71.13L98.84 71.12L99.17 71.21L99.47 71.38L99.71 71.62L99.88 71.91L101.42 75.53L101.51 75.86L101.51 76.2L101.43 76.53L101.26 76.83L101.02 77.07L100.72 77.24ZM106.32 83.29L106.02 83.41L105.69 83.45L105.36 83.4L105.06 83.27L104.81 83.06L104.61 82.8L102.78 79.49L102.66 79.18L102.62 78.86L102.67 78.53L102.8 78.23L103 77.97L103.27 77.78L106.58 75.94L106.88 75.82L107.21 75.79L107.53 75.83L107.84 75.97L108.09 76.17L108.29 76.43L110.12 79.74L110.24 80.05L110.28 80.37L110.23 80.7L110.1 81L109.89 81.26L109.63 81.45ZM124.65 85.76L124.38 85.89L124.08 85.94L123.77 85.91L123.49 85.8L123.24 85.62L123.05 85.39L121.2 82.43L121.07 82.15L121.02 81.85L121.05 81.55L121.16 81.26L121.33 81.02L121.57 80.82L124.53 78.97L124.81 78.84L125.11 78.79L125.41 78.82L125.69 78.93L125.94 79.11L126.13 79.34L127.98 82.3L128.11 82.58L128.16 82.88L128.13 83.18L128.03 83.47L127.85 83.71L127.61 83.91Z"/>
+    </symbol>
+    <symbol id="ic-marguerita" viewBox="0 0 100 100">
+      <ellipse cx="50" cy="75.6" rx="32" ry="4.6" fill="rgba(46,33,26,.11)"/>
+      <path d="M13.0 45.0 A37.0 24.0 0 0 1 87.0 45.0 C87.0 49.1 83.3 48.4 83.3 52.5 A33.3 21.6 0 0 1 16.7 52.5 C16.7 48.4 13.0 49.1 13.0 45.0 Z" fill="url(#g-lateral)"/>
+      <ellipse cx="50" cy="45" rx="37.0" ry="24.0" fill="#F2C97F"/>
+      <ellipse cx="50.0" cy="46.4" rx="32.4" ry="20.8" fill="#E2AE63" opacity=".55"/>
+      <ellipse cx="37" cy="35" rx="12.5" ry="4" fill="rgba(255,255,255,.32)" transform="rotate(-20 37 35)"/>
+      <ellipse cx="50.0" cy="46.4" rx="30.0" ry="19.2" fill="#EFD996"/>
+      <ellipse cx="49" cy="45.6" rx="26" ry="16.4" fill="#F8EDC4"/>
+      <g fill="#D23C27"><ellipse cx="36" cy="41" rx="5.6" ry="3.6"/><ellipse cx="58" cy="38" rx="5.6" ry="3.6"/><ellipse cx="47" cy="49.5" rx="5.6" ry="3.6"/><ellipse cx="66" cy="49" rx="5.6" ry="3.6"/><ellipse cx="33" cy="52" rx="5.2" ry="3.3"/></g>
+      <g fill="#EC6A52"><ellipse cx="36" cy="41" rx="3.8" ry="2.4"/><ellipse cx="58" cy="38" rx="3.8" ry="2.4"/><ellipse cx="47" cy="49.5" rx="3.8" ry="2.4"/><ellipse cx="66" cy="49" rx="3.8" ry="2.4"/><ellipse cx="33" cy="52" rx="3.5" ry="2.2"/></g>
+      <g fill="#3E7B36"><path d="M42 36.5 Q46 33.6 50 36.5 Q46 38.6 42 36.5Z"/><path d="M52 55 Q56 52.2 60 55 Q56 57.2 52 55Z"/><path d="M24.5 46 Q28.5 43.3 32.5 46 Q28.5 48.1 24.5 46Z"/><path d="M60 44 Q64 41.3 68 44 Q64 46.4 60 44Z"/></g>
+    </symbol>
     <symbol id="ic-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
     <symbol id="ic-relogio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5.2l3.4 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
     <symbol id="ic-zap" viewBox="0 0 24 24"><path d="M12.04 2A9.9 9.9 0 0 0 3.6 17.1L2.05 22l5.05-1.5A9.9 9.9 0 1 0 12.04 2Zm5.8 14.1c-.25.7-1.45 1.33-2 1.4-.53.06-1.2.1-3.4-.85-2.86-1.23-4.67-4.2-4.8-4.4-.14-.2-1.15-1.53-1.15-2.92s.73-2.07 1-2.35c.26-.29.57-.36.76-.36l.55.01c.17 0 .4-.07.63.48l.86 2.1c.07.15.12.32.02.5l-.3.46-.44.48c-.15.15-.3.31-.13.6.17.3.76 1.25 1.63 2.03 1.12 1 2.06 1.3 2.35 1.45.3.15.47.13.64-.08l.92-1.07c.2-.25.38-.2.64-.1l2.03.96c.26.13.43.19.5.3.06.1.06.63-.19 1.33Z" fill="currentColor"/></symbol>
@@ -693,12 +712,7 @@ main,header,footer{position:relative;z-index:1}
 <header class="topo" id="topo">
   <div class="wrap topo-in">
     <a class="marca" href="#topo" aria-label="Esfihas Sayones, ir para o início">
-      <svg viewBox="0 0 128 128" aria-hidden="true">
-        <rect width="128" height="128" rx="30" fill="#B54A2A"/>
-        <circle cx="64" cy="64" r="47" fill="#FBF4E7"/>
-        <circle cx="64" cy="64" r="39" fill="none" stroke="#B54A2A" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="0.5 8" opacity=".7"/>
-        <svg x="8" y="16" width="112" height="112" viewBox="0 0 100 100"><use href="#ic-carne"/></svg>
-      </svg>
+      <svg viewBox="0 0 200 200" aria-hidden="true"><use href="#ic-selo"/></svg>
       <span class="marca-txt"><b>Sayones</b><span>Esfihas</span></span>
     </a>
     <nav class="nav" aria-label="Navegação principal">
@@ -721,38 +735,36 @@ main,header,footer{position:relative;z-index:1}
 <section class="hero wrap">
   <div class="hero-grid">
     <div>
-      <span class="olho">Feito em casa · Florianópolis</span>
-      <h1>Esfiha caseira em Floripa, <em>pronta em 6 minutos</em></h1>
-      <p class="lead">A gente assa, embala e congela no mesmo dia. Você guarda no freezer e joga na air fryer quando bater a fome. Calabresa, carne e queijo.</p>
+      <span class="olho">Esfihas Sayones · Florianópolis</span>
+      <h1>Esfiha aberta congelada</h1>
+      <p class="lead">Você guarda no freezer e esquenta na air fryer quando bater a fome. Pronta em 6 minutos.</p>
+      <ul class="numeros-hero">
+        <li><b>6 min</b><span>na air fryer</span></li>
+        <li><b>60 dias</b><span>no freezer</span></li>
+        <li><b id="precoHero">R$ 5,00</b><span>a unidade</span></li>
+      </ul>
+      <div class="combos-hero" id="combosHero"></div>
+      <p class="combos-nota">Preço por unidade. Dá pra misturar os sabores no mesmo combo.</p>
       <div class="hero-acoes">
         <button class="btn btn-primario" type="button" data-abrir-pedido>
           <svg width="18" height="18" aria-hidden="true"><use href="#ic-carrinho"/></svg>
           Montar meu pedido
         </button>
-        <a class="btn btn-fantasma" href="#cardapio">Ver o cardápio</a>
+        <a class="link-sutil" href="#entrega" id="linkRetirada">Retirada qui, sex e sáb</a>
       </div>
-      <ul class="selos">
-        <li><svg aria-hidden="true"><use href="#ic-check"/></svg> R$ 5,00 a unidade</li>
-        <li><svg aria-hidden="true"><use href="#ic-check"/></svg> Combos de 4, 8 e 12</li>
-        <li><svg aria-hidden="true"><use href="#ic-check"/></svg> 60 dias no freezer</li>
-      </ul>
     </div>
-    <div class="prato" aria-hidden="true">
-      <svg class="esf e1" viewBox="0 0 100 100"><use href="#ic-calabresa"/></svg>
-      <svg class="esf e2" viewBox="0 0 100 100"><use href="#ic-carne"/></svg>
-      <svg class="esf e3" viewBox="0 0 100 100"><use href="#ic-queijo"/></svg>
-      <div class="etiqueta t1"><b>R$5</b> a unidade</div>
-      <div class="etiqueta t2">❄️ <span>Direto do freezer<br>pra air fryer</span></div>
-    </div>
+    <svg class="hero-selo" viewBox="0 0 200 200" aria-hidden="true"><use href="#ic-selo"/></svg>
   </div>
+  <div class="sabores-hero" id="saboresHero"></div>
 </section>
 
 <!-- ====== cardápio ====== -->
 <section class="secao wrap" id="cardapio">
   <div class="centro">
     <span class="olho">Cardápio</span>
-    <h2 class="secao-titulo">Calabresa, carne e queijo</h2>
+    <h2 class="secao-titulo">Calabresa, carne, queijo e marguerita</h2>
     <p class="secao-sub">Fazemos o recheio de manhã, assamos e congelamos no mesmo dia. Escolha as quantidades aqui embaixo. O preço por unidade cai quando você chega em 4, 8 ou 12.</p>
+    <p class="secao-sub cel">Em 4, 8 ou 12 o preço por unidade cai.</p>
   </div>
 
   <div class="sabores" id="listaSabores"></div>
@@ -766,7 +778,7 @@ main,header,footer{position:relative;z-index:1}
     <p class="secao-sub">Você não precisa escolher uma caixa fechada. Monte o pedido com os sabores que quiser e o preço do combo entra sozinho quando chegar em 4, 8 ou 12 unidades.</p>
   </div>
   <div class="faixas" id="listaFaixas"></div>
-  <p class="nota">Pode misturar os três sabores no mesmo combo. Peça com <b>24h de antecedência</b>. Você pega no ponto do seu bairro e não paga taxa de entrega.</p>
+  <p class="nota">Pode misturar os sabores no mesmo combo. Peça com <b>24h de antecedência</b>. Você pega no ponto do seu bairro e não paga taxa de entrega.</p>
 </section>
 
 <!-- ====== como funciona ====== -->
@@ -849,7 +861,7 @@ main,header,footer{position:relative;z-index:1}
     <p>A Sayones começou com uma receita de família. Sempre que vinha gente aqui em casa, todo mundo saía levando esfiha, e uma hora a gente resolveu vender. O recheio é temperado à mão e a fornada é pequena, o que dá tempo de olhar cada esfiha antes de embalar.</p>
     <p style="margin-bottom:0">Como a cozinha é de casa, trabalhamos por encomenda e entregamos congelada. Assim dá pra fazer tudo com calma, e você guarda no freezer pra comer na hora que bater a fome.</p>
     <div class="numeros">
-      <div><b>3</b><span>sabores clássicos</span></div>
+      <div><b>4</b><span>sabores</span></div>
       <div><b>6min</b><span>na air fryer</span></div>
       <div><b>3</b><span>pontos na cidade</span></div>
       <div><b>60d</b><span>de freezer</span></div>
@@ -909,7 +921,7 @@ main,header,footer{position:relative;z-index:1}
     <div class="rodape-grid">
       <div>
         <span class="marca-txt" style="display:block;margin-bottom:12px">
-          <b style="font-family:var(--display);font-size:24px;font-weight:900">Esfihas Sayones</b>
+          <b style="font-family:var(--display);font-size:20px;font-weight:600">Esfihas Sayones</b>
         </span>
         <p>Esfiha caseira congelada, feita por encomenda em Florianópolis. Você guarda no freezer e esquenta na air fryer quando quiser.</p>
         <a class="btn btn-zap-escuro" href="https://wa.me/5548988106499" target="_blank" rel="noopener" style="margin-top:12px">
@@ -1046,7 +1058,11 @@ main,header,footer{position:relative;z-index:1}
     { id:"queijo", nome:"Queijo",
       desc:"Muçarela com requeijão e orégano. Essa é a que as crianças pedem.",
       curta:"Muçarela com orégano",
-      icone:"#ic-queijo", veg:true }
+      icone:"#ic-queijo", veg:true },
+    { id:"marguerita", nome:"Marguerita",
+      desc:"Muçarela, tomate e manjericão.",
+      curta:"Tomate e manjericão",
+      icone:"#ic-marguerita", veg:true }
   ];
 
   // Combos por quantidade total do pedido (ordem: maior mínimo primeiro).
@@ -1142,6 +1158,29 @@ main,header,footer{position:relative;z-index:1}
         '</div>' +
       '</div>';
     listaSabores.appendChild(card);
+  });
+
+  /* ---------- topo: tabela de combos e faixa de sabores ---------- */
+  // Saem da mesma configuração do carrinho, pra preço e sabor nunca divergirem.
+  var combosHero = $("#combosHero");
+  FAIXAS.slice().reverse().forEach(function(f){
+    var el = document.createElement("span");
+    el.innerHTML = '<small>'+(f.min > 1 ? f.nome : '1 a '+(FAIXAS[FAIXAS.length-2].min-1))+'</small><b>'+brl(f.preco)+'</b>';
+    combosHero.appendChild(el);
+  });
+  $("#precoHero").textContent = brl(FAIXAS[FAIXAS.length-1].preco);
+  var dias = PONTOS.filter(function(p){ return p.dia !== null; })
+    .map(function(p){ return p.diaNome.slice(0, 3); });
+  $("#linkRetirada").textContent = "Retirada " +
+    (dias.length > 1 ? dias.slice(0, -1).join(", ") + " e " + dias[dias.length-1] : dias.join(""));
+  var saboresHero = $("#saboresHero");
+  SABORES.forEach(function(s){
+    var a = document.createElement("a");
+    a.href = "#cardapio";
+    a.innerHTML =
+      '<svg viewBox="0 0 100 100" aria-hidden="true"><use href="'+s.icone+'"/></svg>' +
+      '<span><b>'+s.nome+'</b><small>'+(s.curta || s.desc)+'</small><em>'+brl(FAIXAS[FAIXAS.length-1].preco)+'</em></span>';
+    saboresHero.appendChild(a);
   });
 
   /* ---------- monta as faixas de preço ---------- */

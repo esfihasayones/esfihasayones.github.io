@@ -602,7 +602,7 @@
   // Se o script estourar na inicialização, os cards não são montados: isso é
   // uma verificação de verdade, diferente de escutar "error" depois do load.
   function paginaInicializou(c) {
-    igual(c.doc.querySelectorAll(".card").length, 3, "os cards não foram montados");
+    igual(c.doc.querySelectorAll(".card").length, 4, "os cards não foram montados");
     igual(c.doc.querySelectorAll(".faixa").length, 4, "os combos não foram montados");
     ok(c.doc.querySelector("#fPonto").options.length >= 3, "os pontos não foram montados");
   }
@@ -657,20 +657,43 @@
     ok(dado.hasMenu.hasMenuSection[0].hasMenuItem.length >= 3, "o cardápio deveria listar os sabores");
   });
 
+  teste("Preços", "a tabela de combos do topo bate com o que o carrinho cobra", function (c) {
+    var anunciados = [].slice.call(c.doc.querySelectorAll("#combosHero b"))
+      .map(function (b) { return b.textContent.replace(/\s/g, ""); });
+    igual(anunciados.length, 4, "a tabela deveria ter avulsa e os três combos");
+    [1, 4, 8, 12].forEach(function (qtd, i) {
+      c.definir("calabresa", qtd);
+      igual(c.texto("#rsUnit").replace(/\s/g, ""), anunciados[i], "preço anunciado para " + qtd);
+    });
+  });
+
+  teste("Conteúdo", "o topo lista todos os sabores do cardápio", function (c) {
+    var topo = [].slice.call(c.doc.querySelectorAll("#saboresHero b")).map(function (b) { return b.textContent; });
+    var cardapio = [].slice.call(c.doc.querySelectorAll(".card h3")).map(function (h) { return h.textContent; });
+    igual(topo.join(", "), cardapio.join(", "));
+  });
+
+  teste("Layout", "no tablet deitado os sabores não deixam um órfão", function (c) {
+    return c.redimensionar(1024, 768).then(function () {
+      var n = colunasReais(c, ".sabores");
+      igual(4 % n, 0, n + " colunas deixam card sozinho na última linha");
+    });
+  });
+
   teste("Conteúdo", "a imagem de compartilhamento é um PNG", function (c) {
     var og = c.doc.querySelector('meta[property="og:image"]').content;
     ok(/\.png$/i.test(og), "WhatsApp e Facebook não renderizam SVG: " + og);
   });
 
-  teste("Conteúdo", "os três sabores aparecem no cardápio", function (c) {
+  teste("Conteúdo", "os quatro sabores aparecem no cardápio", function (c) {
     var nomes = [].slice.call(c.doc.querySelectorAll(".card h3")).map(function (h) { return h.textContent; });
-    igual(nomes.join(", "), "Calabresa, Carne, Queijo");
+    igual(nomes.join(", "), "Calabresa, Carne, Queijo, Marguerita");
   });
 
   teste("Conteúdo", "cada sabor tem o seu próprio desenho", function (c) {
     var icones = [].slice.call(c.doc.querySelectorAll(".card-ilu use"))
       .map(function (u) { return u.getAttribute("href"); });
-    igual(icones.join(", "), "#ic-calabresa, #ic-carne, #ic-queijo");
+    igual(icones.join(", "), "#ic-calabresa, #ic-carne, #ic-queijo, #ic-marguerita");
   });
 
   /* =========================================================
@@ -697,7 +720,7 @@
   });
 
   teste("Acessibilidade", "imagens e ícones decorativos não poluem o leitor de tela", function (c) {
-    var expostos = [].slice.call(c.doc.querySelectorAll(".card-ilu, .prato svg, .linha svg"))
+    var expostos = [].slice.call(c.doc.querySelectorAll(".card-ilu, .hero-selo, .sabores-hero svg, .marca svg, .linha svg"))
       .filter(function (s) { return !s.closest('[aria-hidden="true"]'); })
       .map(function (s) { return s.getAttribute("class") || s.parentElement.className; });
     igual(expostos.join(", "), "", "SVG decorativo visível para o leitor de tela");
@@ -720,23 +743,24 @@
     });
   });
 
-  teste("Layout", "no celular os três sabores têm a mesma altura", function (c) {
+  teste("Layout", "no celular os quatro sabores têm a mesma altura", function (c) {
     return c.redimensionar(390, 844).then(function () {
       var alturas = [].slice.call(c.doc.querySelectorAll(".card"))
         .map(function (el) { return Math.round(el.getBoundingClientRect().height); });
       igual(alturas[0], alturas[1], "calabresa e carne");
       igual(alturas[1], alturas[2], "carne e queijo");
+      igual(alturas[2], alturas[3], "queijo e marguerita");
     });
   });
 
-  teste("Layout", "no celular os três sabores cabem numa tela só", function (c) {
+  teste("Layout", "no celular os quatro sabores cabem numa tela só", function (c) {
     return c.redimensionar(390, 844).then(function () {
       c.doc.documentElement.style.scrollBehavior = "auto";
       var secao = c.el("#cardapio");
       c.win.scrollTo({ top: secao.offsetTop - 96, behavior: "instant" });
-      var ultimo = c.doc.querySelectorAll(".card")[2].getBoundingClientRect().bottom;
+      var ultimo = c.doc.querySelectorAll(".card")[3].getBoundingClientRect().bottom;
       ok(ultimo <= c.win.innerHeight,
-         "o terceiro card termina em " + Math.round(ultimo) + "px, tela de " + c.win.innerHeight + "px");
+         "o quarto card termina em " + Math.round(ultimo) + "px, tela de " + c.win.innerHeight + "px");
     });
   });
 
@@ -832,9 +856,9 @@
     });
   });
 
-  teste("Layout", "no desktop os três sabores ficam lado a lado", function (c) {
+  teste("Layout", "no desktop os quatro sabores ficam lado a lado", function (c) {
     return c.redimensionar(1100, 900).then(function () {
-      igual(colunasReais(c, ".sabores"), 3);
+      igual(colunasReais(c, ".sabores"), 4);
     });
   });
 

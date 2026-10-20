@@ -11,7 +11,7 @@ HTML/CSS/JS puro, sem build e sem servidor. Roda direto no GitHub Pages.
 | `index.html`   | O site inteiro (HTML + CSS + JS num arquivo só)                |
 | `logo.svg`     | Logo horizontal, pra usar no Instagram, cardápio impresso, etiqueta |
 | `favicon.svg`  | Ícone da aba do navegador / selo quadrado                       |
-| `og.png`       | Imagem 1200×630 do preview ao mandar o link no WhatsApp/Insta   |
+| `og-v2.png`    | Imagem 1200×630 do preview ao mandar o link no WhatsApp/Insta. Ao trocar, mude o nome (`og-v3.png`) e a meta `og:image`, senão o WhatsApp segue mostrando a antiga |
 | `.nojekyll`    | Faz o GitHub Pages servir os arquivos sem processar             |
 | `tests/`       | Suíte de testes, roda no navegador sem instalar nada            |
 | `CLAUDE.md`    | Contexto do projeto para o Claude Code, incluindo as decisões e as armadilhas já encontradas |
@@ -111,7 +111,7 @@ Acrescente um item em `SABORES`. O card, a ilustração e o carrinho se montam s
 ```
 
 O `icone` aponta para um `<symbol>` do topo do `index.html`. Cada sabor tem
-o seu (`#ic-calabresa`, `#ic-carne`, `#ic-queijo`). Para um sabor novo, ou
+o seu (`#ic-calabresa`, `#ic-carne`, `#ic-queijo`, `#ic-marguerita`). Para um sabor novo, ou
 reaproveite o desenho mais parecido ou duplique um `<symbol>` e troque as
 cores do recheio.
 
@@ -191,7 +191,7 @@ Os cards usam ilustração SVG. Para trocar por foto, substitua o
 <img class="card-ilu" src="img/calabresa.jpg" alt="Esfiha de calabresa">
 ```
 
-Foto quadrada, pelo menos 400×400, fundo claro. Vale trocar o `og.png`
+Foto quadrada, pelo menos 400×400, fundo claro. Vale trocar o `og-v2.png`
 também: o preview do WhatsApp com foto de verdade rende mais que ilustração.
 
 ## Como o texto do site foi escrito

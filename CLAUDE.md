@@ -36,6 +36,8 @@ parte da Trindade.
 - Calabresa: calabresa moída, cebola, azeitona, um pouco de pimenta
 - Carne: carne bovina moída com cebola e tomate
 - Queijo: muçarela com requeijão e orégano
+- Marguerita: muçarela, tomate e manjericão (entrou em 19/10/2026, mesmo
+  preço e mesmos combos dos outros)
 
 **Preços.** R$ 5,00 avulsa, com combos em 4, 8 e 12. Desconto de propósito
 leve (5%, 8%, 10%): a primeira versão chegava a 22% e o dono achou agressivo
@@ -82,11 +84,26 @@ gerados; `tests/` tem a suíte.
 "Entrega e horários" (o que o visitante lê) e o array `PONTOS` no JS (o que
 alimenta o seletor). O `openingHoursSpecification` do JSON-LD é o terceiro.
 
+**Identidade visual (19/10/2026).** Uma tinta só, como a camisa: quase preto
+`#121212` sobre branco quebrado `#F7F6F2`, fontes Unbounded (títulos) e
+Space Grotesk (texto). Os nomes antigos dos tokens (`--terracota`, `--creme`
+etc.) foram mantidos com valores novos; `--terracota` hoje é a tinta. A marca
+é o selo `#ic-selo`: "ESFIHAS" em arco em cima, "SAYONES" embaixo e a esfiha
+aberta no meio, **sem círculo em volta** (o círculo dava cara de pneu). O
+letreiro já está em curva, então o selo não depende da fonte carregar. Os
+arquivos de estampa da camisa ficam fora do repositório.
+
+**O topo** tem a tabela de combos e a faixa de sabores montadas pelo JS a
+partir de `FAIXAS` e `SABORES`, pra preço e sabor nunca divergirem do
+carrinho. No celular a tabela e a faixa somem e entram três números (6 min,
+60 dias, R$ 5,00).
+
 **Os desenhos das esfihas** são SVG gerados por script Python, um `<symbol>`
-por sabor (`#ic-calabresa`, `#ic-carne`, `#ic-queijo`). São vistos de
+por sabor (`#ic-calabresa`, `#ic-carne`, `#ic-queijo`, `#ic-marguerita`; a
+marguerita foi desenhada à mão no mesmo molde). São vistos de
 três-quartos, com a lateral da massa aparecendo: de cima e com rodela de
 calabresa, o desenho lia como pizza. A esfiha é **aberta**, estilo Habib's,
-e a calabresa é **moída**, não em rodela. O ícone da marca usa a de carne.
+e a calabresa é **moída**, não em rodela. A esfiha do selo é a de carne.
 
 **O ícone do botão de pedido** é `#ic-carrinho`, um carrinho de compras. Já
 foi uma sacola, que tinha o mesmo corpo afunilado da lixeira do carrinho e a
