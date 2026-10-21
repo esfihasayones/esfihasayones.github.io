@@ -477,7 +477,7 @@ main,header,footer{position:relative;z-index:1}
   .card .desc{display:none}
   .card .desc.curta{
     grid-area:desc;text-align:left;font-size:12.5px;margin:2px 0 3px;line-height:1.35;
-    color:var(--texto-suave);height:2.7em;
+    color:var(--texto-suave);height:2.7em;min-height:0;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
   }
   .card-rodape{display:contents}
@@ -504,10 +504,15 @@ main,header,footer{position:relative;z-index:1}
 @media(max-width:360px){
   .horarios li{flex-direction:column;gap:4px}
   .horarios span{text-align:left}
-  .card{grid-template-columns:52px 1fr auto;column-gap:10px;padding:11px}
+  /* os botões descem pra linha do preço: com eles ao lado, a descrição
+     ficava com uns 76px e cortava no meio da palavra */
+  .card{grid-template-columns:52px 1fr auto;column-gap:10px;padding:11px;
+    grid-template-areas:"ilu nome nome" "ilu desc desc" "ilu preco passo"}
+  .card .preco{align-self:center}
+  .barra-info .cada{display:none}
   .card-ilu{width:52px;height:52px}
   .card h3{font-size:18px}
-  .card .desc.curta{font-size:12px}
+  .card .desc.curta{font-size:12px;height:auto;max-height:2.7em}
   .card .preco{font-size:14.5px}
   /* 32px é o piso pra dedo; o que encolhe é o resto da linha, não o toque */
   .card .stepper{padding:3px;gap:1px}
@@ -546,7 +551,7 @@ main,header,footer{position:relative;z-index:1}
       "@type": "MenuSection",
       "name": "Esfihas",
       "hasMenuItem": [
-        { "@type": "MenuItem", "name": "Esfiha de calabresa congelada", "description": "Calabresa moída, cebola e muçarela. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } },
+        { "@type": "MenuItem", "name": "Esfiha de calabresa congelada", "description": "Calabresa moída, molho de tomate, cebola e muçarela. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } },
         { "@type": "MenuItem", "name": "Esfiha de carne congelada", "description": "Carne bovina moída com cebola e tomate. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } },
         { "@type": "MenuItem", "name": "Esfiha de queijo congelada", "description": "Muçarela com requeijão cremoso e orégano. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } },
         { "@type": "MenuItem", "name": "Esfiha de marguerita congelada", "description": "Muçarela, tomate e manjericão. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } }
@@ -773,7 +778,7 @@ main,header,footer{position:relative;z-index:1}
   <div class="centro">
     <span class="olho">Cardápio</span>
     <h2 class="secao-titulo">Calabresa, carne, queijo e marguerita</h2>
-    <p class="secao-sub">Fazemos o recheio de manhã, assamos e congelamos no mesmo dia. Escolha as quantidades aqui embaixo. O preço por unidade cai quando você chega em 4, 8 ou 12.</p>
+    <p class="secao-sub">Escolha as quantidades aqui embaixo. Elas vão pré-assadas e congeladas pra você, e o preço por unidade cai quando você chega em 4, 8 ou 12.</p>
     <p class="secao-sub cel">Em 4, 8 ou 12 o preço por unidade cai.</p>
   </div>
 
@@ -875,7 +880,7 @@ main,header,footer{position:relative;z-index:1}
     <div class="numeros">
       <div><b>4</b><span>sabores</span></div>
       <div><b>6min</b><span>na air fryer</span></div>
-      <div><b>3</b><span>pontos na cidade</span></div>
+      <div><b id="nPontos">4</b><span>pontos na cidade</span></div>
       <div><b>60d</b><span>de freezer</span></div>
     </div>
   </div>
@@ -1069,8 +1074,8 @@ main,header,footer{position:relative;z-index:1}
   var SABORES = [
     // `curta` é a versão que aparece no card compacto do celular.
     { id:"calabresa", nome:"Calabresa",
-      desc:"Calabresa moída na hora, com cebola e muçarela.",
-      curta:"Com cebola e muçarela",
+      desc:"Calabresa moída na hora, com molho de tomate, cebola e muçarela.",
+      curta:"Molho, cebola e muçarela",
       icone:"#ic-calabresa" },
     { id:"carne", nome:"Carne",
       desc:"Carne bovina moída com cebola e tomate, temperada na hora de fazer.",
@@ -1194,6 +1199,7 @@ main,header,footer{position:relative;z-index:1}
     combosHero.appendChild(el);
   });
   $("#precoHero").textContent = brl(FAIXAS[FAIXAS.length-1].preco);
+  $("#nPontos").textContent = PONTOS.filter(function(p){ return p.dias !== null; }).length;
   // Junta os dias de todos os pontos em ordem. Uma sequência de 3 ou mais
   // vira "de seg a sáb", senão lista: "qui, sex e sáb".
   var dias = [];
@@ -1359,8 +1365,9 @@ main,header,footer{position:relative;z-index:1}
 
     // barra
     $("#barraTotal").textContent = brl(total);
-    $("#barraQtd").textContent = q === 0 ? "nenhuma esfiha"
-      : q + (q === 1 ? " esfiha" : " esfihas") + " · " + brl(f.preco) + " cada";
+    // "cada" fica num span pra sair em tela estreita sem cortar o preço
+    $("#barraQtd").innerHTML = q === 0 ? "nenhuma esfiha"
+      : q + (q === 1 ? " esfiha" : " esfihas") + " · " + brl(f.preco) + '<span class="cada"> cada</span>';
     barra.classList.toggle("visivel", q > 0 && !gaveta.classList.contains("aberta"));
 
     // gaveta

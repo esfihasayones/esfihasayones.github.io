@@ -36,7 +36,7 @@ horário muda conforme o dia, um mapa `janelas`. UFSC não é ponto separado, fa
 parte da Trindade.
 
 **Sabores e receitas** (confirmadas pelo dono):
-- Calabresa: calabresa moída, cebola e muçarela (azeitona e pimenta saíram
+- Calabresa: calabresa moída, molho de tomate, cebola e muçarela (azeitona e pimenta saíram
   em 21/10/2026)
 - Carne: carne bovina moída com cebola e tomate
 - Queijo: muçarela com requeijão e orégano
