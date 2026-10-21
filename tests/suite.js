@@ -105,6 +105,7 @@
     c.definir("calabresa", 2);
     c.abrirGaveta();
     ok(c.el("#rsLinhaEco").hidden, "não há economia em pedido de 2 unidades");
+    igual(c.el("#rsLinhaEco").getBoundingClientRect().height, 0, "a linha de economia continua na tela");
   });
 
   teste("Preços", "o aviso diz quantas faltam para o próximo combo", function (c) {
@@ -153,6 +154,8 @@
     c.definir("calabresa", 12);
     c.abrirGaveta();
     ok(c.el("#rsProgresso").hidden, "não há próximo combo depois do 12");
+    // o atributo não basta: o CSS do resumo já passou por cima dele
+    igual(c.el("#rsProgresso").getBoundingClientRect().height, 0, "o aviso continua na tela");
   });
 
   teste("Preços", "o combo vigente fica destacado na seção de preços", function (c) {
@@ -414,7 +417,7 @@
   teste("Retirada", "trocar de ponto ajusta a data para o dia daquele ponto", function (c) {
     c.abrirGaveta();
     var ponto = c.el("#fPonto");
-    [[1, [1, 2, 3, 4, 5], "Itacorubi"], [2, [6], "Centro"]].forEach(function (caso) {
+    [[1, [1, 2, 3, 4, 5], "Itacorubi"], [2, [1, 2, 3, 4, 5], "Abraão"], [3, [6], "Centro"]].forEach(function (caso) {
       ponto.value = String(caso[0]);
       ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
       var dia = new Date(c.el("#fData").value + "T12:00:00").getDay();
@@ -498,6 +501,60 @@
     contem(dica, "Trindade");
   });
 
+  // Fixa o relógio da página e escolhe ponto e data.
+  function retirada(c, agora, ponto, data) {
+    c.win.Date.now = function () { return new c.win.Date(agora).getTime(); };
+    c.abrirGaveta();
+    var p = c.el("#fPonto");
+    p.value = String(ponto);
+    p.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    var d = c.el("#fData");
+    d.value = data;
+    d.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    return c.texto("#dicaData");
+  }
+
+  teste("Retirada", "o envio é barrado num dia em que o ponto não abre", function (c) {
+    c.definir("calabresa", 4);
+    retirada(c, "2026-10-21T10:00:00", 3, "2026-10-27");   // Centro numa terça
+    c.el("#fNome").value = "Breno";
+    igual(c.enviar(), null, "o pedido não podia sair");
+    contem(c.texto("#aviso"), "só no sábado");
+  });
+
+  teste("Retirada", "a antecedência conta horas até o começo da janela", function (c) {
+    c.definir("calabresa", 4);
+    // quarta 23h pra quinta 8h no Itacorubi: só 9 horas
+    var dica = retirada(c, "2026-10-21T23:00:00", 1, "2026-10-22");
+    contem(dica, "não dá tempo");
+    contem(dica, "24 horas");
+    c.el("#fNome").value = "Breno";
+    igual(c.enviar(), null, "o pedido com 9 horas não podia sair");
+    // sexta 8h já tem 33 horas
+    contem(retirada(c, "2026-10-21T23:00:00", 1, "2026-10-23"), "✓");
+  });
+
+  teste("Retirada", "acima de 40 esfihas a antecedência é de 3 dias", function (c) {
+    c.definir("calabresa", 41);
+    var dica = retirada(c, "2026-10-21T10:00:00", 1, "2026-10-23");   // 46 horas
+    contem(dica, "3 dias");
+    c.el("#fNome").value = "Breno";
+    igual(c.enviar(), null, "41 esfihas com 46 horas não podia sair");
+    contem(retirada(c, "2026-10-21T10:00:00", 1, "2026-10-26"), "✓");   // segunda, 118 horas
+    c.definir("calabresa", 40);
+    contem(retirada(c, "2026-10-21T10:00:00", 1, "2026-10-23"), "✓", "com 40 vale a regra de 24 horas");
+  });
+
+  teste("Retirada", "o Abraão abre de segunda a sexta de manhã", function (c) {
+    c.definir("calabresa", 4);
+    var dica = retirada(c, "2026-10-21T10:00:00", 2, "2026-10-23");
+    contem(c.el("#fPonto").options[2].textContent, "Abraão");
+    contem(dica, "✓");
+    contem(dica, "de manhã no Abraão");
+    naoContem(dica, "das de manhã");
+    contem(retirada(c, "2026-10-21T10:00:00", 2, "2026-10-24"), "de segunda a sexta");
+  });
+
   teste("Retirada", "combinar outro ponto não exige data", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
@@ -514,7 +571,7 @@
   teste("Retirada", "a concordância do texto acompanha o ponto", function (c) {
     c.abrirGaveta();
     var ponto = c.el("#fPonto");
-    ponto.value = "2";                          // Centro, no sábado
+    ponto.value = "3";                          // Centro, no sábado
     ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
     contem(c.texto("#dicaData"), "no Centro");
     naoContem(c.texto("#dicaData"), "na Centro");

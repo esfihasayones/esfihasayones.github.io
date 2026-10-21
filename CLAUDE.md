@@ -29,8 +29,9 @@ um ponto combinado do bairro e o cliente passa lá para pegar. Por isso não
 há taxa de entrega. Nunca escreva "entregamos na sua casa".
 
 **Pontos e dias (21/10/2026):** Trindade/UFSC segunda e quinta 18h30–20h,
-terça e quarta 18h30–22h; Itacorubi de segunda a sexta 8h–16h30; Centro no
-sábado 14h–17h. Cada ponto em `PONTOS` tem uma lista `dias` e, quando o
+terça e quarta 18h30–22h; Itacorubi de segunda a sexta 8h–16h30; Abraão de
+segunda a sexta de manhã (sem horário fechado; `inicio:7` só entra na conta
+da antecedência); Centro no sábado 14h–17h. Cada ponto em `PONTOS` tem uma lista `dias` e, quando o
 horário muda conforme o dia, um mapa `janelas`. UFSC não é ponto separado, faz
 parte da Trindade.
 
@@ -128,7 +129,7 @@ python3 -m http.server 8791
 # http://127.0.0.1:8791/tests/index.html
 ```
 
-107 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
+111 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
 iframe limpo, um teste por vez. `window.RESULTADO` expõe o resultado para
 automação.
 
@@ -148,6 +149,16 @@ existiam e simplesmente não aplicavam.
 
 **`minmax(Npx, 1fr)` estoura.** Quando a tela é menor que N, o mínimo fixo
 ganha e a coluna passa da viewport. Use sempre `minmax(min(Npx, 100%), 1fr)`.
+
+**`hidden` perde para `display` do CSS.** `.resumo div{display:flex}` passava
+por cima do atributo, e o aviso de combo aparecia com 12 esfihas. Há
+`[hidden]{display:none!important}` no começo do CSS. Teste de "sumiu" tem que
+medir a altura na tela, não olhar o atributo.
+
+**Antecedência é em horas até o começo da janela**, não em dias do
+calendário: 24h, ou 3 dias acima de 40 esfihas. O envio é barrado se a data
+não respeita isso ou se o ponto não abre naquele dia. Os testes fixam
+`Date.now()` da página pra não depender da hora em que rodam.
 
 **`overflow-x: hidden` esconde bug de layout.** Ele mascara o `scrollWidth`,
 então teste de estouro que olha `scrollWidth` passa com a página quebrada. O

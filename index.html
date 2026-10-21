@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Esfihas Sayones | Esfiha caseira em Florianópolis</title>
-<meta name="description" content="Esfiha aberta congelada em Florianópolis: calabresa, carne, queijo e marguerita. Combos de 4, 8 e 12, pronta em 6 minutos na air fryer. Retirada na Trindade, Itacorubi e Centro.">
+<meta name="description" content="Esfiha aberta congelada em Florianópolis: calabresa, carne, queijo e marguerita. Combos de 4, 8 e 12, pronta em 6 minutos na air fryer. Retirada na Trindade, Itacorubi, Abraão e Centro.">
 <meta name="theme-color" content="#F7F6F2">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="Esfihas Sayones | Esfiha caseira em Florianópolis">
@@ -26,6 +26,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* O atributo hidden tem que vencer qualquer display:flex/block das regras abaixo. */
+[hidden]{display:none!important}
 /* ---------- tokens ---------- */
 :root{
   /* Identidade de uma tinta só, como na camisa: o selo e o texto em quase
@@ -518,7 +520,7 @@ main,header,footer{position:relative;z-index:1}
   "@context": "https://schema.org",
   "@type": "FoodEstablishment",
   "name": "Esfihas Sayones",
-  "description": "Esfiha aberta congelada, feita por encomenda em Florianópolis. Calabresa, carne, queijo e marguerita em combos de 4, 8 e 12 unidades, retirados em pontos na Trindade, Itacorubi e Centro.",
+  "description": "Esfiha aberta congelada, feita por encomenda em Florianópolis. Calabresa, carne, queijo e marguerita em combos de 4, 8 e 12 unidades, retirados em pontos na Trindade, Itacorubi, Abraão e Centro.",
   "servesCuisine": ["Esfiha", "Árabe", "Salgados"],
   "priceRange": "R$",
   "telephone": "+5548988106499",
@@ -528,6 +530,7 @@ main,header,footer{position:relative;z-index:1}
   "areaServed": [
     { "@type": "Place", "name": "Trindade, Florianópolis" },
     { "@type": "Place", "name": "Itacorubi, Florianópolis" },
+    { "@type": "Place", "name": "Abraão, Florianópolis" },
     { "@type": "Place", "name": "Centro, Florianópolis" }
   ],
   "openingHoursSpecification": [
@@ -839,6 +842,7 @@ main,header,footer{position:relative;z-index:1}
       <ul class="horarios">
         <li><b>Trindade e UFSC</b><span><i>Seg e qui · 18h30 às 20h</i><i>Ter e qua · 18h30 às 22h</i></span></li>
         <li><b>Itacorubi</b><span><i>Seg a sex · 8h às 16h30</i></span></li>
+        <li><b>Abraão</b><span><i>Seg a sex · de manhã</i></span></li>
         <li><b>Centro</b><span><i>Sábado · 14h às 17h</i></span></li>
       </ul>
       <div class="taxa">
@@ -951,7 +955,7 @@ main,header,footer{position:relative;z-index:1}
         <ul>
           <li><a href="https://wa.me/5548988106499" target="_blank" rel="noopener">WhatsApp (48) 98810-6499</a></li>
           <li><a href="https://instagram.com/esfihasayones" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px"><svg width="17" height="17" aria-hidden="true"><use href="#ic-insta"/></svg> @esfihasayones</a></li>
-          <li>Trindade · Itacorubi · Centro</li>
+          <li>Trindade · Itacorubi · Abraão · Centro</li>
           <li>Florianópolis / SC</li>
         </ul>
       </div>
@@ -1040,18 +1044,21 @@ main,header,footer{position:relative;z-index:1}
      CONFIGURAÇÃO: é só aqui que você mexe pra mudar preços e sabores
      =================================================================== */
   var WHATSAPP = "5548988106499";          // DDI 55 + DDD 48 + número
-  var ANTECEDENCIA_H = 24;                  // horas mínimas de antecedência
+  var ANTECEDENCIA_H = 24;                  // horas mínimas entre o pedido e o começo da retirada
+  var PEDIDO_GRANDE = 40;                   // acima disso...
+  var ANTECEDENCIA_GRANDE_H = 72;           // ...a antecedência sobe pra 3 dias
 
   // Pontos de retirada. Não há entrega porta a porta: em cada dia levamos as
   // encomendas a um ponto do bairro. `dia`: 0 = domingo … 6 = sábado.
   // `prep` é a preposição do bairro ("na Trindade", "no Centro").
   var PONTOS = [
     // dias: 0 = domingo ... 6 = sábado. `quando` é como a frase fala dos dias.
-    // `janela` é o horário; quando muda conforme o dia, `janelas` diz o de
-    // cada um e `janela` fica sendo o resumo que aparece no seletor.
-    { nome:"Trindade",  prep:"na", dias:[1,2,3,4],   diaNome:"segunda a quinta", quando:"de segunda a quinta", janela:"a partir das 18h30",
+    // `janela` é o horário; quando muda conforme o dia, `janelas` diz o de cada um.
+    { nome:"Trindade",  prep:"na", dias:[1,2,3,4],   diaNome:"segunda a quinta", quando:"de segunda a quinta", janela:"18h30 às 20h",
       janelas:{ 1:"18h30 às 20h", 2:"18h30 às 22h", 3:"18h30 às 22h", 4:"18h30 às 20h" } },
     { nome:"Itacorubi", prep:"no", dias:[1,2,3,4,5], diaNome:"segunda a sexta",  quando:"de segunda a sexta",  janela:"8h às 16h30" },
+    // Sem horário fechado: `inicio` é a hora que entra na conta da antecedência.
+    { nome:"Abraão",    prep:"no", dias:[1,2,3,4,5], diaNome:"segunda a sexta",  quando:"de segunda a sexta",  janela:"de manhã", inicio:7 },
     { nome:"Centro",    prep:"no", dias:[6],         diaNome:"sábado",           quando:"no sábado",           janela:"14h às 17h" },
     { nome:"Combinar outro ponto", dias:null }
   ];
@@ -1235,60 +1242,91 @@ main,header,footer{position:relative;z-index:1}
   PONTOS.forEach(function(pt, i){
     var op = document.createElement("option");
     op.value = i;
-    op.textContent = pt.dias === null ? pt.nome : pt.nome + " · " + pt.diaNome + ", " + pt.janela;
+    // Só ponto e dias: o horário cortava no celular, e a dica embaixo já mostra o do dia.
+    op.textContent = pt.dias === null ? pt.nome : pt.nome + " · " + pt.diaNome;
     fPonto.appendChild(op);
   });
 
   /* ---------- data mínima ---------- */
-  var minimo = new Date(Date.now() + ANTECEDENCIA_H*3600*1000);
   var iso = function(d){
     return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
   };
-  fData.min = iso(minimo);
-  if (!fData.value) fData.value = iso(minimo);
+  var dois = function(n){ return String(n).padStart(2, "0"); };
 
   function pontoAtual(){ return PONTOS[+fPonto.value] || PONTOS[0]; }
 
   function diaDaData(valor){ return new Date(valor + "T12:00:00").getDay(); }
   function janelaDe(pt, dia){ return (pt.janelas && pt.janelas[dia]) || pt.janela; }
+  // "das 18h30 às 20h" quando há horário; "de manhã" fica como está.
+  function horarioTxt(pt, dia){
+    var j = janelaDe(pt, dia);
+    return /^\d/.test(j) ? "das " + j : j;
+  }
 
-  // Primeira data válida que caia num dos dias da semana do ponto.
-  function proximaDataDe(dias){
-    var d = new Date(minimo.getTime());
-    for (var i = 0; i < 14; i++){
-      if (dias.indexOf(d.getDay()) !== -1) return iso(d);
+  // A antecedência conta em horas até o começo da janela, não em dias do
+  // calendário: pedir quarta às 23h pra quinta às 8h dá só 9 horas.
+  function horasAntecedencia(){ return totalQtd() > PEDIDO_GRANDE ? ANTECEDENCIA_GRANDE_H : ANTECEDENCIA_H; }
+  function antecedenciaTxt(){
+    return totalQtd() > PEDIDO_GRANDE ? "3 dias de antecedência acima de " + PEDIDO_GRANDE + " esfihas"
+                                      : ANTECEDENCIA_H + " horas de antecedência";
+  }
+  function limite(){ return new Date(Date.now() + horasAntecedencia()*3600*1000); }
+  function inicioRetirada(pt, valor){
+    var m = /^(\d+)h(\d*)/.exec(janelaDe(pt, diaDaData(valor)));
+    var h = m ? +m[1] : pt.inicio, min = m && m[2] ? +m[2] : 0;
+    return new Date(valor + "T" + dois(h) + ":" + dois(min) + ":00");
+  }
+
+  // "ok", "dia" (o ponto não abre nesse dia) ou "cedo" (falta antecedência).
+  function situacaoData(pt, valor){
+    if (pt.dias.indexOf(diaDaData(valor)) === -1) return "dia";
+    return inicioRetirada(pt, valor) < limite() ? "cedo" : "ok";
+  }
+
+  // Primeira data em que o ponto abre e que respeita a antecedência.
+  function proximaDataDe(pt){
+    var d = new Date(Date.now());
+    for (var i = 0; i < 21; i++){
+      if (situacaoData(pt, iso(d)) === "ok") return iso(d);
       d.setDate(d.getDate() + 1);
     }
-    return iso(minimo);
+    return iso(limite());
+  }
+
+  function textoData(pt, valor){
+    var sit = situacaoData(pt, valor);
+    if (sit === "dia")
+      return "Nesse dia a gente não está " + pt.prep + " " + pt.nome + ", só " +
+             pt.quando + ". A mais próxima é " + dataBR(proximaDataDe(pt)) + ".";
+    if (sit === "cedo")
+      return "Pra essa data não dá tempo: precisamos de " + antecedenciaTxt() +
+             ". A mais próxima " + pt.prep + " " + pt.nome + " é " + dataBR(proximaDataDe(pt)) + ".";
+    var dia = diaDaData(valor);
+    return "✓ " + NOMES_DIA[dia].charAt(0).toUpperCase() + NOMES_DIA[dia].slice(1) + ", " +
+           dataBR(valor) + " · " + horarioTxt(pt, dia) + " " + pt.prep + " " + pt.nome;
   }
 
   function atualizarDica(){
     var el = $("#dicaData"), pt = pontoAtual();
+    fData.min = iso(limite());
     if (pt.dias === null){
       el.hidden = false; el.className = "dica";
       el.textContent = "A gente combina o ponto e o horário com você pelo WhatsApp.";
       return;
     }
     if (!fData.value){ el.hidden = true; return; }
-    var dia = diaDaData(fData.value);
-    var bate = pt.dias.indexOf(dia) !== -1;
     el.hidden = false;
-    el.className = bate ? "dica ok" : "dica";
-    el.textContent = bate
-      ? "✓ " + NOMES_DIA[dia].charAt(0).toUpperCase() + NOMES_DIA[dia].slice(1) + ", " +
-        dataBR(fData.value) + " · das " + janelaDe(pt, dia) + " " + pt.prep + " " + pt.nome
-      : "Nesse dia a gente não está " + pt.prep + " " + pt.nome + ", só " +
-        pt.quando + ". A mais próxima é " +
-        dataBR(proximaDataDe(pt.dias)) + ".";
+    el.className = situacaoData(pt, fData.value) === "ok" ? "dica ok" : "dica";
+    el.textContent = textoData(pt, fData.value);
   }
 
   fPonto.addEventListener("change", function(){
     var pt = pontoAtual();
-    if (pt.dias !== null) fData.value = proximaDataDe(pt.dias);
+    if (pt.dias !== null) fData.value = proximaDataDe(pt);
     atualizarDica();
   });
   fData.addEventListener("change", atualizarDica);
-  fData.value = proximaDataDe(PONTOS[0].dias);
+  fData.value = proximaDataDe(PONTOS[0]);
   atualizarDica();
 
   /* ---------- render ---------- */
@@ -1405,6 +1443,7 @@ main,header,footer{position:relative;z-index:1}
       prog.hidden = true;
     }
 
+    atualizarDica();
     salvar();
   }
 
@@ -1595,13 +1634,13 @@ main,header,footer{position:relative;z-index:1}
     if (!fNome.value.trim()) faltando.push("seu nome");
 
     var precisaData = pt.dias !== null;
-    var cedoDemais = precisaData && !!fData.value && fData.value < fData.min;
-    marcarErro(fData, precisaData && (!fData.value || cedoDemais));
+    var dataRuim = precisaData && !!fData.value && situacaoData(pt, fData.value) !== "ok";
+    marcarErro(fData, precisaData && (!fData.value || dataRuim));
     if (precisaData && !fData.value) faltando.push("o dia da retirada");
-    else if (cedoDemais) faltando.push("um dia a partir de " + dataBR(fData.min) + ", que é a antecedência mínima");
 
-    if (faltando.length){
-      aviso.textContent = "Falta preencher: " + faltando.join(", ") + ".";
+    if (faltando.length || dataRuim){
+      aviso.textContent = faltando.length ? "Falta preencher: " + faltando.join(", ") + "."
+                                          : textoData(pt, fData.value);
       aviso.classList.add("on");
       var alvo = $(".erro");
       if (alvo) { alvo.focus(); alvo.scrollIntoView({behavior: comoRolar(), block:"center"}); }
@@ -1619,7 +1658,7 @@ main,header,footer{position:relative;z-index:1}
 
     var retiradaTxt = pt.dias === null
       ? "Combinar ponto e horário"
-      : pt.nome + ", " + NOMES_DIA[diaDaData(fData.value)] + " " + dataBR(fData.value) + ", das " + janelaDe(pt, diaDaData(fData.value));
+      : pt.nome + ", " + NOMES_DIA[diaDaData(fData.value)] + " " + dataBR(fData.value) + ", " + horarioTxt(pt, diaDaData(fData.value));
 
     var msg =
       "Olá, Esfihas Sayones! Quero fazer uma encomenda de esfiha congelada.\n\n" +
