@@ -51,7 +51,7 @@ Tudo está num único bloco no fim do `index.html`, logo depois de
 `CONFIGURAÇÃO: é só aqui que você mexe`:
 
 ```js
-var WHATSAPP = "5548988106499";   // DDI 55 + DDD + número, só dígitos
+var WHATSAPP = "5548992210812";   // DDI 55 + DDD + número, só dígitos
 var ANTECEDENCIA_H = 24;          // antecedência mínima do pedido, em horas
 
 var SABORES = [ ... ];            // nome, descrição e cores da ilustração

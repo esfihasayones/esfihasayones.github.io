@@ -584,7 +584,7 @@
     c.definir("calabresa", 4);
     c.abrirGaveta();
     c.el("#fNome").value = "Breno";
-    igual(c.enviarUrl().split("?")[0], "https://wa.me/5548988106499");
+    igual(c.enviarUrl().split("?")[0], "https://wa.me/5548992210812");
   });
 
   teste("WhatsApp", "a mensagem lista os itens, o total e o preço unitário", function (c) {

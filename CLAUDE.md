@@ -120,7 +120,7 @@ foi uma sacola, que tinha o mesmo corpo afunilado da lixeira do carrinho e a
 com os outros antes de escolher.
 
 **A mensagem do WhatsApp** é montada no cliente e aberta via `wa.me`. Não há
-servidor: o pedido chega como conversa normal no (48) 98810-6499.
+servidor: o pedido chega como conversa normal no (48) 99221-0812.
 
 ## Testes
 
