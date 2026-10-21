@@ -129,7 +129,7 @@ python3 -m http.server 8791
 # depois: http://127.0.0.1:8791/tests/index.html
 ```
 
-São 101 testes cobrindo preço por combo, carrinho, formulário de retirada,
+São 103 testes cobrindo preço por combo, carrinho, formulário de retirada,
 mensagem do WhatsApp, persistência, acessibilidade e layout no celular.
 Os casos ficam em `tests/suite.js`, em português e sem dependência nenhuma.
 

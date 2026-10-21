@@ -138,6 +138,17 @@
     ok(c.el("#rsProgresso").hidden, "com 3 faltando a sugestão vira insistência");
   });
 
+  teste("Cardápio", "o topo avisa que a esfiha vai pré-assada e congelada", function (c) {
+    contem(c.texto(".hero .lead"), "pré-assada e congelada");
+  });
+
+  teste("Cardápio", "o cardápio avisa que tem glúten e lactose", function (c) {
+    var aviso = c.el("#alergenicos");
+    ok(aviso && aviso.getBoundingClientRect().height > 0, "o aviso precisa estar visível");
+    contem(aviso.textContent, "glúten");
+    contem(aviso.textContent, "lactose");
+  });
+
   teste("Preços", "no maior combo o aviso de progresso some", function (c) {
     c.definir("calabresa", 12);
     c.abrirGaveta();

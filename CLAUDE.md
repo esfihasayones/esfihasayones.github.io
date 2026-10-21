@@ -125,7 +125,7 @@ python3 -m http.server 8791
 # http://127.0.0.1:8791/tests/index.html
 ```
 
-101 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
+103 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
 iframe limpo, um teste por vez. `window.RESULTADO` expõe o resultado para
 automação.
 
