@@ -485,6 +485,14 @@
     contem(msg, "R$ 5,35 cada");
   });
 
+  teste("WhatsApp", "a mensagem não leva emoji fora do básico, que chega como �", function (c) {
+    c.definir("calabresa", 4);
+    var msg = c.pedidoCompleto();
+    // Emoji como 🥟 vira par substituto em UTF-16. Pelo wa.me ele chegou
+    // quebrado no celular do cliente, então a mensagem fica sem nenhum.
+    ok(!/[\uD800-\uDFFF]/.test(msg), "a mensagem tem caractere fora do plano básico");
+  });
+
   teste("WhatsApp", "a observação de cada item vai junto do item", function (c) {
     c.definir("calabresa", 4);
     c.definir("carne", 4);
