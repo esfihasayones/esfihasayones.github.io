@@ -536,10 +536,10 @@ main,header,footer{position:relative;z-index:1}
       "@type": "MenuSection",
       "name": "Esfihas",
       "hasMenuItem": [
-        { "@type": "MenuItem", "name": "Esfiha de calabresa congelada", "description": "Calabresa moída, cebola caramelizada, azeitona e pimenta. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.00", "priceCurrency": "BRL" } },
-        { "@type": "MenuItem", "name": "Esfiha de carne congelada", "description": "Carne bovina moída com cebola e tomate. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.00", "priceCurrency": "BRL" } },
-        { "@type": "MenuItem", "name": "Esfiha de queijo congelada", "description": "Muçarela com requeijão cremoso e orégano. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.00", "priceCurrency": "BRL" } },
-        { "@type": "MenuItem", "name": "Esfiha de marguerita congelada", "description": "Muçarela, tomate e manjericão. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.00", "priceCurrency": "BRL" } }
+        { "@type": "MenuItem", "name": "Esfiha de calabresa congelada", "description": "Calabresa moída, cebola caramelizada, azeitona e pimenta. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } },
+        { "@type": "MenuItem", "name": "Esfiha de carne congelada", "description": "Carne bovina moída com cebola e tomate. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } },
+        { "@type": "MenuItem", "name": "Esfiha de queijo congelada", "description": "Muçarela com requeijão cremoso e orégano. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } },
+        { "@type": "MenuItem", "name": "Esfiha de marguerita congelada", "description": "Muçarela, tomate e manjericão. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } }
       ]
     }]
   }
@@ -741,7 +741,7 @@ main,header,footer{position:relative;z-index:1}
       <ul class="numeros-hero">
         <li><b>6 min</b><span>na air fryer</span></li>
         <li><b>60 dias</b><span>no freezer</span></li>
-        <li><b id="precoHero">R$ 5,00</b><span>a unidade</span></li>
+        <li><b id="precoHero">R$ 5,90</b><span>a unidade</span></li>
       </ul>
       <div class="combos-hero" id="combosHero"></div>
       <p class="combos-nota">Preço por unidade. Dá pra misturar os sabores no mesmo combo.</p>
@@ -985,7 +985,7 @@ main,header,footer{position:relative;z-index:1}
 
       <div class="resumo">
         <div><span>Esfihas</span><span id="rsQtd">0</span></div>
-        <div><span>Preço por unidade</span><span id="rsUnit">R$ 5,00</span></div>
+        <div><span>Preço por unidade</span><span id="rsUnit">R$ 5,90</span></div>
         <div id="rsLinhaEco" hidden><span>Você economiza</span><span class="economia" id="rsEco">R$ 0,00</span></div>
         <div class="total"><span>Total</span><b id="rsTotal">R$ 0,00</b></div>
         <div class="progresso" id="rsProgresso" hidden></div>
@@ -1068,10 +1068,10 @@ main,header,footer{position:relative;z-index:1}
   // Combos por quantidade total do pedido (ordem: maior mínimo primeiro).
   // O desconto entra sozinho quando o cliente chega na quantidade.
   var FAIXAS = [
-    { min:12, preco:4.50, nome:"Combo 12", destaque:true },
-    { min:8,  preco:4.60, nome:"Combo 8"  },
-    { min:4,  preco:4.75, nome:"Combo 4"  },
-    { min:1,  preco:5.00, nome:"Avulsa"   }
+    { min:12, preco:5.25, nome:"Combo 12", destaque:true },
+    { min:8,  preco:5.50, nome:"Combo 8"  },
+    { min:4,  preco:5.75, nome:"Combo 4"  },
+    { min:1,  preco:5.90, nome:"Avulsa"   }
   ];
   /* =================================================================== */
 
@@ -1150,7 +1150,7 @@ main,header,footer{position:relative;z-index:1}
       '<p class="desc">'+s.desc+'</p>' +
       '<p class="desc curta">'+(s.curta || s.desc)+'</p>' +
       '<div class="card-rodape">' +
-        '<span class="preco">R$&nbsp;5,00<small>por unidade</small></span>' +
+        '<span class="preco">'+brl(FAIXAS[FAIXAS.length-1].preco).replace(" ", "&nbsp;")+'<small>por unidade</small></span>' +
         '<div class="stepper">' +
           '<button type="button" data-op="-1" aria-label="Remover uma esfiha de '+s.nome+'">−</button>' +
           '<input class="conta" type="text" inputmode="numeric" value="0" aria-label="Quantidade de '+s.nome+'">' +
@@ -1367,14 +1367,18 @@ main,header,footer{position:relative;z-index:1}
     $("#rsLinhaEco").hidden = eco <= 0;
     $("#rsEco").textContent = "− " + brl(eco);
 
-    // quanto falta pro próximo desconto
+    // Quanto falta pro próximo desconto. Só aparece quando faltam 1 ou 2:
+    // com mais que isso a sugestão vira empurrão. Mostra quanto o pedido
+    // sobe, que é o que o cliente pesa na hora de decidir.
     var prog = $("#rsProgresso"), prox = null;
     for (var i = FAIXAS.length-1; i >= 0; i--){ if (FAIXAS[i].min > q){ prox = FAIXAS[i]; break; } }
-    if (prox && q > 0){
-      var falta = prox.min - q;
+    var falta = prox ? prox.min - q : 0;
+    if (prox && q > 0 && falta <= 2){
+      var novo = prox.min * prox.preco;
       prog.hidden = false;
       prog.innerHTML = (falta === 1 ? "Falta <b>1 esfiha</b>" : "Faltam <b>"+falta+" esfihas</b>") +
-                       " pro <b>"+prox.nome+"</b>, que sai a "+brl(prox.preco)+" cada.";
+                       " pro <b>"+prox.nome+"</b>: o pedido fica em "+brl(novo)+
+                       ", "+brl(novo - total)+" a mais que agora.";
     } else {
       prog.hidden = true;
     }

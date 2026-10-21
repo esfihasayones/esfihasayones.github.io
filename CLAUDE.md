@@ -39,16 +39,20 @@ parte da Trindade.
 - Marguerita: muçarela, tomate e manjericão (entrou em 19/10/2026, mesmo
   preço e mesmos combos dos outros)
 
-**Preços.** R$ 5,00 avulsa, com combos em 4, 8 e 12. Desconto de propósito
-leve (5%, 8%, 10%): a primeira versão chegava a 22% e o dono achou agressivo
-demais. O combo vale pelo total do pedido, misturando sabores à vontade.
+**Preços (21/10/2026).** R$ 5,90 avulsa, com combos em 4, 8 e 12. O
+desconto cresce a cada degrau (3%, 7%, 11%) pra o combo 12 valer a pena
+sem passar do aceitável: a primeira versão chegava a 22% e o dono achou
+agressivo demais. Antes era R$ 5,00 com 5/8/10%; subiu porque a conta de
+custo (~R$ 2,25 por esfiha com embalagem e luz, mais ~R$ 1,50 da hora do
+dono) deixava o combo 12 quase sem lucro. O combo vale pelo total do pedido,
+misturando sabores à vontade.
 
 | Combo    | Esfihas | Por unidade | Total    |
 |----------|---------|-------------|----------|
-| Avulsa   | 1 a 3   | R$ 5,00     | (avulsa) |
-| Combo 4  | 4 a 7   | R$ 4,75     | R$ 19,00 |
-| Combo 8  | 8 a 11  | R$ 4,60     | R$ 36,80 |
-| Combo 12 | 12+     | R$ 4,50     | R$ 54,00 |
+| Avulsa   | 1 a 3   | R$ 5,90     | (avulsa) |
+| Combo 4  | 4 a 7   | R$ 5,75     | R$ 23,00 |
+| Combo 8  | 8 a 11  | R$ 5,50     | R$ 44,00 |
+| Combo 12 | 12+     | R$ 5,25     | R$ 63,00 |
 
 ## Como o texto tem que soar
 
@@ -96,7 +100,7 @@ arquivos de estampa da camisa ficam fora do repositório.
 **O topo** tem a tabela de combos e a faixa de sabores montadas pelo JS a
 partir de `FAIXAS` e `SABORES`, pra preço e sabor nunca divergirem do
 carrinho. No celular a tabela e a faixa somem e entram três números (6 min,
-60 dias, R$ 5,00).
+60 dias, R$ 5,90).
 
 **Os desenhos das esfihas** são SVG gerados por script Python, um `<symbol>`
 por sabor (`#ic-calabresa`, `#ic-carne`, `#ic-queijo`, `#ic-marguerita`; a
@@ -120,7 +124,7 @@ python3 -m http.server 8791
 # http://127.0.0.1:8791/tests/index.html
 ```
 
-96 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
+101 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
 iframe limpo, um teste por vez. `window.RESULTADO` expõe o resultado para
 automação.
 

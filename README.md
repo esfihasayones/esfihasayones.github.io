@@ -62,10 +62,10 @@ var FAIXAS  = [ ... ];            // combos: quantidade mínima e preço por uni
 
 | Combo     | Esfihas | Por unidade | Total     | Desconto |
 |-----------|---------|-------------|-----------|----------|
-| Avulsa    | 1 a 3   | R$ 5,00     | –         | –        |
-| Combo 4   | 4 a 7   | R$ 4,75     | R$ 19,00  | 5%       |
-| Combo 8   | 8 a 11  | R$ 4,60     | R$ 36,80  | 8%       |
-| Combo 12  | 12+     | R$ 4,50     | R$ 54,00  | 10%      |
+| Avulsa    | 1 a 3   | R$ 5,90     | –         | –        |
+| Combo 4   | 4 a 7   | R$ 5,75     | R$ 23,00  | 3%       |
+| Combo 8   | 8 a 11  | R$ 5,50     | R$ 44,00  | 7%       |
+| Combo 12  | 12+     | R$ 5,25     | R$ 63,00  | 11%      |
 
 Não é caixa fechada: o cliente mistura os sabores à vontade e o preço do combo
 entra sozinho quando o **total** do pedido chega em 4, 8 ou 12 unidades.
@@ -129,7 +129,7 @@ python3 -m http.server 8791
 # depois: http://127.0.0.1:8791/tests/index.html
 ```
 
-São 96 testes cobrindo preço por combo, carrinho, formulário de retirada,
+São 101 testes cobrindo preço por combo, carrinho, formulário de retirada,
 mensagem do WhatsApp, persistência, acessibilidade e layout no celular.
 Os casos ficam em `tests/suite.js`, em português e sem dependência nenhuma.
 

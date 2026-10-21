@@ -42,63 +42,63 @@
   /* =========================================================
      PREÇOS E COMBOS
      ========================================================= */
-  teste("Preços", "uma esfiha avulsa custa R$ 5,00", function (c) {
+  teste("Preços", "uma esfiha avulsa custa R$ 5,90", function (c) {
     c.definir("calabresa", 1);
-    igual(c.texto("#barraTotal"), "R$ 5,00");
+    igual(c.texto("#barraTotal"), "R$ 5,90");
   });
 
   teste("Preços", "três esfihas ainda são preço cheio", function (c) {
     c.definir("calabresa", 3);
-    igual(c.texto("#barraTotal"), "R$ 15,00");
+    igual(c.texto("#barraTotal"), "R$ 17,70");
     c.abrirGaveta();
-    igual(c.texto("#rsUnit"), "R$ 5,00");
+    igual(c.texto("#rsUnit"), "R$ 5,90");
   });
 
   teste("Preços", "quatro esfihas entram no Combo 4", function (c) {
     c.definir("calabresa", 4);
-    igual(c.texto("#barraTotal"), "R$ 19,00");
+    igual(c.texto("#barraTotal"), "R$ 23,00");
     c.abrirGaveta();
-    igual(c.texto("#rsUnit"), "R$ 4,75");
+    igual(c.texto("#rsUnit"), "R$ 5,75");
   });
 
   teste("Preços", "sete esfihas continuam no Combo 4", function (c) {
     c.definir("calabresa", 7);
-    igual(c.texto("#barraTotal"), "R$ 33,25");
+    igual(c.texto("#barraTotal"), "R$ 40,25");
   });
 
   teste("Preços", "oito esfihas entram no Combo 8", function (c) {
     c.definir("carne", 8);
-    igual(c.texto("#barraTotal"), "R$ 36,80");
+    igual(c.texto("#barraTotal"), "R$ 44,00");
     c.abrirGaveta();
-    igual(c.texto("#rsUnit"), "R$ 4,60");
+    igual(c.texto("#rsUnit"), "R$ 5,50");
   });
 
   teste("Preços", "doze esfihas entram no Combo 12", function (c) {
     c.definir("queijo", 12);
-    igual(c.texto("#barraTotal"), "R$ 54,00");
+    igual(c.texto("#barraTotal"), "R$ 63,00");
     c.abrirGaveta();
-    igual(c.texto("#rsUnit"), "R$ 4,50");
+    igual(c.texto("#rsUnit"), "R$ 5,25");
   });
 
   teste("Preços", "acima de doze o preço por unidade não cai mais", function (c) {
     c.definir("calabresa", 40);
-    igual(c.texto("#barraTotal"), "R$ 180,00");
+    igual(c.texto("#barraTotal"), "R$ 210,00");
   });
 
   teste("Preços", "o combo conta o total do pedido, misturando sabores", function (c) {
     c.definir("calabresa", 5);
     c.definir("carne", 4);
     c.definir("queijo", 3);          // 12 no total
-    igual(c.texto("#barraTotal"), "R$ 54,00");
+    igual(c.texto("#barraTotal"), "R$ 63,00");
     c.abrirGaveta();
-    igual(c.texto("#rsUnit"), "R$ 4,50");
+    igual(c.texto("#rsUnit"), "R$ 5,25");
   });
 
   teste("Preços", "a economia é a diferença para o preço cheio", function (c) {
     c.definir("calabresa", 12);
     c.abrirGaveta();
     ok(!c.el("#rsLinhaEco").hidden, "a linha de economia deveria aparecer");
-    igual(c.texto("#rsEco"), "− R$ 6,00");   // 12 x 5,00 = 60,00 contra 54,00
+    igual(c.texto("#rsEco"), "− R$ 7,80");   // 12 x 5,90 = 70,80 contra 63,00
   });
 
   teste("Preços", "sem desconto, a linha de economia some", function (c) {
@@ -121,6 +121,21 @@
     var aviso = c.texto("#rsProgresso");
     contem(aviso, "Falta 1 esfiha");
     naoContem(aviso, "Faltam 1", "verbo no plural com uma unidade");
+  });
+
+  teste("Preços", "o aviso mostra o total do próximo combo e quanto ele sobe", function (c) {
+    c.definir("calabresa", 10);
+    c.abrirGaveta();
+    var aviso = c.texto("#rsProgresso");
+    contem(aviso, "Combo 12");
+    contem(aviso, "R$ 63,00");                // 12 x 5,25
+    contem(aviso, "R$ 8,00 a mais");          // 63,00 contra 10 x 5,50 = 55,00
+  });
+
+  teste("Preços", "longe do próximo combo o aviso não aparece", function (c) {
+    c.definir("calabresa", 9);                // faltam 3 pro Combo 12
+    c.abrirGaveta();
+    ok(c.el("#rsProgresso").hidden, "com 3 faltando a sugestão vira insistência");
   });
 
   teste("Preços", "no maior combo o aviso de progresso some", function (c) {
@@ -163,7 +178,7 @@
     c.mais("calabresa"); c.mais("calabresa"); c.mais("carne");
     igual(c.qtd("calabresa"), 2);
     igual(c.qtd("carne"), 1);
-    igual(c.texto("#barraTotal"), "R$ 15,00");
+    igual(c.texto("#barraTotal"), "R$ 17,70");
   });
 
   teste("Carrinho", "o botão de menos fica travado no zero", function (c) {
@@ -179,7 +194,7 @@
   teste("Carrinho", "dá para digitar a quantidade direto", function (c) {
     c.definir("calabresa", 12);
     igual(c.qtd("calabresa"), 12);
-    igual(c.texto("#barraTotal"), "R$ 54,00");
+    igual(c.texto("#barraTotal"), "R$ 63,00");
   });
 
   teste("Carrinho", "o campo de quantidade ignora o que não é número", function (c) {
@@ -227,7 +242,7 @@
     c.doc.querySelector('#linhas [data-sabor="calabresa"] .linha-acao.remover').click();
     igual(c.qtd("calabresa"), 0);
     igual(c.doc.querySelectorAll("#linhas .linha").length, 1);
-    igual(c.texto("#barraTotal"), "R$ 15,00");
+    igual(c.texto("#barraTotal"), "R$ 17,70");
   });
 
   teste("Carrinho", "esvaziar pela lixeira volta ao estado vazio", function (c) {
@@ -455,8 +470,8 @@
     contem(msg, "• 5x Calabresa");
     contem(msg, "• 3x Carne");
     contem(msg, "Total: 8 esfihas");
-    contem(msg, "R$ 36,80");
-    contem(msg, "R$ 4,60 cada");
+    contem(msg, "R$ 44,00");
+    contem(msg, "R$ 5,50 cada");
   });
 
   teste("WhatsApp", "a observação de cada item vai junto do item", function (c) {
@@ -581,7 +596,7 @@
     return c.recarregar().then(function (c2) {
       igual(c2.qtd("calabresa"), 7);
       igual(c2.qtd("carne"), 2);
-      igual(c2.texto("#barraTotal"), "R$ 41,40");   // 9 x 4,60
+      igual(c2.texto("#barraTotal"), "R$ 49,50");   // 9 x 5,50
     });
   });
 
@@ -902,7 +917,7 @@
     campo.dispatchEvent(new c.win.Event("input", { bubbles: true }));
     // antes o campo mostrava 999 enquanto o carrinho já tinha cortado pra 200
     igual(campo.value, "200", "o campo não pode exibir número diferente do cobrado");
-    igual(c.texto("#barraTotal"), "R$ 900,00");
+    igual(c.texto("#barraTotal"), "R$ 1050,00");
   });
 
   teste("Regressões", "segurar o mais para no teto", function (c) {
