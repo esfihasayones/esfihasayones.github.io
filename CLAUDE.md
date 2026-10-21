@@ -129,12 +129,19 @@ python3 -m http.server 8791
 # http://127.0.0.1:8791/tests/index.html
 ```
 
-111 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
+117 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
 iframe limpo, um teste por vez. `window.RESULTADO` expõe o resultado para
 automação.
 
 Rode depois de mexer em preço, sabor ou ponto. Um dos testes confere se o
 valor anunciado em cada combo bate com o que o carrinho realmente cobra.
+
+`tests/varredura.js` roda mais de 8 mil casos aleatórios (carrinhos, pedidos
+com relógio, ponto e data sorteados, quantidades digitadas, larguras de
+tela, recargas) contra um oráculo que reescreve as regras deste arquivo sem
+ler a configuração do site. Mudou preço, ponto ou horário? Atualize o
+oráculo no topo dela também. A semente aparece na falha; `?semente=N` repete
+a rodada e `?grupo=Varredura` roda só ela.
 
 A suíte foi validada por mutação: alterar preço de combo, remover a lixeira,
 tirar a observação da mensagem, reintroduzir travessão, remover o `inert` da

@@ -1056,7 +1056,7 @@
     campo.dispatchEvent(new c.win.Event("input", { bubbles: true }));
     // antes o campo mostrava 999 enquanto o carrinho já tinha cortado pra 200
     igual(campo.value, "200", "o campo não pode exibir número diferente do cobrado");
-    igual(c.texto("#barraTotal"), "R$ 1040,00");
+    igual(c.texto("#barraTotal"), "R$ 1.040,00");
   });
 
   teste("Regressões", "segurar o mais para no teto", function (c) {
