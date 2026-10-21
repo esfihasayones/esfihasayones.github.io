@@ -537,7 +537,7 @@ main,header,footer{position:relative;z-index:1}
       "@type": "MenuSection",
       "name": "Esfihas",
       "hasMenuItem": [
-        { "@type": "MenuItem", "name": "Esfiha de calabresa congelada", "description": "Calabresa moída, cebola caramelizada, azeitona e pimenta. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } },
+        { "@type": "MenuItem", "name": "Esfiha de calabresa congelada", "description": "Calabresa moída, cebola e muçarela. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } },
         { "@type": "MenuItem", "name": "Esfiha de carne congelada", "description": "Carne bovina moída com cebola e tomate. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } },
         { "@type": "MenuItem", "name": "Esfiha de queijo congelada", "description": "Muçarela com requeijão cremoso e orégano. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } },
         { "@type": "MenuItem", "name": "Esfiha de marguerita congelada", "description": "Muçarela, tomate e manjericão. Assada e congelada.", "offers": { "@type": "Offer", "price": "5.90", "priceCurrency": "BRL" } }
@@ -1013,7 +1013,7 @@ main,header,footer{position:relative;z-index:1}
 
       <div class="campo">
         <label for="fObs">Alguma observação? <span style="font-weight:600;color:var(--texto-suave)">(opcional)</span></label>
-        <textarea id="fObs" placeholder="Ex.: sem azeitona na calabresa, embalar separado..."></textarea>
+        <textarea id="fObs" placeholder="Ex.: sem cebola na calabresa, embalar separado..."></textarea>
       </div>
     </div>
   </div>
@@ -1050,15 +1050,15 @@ main,header,footer{position:relative;z-index:1}
   var SABORES = [
     // `curta` é a versão que aparece no card compacto do celular.
     { id:"calabresa", nome:"Calabresa",
-      desc:"Calabresa moída na hora, com cebola, azeitona e um pouco de pimenta.",
-      curta:"Com cebola e azeitona",
+      desc:"Calabresa moída na hora, com cebola e muçarela.",
+      curta:"Com cebola e muçarela",
       icone:"#ic-calabresa" },
     { id:"carne", nome:"Carne",
       desc:"Carne bovina moída com cebola e tomate, temperada na hora de fazer.",
       curta:"Cebola, tomate e tempero",
       icone:"#ic-carne" },
     { id:"queijo", nome:"Queijo",
-      desc:"Muçarela com requeijão e orégano. Essa é a que as crianças pedem.",
+      desc:"Muçarela com requeijão e orégano.",
       curta:"Muçarela com orégano",
       icone:"#ic-queijo", veg:true },
     { id:"marguerita", nome:"Marguerita",
@@ -1085,7 +1085,7 @@ main,header,footer{position:relative;z-index:1}
 
   var chaveLinhas = null;   // assinatura da lista montada na gaveta
   var carrinho = {};
-  var obsItem = {};         // observação por sabor, ex.: {calabresa: "sem azeitona"}
+  var obsItem = {};         // observação por sabor, ex.: {calabresa: "sem cebola"}
   SABORES.forEach(function(s){ carrinho[s.id] = 0; });
   try {
     var salvo = JSON.parse(localStorage.getItem(CHAVE) || "{}") || {};
@@ -1341,7 +1341,7 @@ main,header,footer{position:relative;z-index:1}
               '<svg aria-hidden="true"><use href="#ic-lixeira"/></svg>Tirar</button>' +
           '</div>' +
           '<input class="obs-item" type="text" maxlength="140" hidden ' +
-                 'placeholder="Ex.: sem azeitona, embalar separado" ' +
+                 'placeholder="Ex.: sem cebola, embalar separado" ' +
                  'aria-label="Observação para '+s.nome+'">';
         var campo = $(".obs-item", li);
         if (obsItem[s.id]) {

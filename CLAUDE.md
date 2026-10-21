@@ -33,7 +33,8 @@ há taxa de entrega. Nunca escreva "entregamos na sua casa".
 parte da Trindade.
 
 **Sabores e receitas** (confirmadas pelo dono):
-- Calabresa: calabresa moída, cebola, azeitona, um pouco de pimenta
+- Calabresa: calabresa moída, cebola e muçarela (azeitona e pimenta saíram
+  em 21/10/2026)
 - Carne: carne bovina moída com cebola e tomate
 - Queijo: muçarela com requeijão e orégano
 - Marguerita: muçarela, tomate e manjericão (entrou em 19/10/2026, mesmo

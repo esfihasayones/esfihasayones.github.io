@@ -284,9 +284,9 @@
     c.abrirGaveta();
     var linha = c.doc.querySelector('#linhas [data-sabor="calabresa"]');
     linha.querySelector(".linha-acao.obs").click();
-    c.digitar(linha.querySelector(".obs-item"), "sem azeitona");
+    c.digitar(linha.querySelector(".obs-item"), "sem cebola");
     linha.querySelector(".linha-acao.obs").click();   // clique distraído
-    igual(linha.querySelector(".obs-item").value, "sem azeitona",
+    igual(linha.querySelector(".obs-item").value, "sem cebola",
           "um clique não pode apagar texto sem avisar");
     ok(!linha.querySelector(".obs-item").hidden, "com texto dentro, o campo continua à vista");
   });
@@ -310,7 +310,7 @@
     c.abrirGaveta();
     var linha = c.doc.querySelector('#linhas [data-sabor="calabresa"]');
     linha.querySelector(".linha-acao.obs").click();
-    c.digitar(linha.querySelector(".obs-item"), "sem azeitona");
+    c.digitar(linha.querySelector(".obs-item"), "sem cebola");
 
     var campo = linha.querySelector(".conta");
     campo.focus();
@@ -325,7 +325,7 @@
     campo.dispatchEvent(new c.win.Event("input", { bubbles: true }));
     igual(c.qtd("calabresa"), 12);
     igual(c.doc.querySelector('#linhas [data-sabor="calabresa"] .obs-item').value,
-          "sem azeitona", "a observação tinha que sobreviver");
+          "sem cebola", "a observação tinha que sobreviver");
   });
 
   teste("Carrinho", "tirar o item pela lixeira também descarta a observação dele", function (c) {
@@ -499,9 +499,9 @@
     c.abrirGaveta();
     var linha = c.doc.querySelector('#linhas [data-sabor="calabresa"]');
     linha.querySelector(".linha-acao.obs").click();
-    c.digitar(linha.querySelector(".obs-item"), "sem azeitona");
+    c.digitar(linha.querySelector(".obs-item"), "sem cebola");
     var msg = c.enviarValido();
-    contem(msg, "• 4x Calabresa (sem azeitona)");
+    contem(msg, "• 4x Calabresa (sem cebola)");
     contem(msg, "• 4x Carne\n", "a carne não tem observação");
   });
 
@@ -1034,7 +1034,7 @@
     var linha = c.doc.querySelector('#linhas [data-sabor="calabresa"]');
     linha.querySelector(".linha-acao.obs").click();
     var campo = linha.querySelector(".obs-item");
-    "sem azeitona por favor".split("").forEach(function (ch, i) {
+    "sem cebola por favor".split("").forEach(function (ch, i) {
       campo.value = campo.value + ch;
       campo.dispatchEvent(new c.win.Event("input", { bubbles: true }));
     });
