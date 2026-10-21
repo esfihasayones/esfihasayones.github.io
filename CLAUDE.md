@@ -28,8 +28,9 @@ argumento de venda virou "pronta em 6 minutos na air fryer".
 um ponto combinado do bairro e o cliente passa lá para pegar. Por isso não
 há taxa de entrega. Nunca escreva "entregamos na sua casa".
 
-**Pontos e dias:** Trindade na quinta (18h30–20h30), Itacorubi na sexta
-(18h30–20h30), Centro no sábado (14h–17h). UFSC não é ponto separado, faz
+**Pontos e dias:** Trindade na quinta (18h30–20h30), Itacorubi de segunda
+a sexta (8h–16h30, desde 21/10/2026), Centro no sábado (14h–17h). Cada ponto
+em `PONTOS` tem uma lista `dias`, porque o Itacorubi abre em vários. UFSC não é ponto separado, faz
 parte da Trindade.
 
 **Sabores e receitas** (confirmadas pelo dono):
@@ -126,7 +127,7 @@ python3 -m http.server 8791
 # http://127.0.0.1:8791/tests/index.html
 ```
 
-104 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
+106 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
 iframe limpo, um teste por vez. `window.RESULTADO` expõe o resultado para
 automação.
 

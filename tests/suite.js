@@ -414,13 +414,52 @@
   teste("Retirada", "trocar de ponto ajusta a data para o dia daquele ponto", function (c) {
     c.abrirGaveta();
     var ponto = c.el("#fPonto");
-    [[1, 5, "Itacorubi"], [2, 6, "Centro"]].forEach(function (caso) {
+    [[1, [1, 2, 3, 4, 5], "Itacorubi"], [2, [6], "Centro"]].forEach(function (caso) {
       ponto.value = String(caso[0]);
       ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
       var dia = new Date(c.el("#fData").value + "T12:00:00").getDay();
-      igual(dia, caso[1], caso[2] + " deveria cair no dia " + caso[1]);
+      ok(caso[1].indexOf(dia) !== -1, caso[2] + " não abre no dia " + dia);
       contem(c.texto("#dicaData"), caso[2]);
     });
+  });
+
+  teste("Retirada", "Itacorubi aceita de segunda a sexta e recusa o sábado", function (c) {
+    c.abrirGaveta();
+    var ponto = c.el("#fPonto"), data = c.el("#fData");
+    ponto.value = "1";
+    ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    var d = new Date(data.min + "T12:00:00");
+    d.setDate(d.getDate() + 7);                   // longe do mínimo, qualquer dia vale
+    while (d.getDay() !== 1) d.setDate(d.getDate() + 1);
+    for (var i = 0; i < 6; i++) {                 // segunda a sábado
+      data.value = c.iso(d);
+      data.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+      var dica = c.texto("#dicaData");
+      if (d.getDay() === 6) {
+        contem(dica, "não está", "sábado não é dia de Itacorubi");
+        contem(dica, "de segunda a sexta");
+      } else {
+        contem(dica, "✓", "dia " + d.getDay() + " deveria valer");
+        contem(dica, "8h às 16h30");
+      }
+      d.setDate(d.getDate() + 1);
+    }
+  });
+
+  teste("Retirada", "a mensagem diz o dia da semana da data escolhida", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    var ponto = c.el("#fPonto"), data = c.el("#fData");
+    ponto.value = "1";
+    ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    var d = new Date(data.min + "T12:00:00");
+    d.setDate(d.getDate() + 7);
+    while (d.getDay() !== 2) d.setDate(d.getDate() + 1);   // uma terça
+    data.value = c.iso(d);
+    data.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    var msg = c.enviarValido();
+    contem(msg, "Itacorubi, terça ");
+    naoContem(msg, "segunda a sexta", "a mensagem tem que dizer o dia, não a faixa");
   });
 
   teste("Retirada", "a data sugerida respeita as 24h de antecedência", function (c) {
