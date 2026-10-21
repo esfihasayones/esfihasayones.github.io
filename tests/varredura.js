@@ -38,7 +38,6 @@
     { nome: "Abraão", dias: {
         1: janela(7, 0, "de manhã"), 2: janela(7, 0, "de manhã"), 3: janela(7, 0, "de manhã"),
         4: janela(7, 0, "de manhã"), 5: janela(7, 0, "de manhã") } },
-    { nome: "Centro", dias: { 6: janela(14, 0, "das 14h às 17h") } },
     { nome: "Combinar outro ponto", dias: null }
   ];
   var DIAS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];

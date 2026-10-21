@@ -81,7 +81,6 @@ ponto do bairro e o cliente passa lá pra pegar. Por isso não há taxa de entre
 | Trindade e UFSC | Ter e qua | 18h30 – 22h |
 | Itacorubi  | Seg a sex | 8h – 16h30   |
 | Abraão     | Seg a sex | de manhã     |
-| Centro     | Sábado  | 14h – 17h      |
 
 Os pontos vivem em **dois lugares** do `index.html`, que precisam andar juntos:
 

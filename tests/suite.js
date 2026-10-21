@@ -417,7 +417,7 @@
   teste("Retirada", "trocar de ponto ajusta a data para o dia daquele ponto", function (c) {
     c.abrirGaveta();
     var ponto = c.el("#fPonto");
-    [[1, [1, 2, 3, 4, 5], "Itacorubi"], [2, [1, 2, 3, 4, 5], "Abraão"], [3, [6], "Centro"]].forEach(function (caso) {
+    [[1, [1, 2, 3, 4, 5], "Itacorubi"], [2, [1, 2, 3, 4, 5], "Abraão"]].forEach(function (caso) {
       ponto.value = String(caso[0]);
       ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
       var dia = new Date(c.el("#fData").value + "T12:00:00").getDay();
@@ -516,10 +516,10 @@
 
   teste("Retirada", "o envio é barrado num dia em que o ponto não abre", function (c) {
     c.definir("calabresa", 4);
-    retirada(c, "2026-10-21T10:00:00", 3, "2026-10-27");   // Centro numa terça
+    retirada(c, "2026-10-21T10:00:00", 1, "2026-10-24");   // Itacorubi num sábado
     c.el("#fNome").value = "Breno";
     igual(c.enviar(), null, "o pedido não podia sair");
-    contem(c.texto("#aviso"), "só no sábado");
+    contem(c.texto("#aviso"), "só de segunda a sexta");
   });
 
   teste("Retirada", "a antecedência conta horas até o começo da janela", function (c) {
@@ -571,10 +571,10 @@
   teste("Retirada", "a concordância do texto acompanha o ponto", function (c) {
     c.abrirGaveta();
     var ponto = c.el("#fPonto");
-    ponto.value = "3";                          // Centro, no sábado
+    ponto.value = "2";                          // Abraão é masculino
     ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
-    contem(c.texto("#dicaData"), "no Centro");
-    naoContem(c.texto("#dicaData"), "na Centro");
+    contem(c.texto("#dicaData"), "no Abraão");
+    naoContem(c.texto("#dicaData"), "na Abraão");
   });
 
   /* =========================================================

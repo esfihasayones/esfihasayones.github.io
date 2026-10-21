@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Esfihas Sayones | Esfiha caseira em Florianópolis</title>
-<meta name="description" content="Esfiha aberta congelada em Florianópolis: calabresa, carne, queijo e marguerita. Combos de 4, 8 e 12, pronta em 6 minutos na air fryer. Retirada na Trindade, Itacorubi, Abraão e Centro.">
+<meta name="description" content="Esfiha aberta congelada em Florianópolis: calabresa, carne, queijo e marguerita. Combos de 4, 8 e 12, pronta em 6 minutos na air fryer. Retirada na Trindade, Itacorubi e Abraão.">
 <meta name="theme-color" content="#F7F6F2">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="Esfihas Sayones | Esfiha caseira em Florianópolis">
@@ -526,7 +526,7 @@ main,header,footer{position:relative;z-index:1}
   "@context": "https://schema.org",
   "@type": "FoodEstablishment",
   "name": "Esfihas Sayones",
-  "description": "Esfiha aberta congelada, feita por encomenda em Florianópolis. Calabresa, carne, queijo e marguerita em combos de 4, 8 e 12 unidades, retirados em pontos na Trindade, Itacorubi, Abraão e Centro.",
+  "description": "Esfiha aberta congelada, feita por encomenda em Florianópolis. Calabresa, carne, queijo e marguerita em combos de 4, 8 e 12 unidades, retirados em pontos na Trindade, Itacorubi e Abraão.",
   "servesCuisine": ["Esfiha", "Árabe", "Salgados"],
   "priceRange": "R$",
   "telephone": "+5548992210812",
@@ -536,14 +536,12 @@ main,header,footer{position:relative;z-index:1}
   "areaServed": [
     { "@type": "Place", "name": "Trindade, Florianópolis" },
     { "@type": "Place", "name": "Itacorubi, Florianópolis" },
-    { "@type": "Place", "name": "Abraão, Florianópolis" },
-    { "@type": "Place", "name": "Centro, Florianópolis" }
+    { "@type": "Place", "name": "Abraão, Florianópolis" }
   ],
   "openingHoursSpecification": [
     { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "08:00", "closes": "16:30" },
     { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Thursday"], "opens": "18:30", "closes": "20:00" },
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Tuesday","Wednesday"], "opens": "18:30", "closes": "22:00" },
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "14:00", "closes": "17:00" }
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Tuesday","Wednesday"], "opens": "18:30", "closes": "22:00" }
   ],
   "hasMenu": {
     "@type": "Menu",
@@ -765,7 +763,7 @@ main,header,footer{position:relative;z-index:1}
           <svg width="18" height="18" aria-hidden="true"><use href="#ic-carrinho"/></svg>
           Montar meu pedido
         </button>
-        <a class="link-sutil" href="#entrega" id="linkRetirada">Retirada qui, sex e sáb</a>
+        <a class="link-sutil" href="#entrega" id="linkRetirada">Retirada de seg a sex</a>
       </div>
     </div>
     <svg class="hero-selo" viewBox="0 0 200 200" aria-hidden="true"><use href="#ic-selo"/></svg>
@@ -849,7 +847,6 @@ main,header,footer{position:relative;z-index:1}
         <li><b>Trindade e UFSC</b><span><i>Seg e qui · 18h30 às 20h</i><i>Ter e qua · 18h30 às 22h</i></span></li>
         <li><b>Itacorubi</b><span><i>Seg a sex · 8h às 16h30</i></span></li>
         <li><b>Abraão</b><span><i>Seg a sex · de manhã</i></span></li>
-        <li><b>Centro</b><span><i>Sábado · 14h às 17h</i></span></li>
       </ul>
       <div class="taxa">
         <span class="cifra">R$0</span>
@@ -961,7 +958,7 @@ main,header,footer{position:relative;z-index:1}
         <ul>
           <li><a href="https://wa.me/5548992210812" target="_blank" rel="noopener">WhatsApp (48) 99221-0812</a></li>
           <li><a href="https://instagram.com/esfihasayones" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:7px"><svg width="17" height="17" aria-hidden="true"><use href="#ic-insta"/></svg> @esfihasayones</a></li>
-          <li>Trindade · Itacorubi · Abraão · Centro</li>
+          <li>Trindade · Itacorubi · Abraão</li>
           <li>Florianópolis / SC</li>
         </ul>
       </div>
@@ -1056,7 +1053,7 @@ main,header,footer{position:relative;z-index:1}
 
   // Pontos de retirada. Não há entrega porta a porta: em cada dia levamos as
   // encomendas a um ponto do bairro. `dia`: 0 = domingo … 6 = sábado.
-  // `prep` é a preposição do bairro ("na Trindade", "no Centro").
+  // `prep` é a preposição do bairro ("na Trindade", "no Itacorubi").
   var PONTOS = [
     // dias: 0 = domingo ... 6 = sábado. `quando` é como a frase fala dos dias.
     // `janela` é o horário; quando muda conforme o dia, `janelas` diz o de cada um.
@@ -1065,7 +1062,6 @@ main,header,footer{position:relative;z-index:1}
     { nome:"Itacorubi", prep:"no", dias:[1,2,3,4,5], diaNome:"segunda a sexta",  quando:"de segunda a sexta",  janela:"8h às 16h30" },
     // Sem horário fechado: `inicio` é a hora que entra na conta da antecedência.
     { nome:"Abraão",    prep:"no", dias:[1,2,3,4,5], diaNome:"segunda a sexta",  quando:"de segunda a sexta",  janela:"de manhã", inicio:7 },
-    { nome:"Centro",    prep:"no", dias:[6],         diaNome:"sábado",           quando:"no sábado",           janela:"14h às 17h" },
     { nome:"Combinar outro ponto", dias:null }
   ];
 
