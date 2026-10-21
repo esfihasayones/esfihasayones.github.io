@@ -63,9 +63,9 @@ var FAIXAS  = [ ... ];            // combos: quantidade mínima e preço por uni
 | Combo     | Esfihas | Por unidade | Total     | Desconto |
 |-----------|---------|-------------|-----------|----------|
 | Avulsa    | 1 a 3   | R$ 5,90     | –         | –        |
-| Combo 4   | 4 a 7   | R$ 5,75     | R$ 23,00  | 3%       |
-| Combo 8   | 8 a 11  | R$ 5,50     | R$ 44,00  | 7%       |
-| Combo 12  | 12+     | R$ 5,25     | R$ 63,00  | 11%      |
+| Combo 4   | 4 a 7   | R$ 5,50     | R$ 22,00  | 7%       |
+| Combo 8   | 8 a 11  | R$ 5,35     | R$ 42,80  | 9%       |
+| Combo 12  | 12+     | R$ 5,20     | R$ 62,40  | 12%      |
 
 Não é caixa fechada: o cliente mistura os sabores à vontade e o preço do combo
 entra sozinho quando o **total** do pedido chega em 4, 8 ou 12 unidades.

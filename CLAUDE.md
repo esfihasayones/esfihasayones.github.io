@@ -40,8 +40,9 @@ parte da Trindade.
   preço e mesmos combos dos outros)
 
 **Preços (21/10/2026).** R$ 5,90 avulsa, com combos em 4, 8 e 12. O
-desconto cresce a cada degrau (3%, 7%, 11%) pra o combo 12 valer a pena
-sem passar do aceitável: a primeira versão chegava a 22% e o dono achou
+combo 4 tem desconto mais forte (7%) pra ser a porta de entrada, ideia de um
+coordenador de marketing; o 8 e o 12 (9%, 12%) continuam mais baratos por
+unidade pra valer subir. Nada perto do limite: a primeira versão chegava a 22% e o dono achou
 agressivo demais. Antes era R$ 5,00 com 5/8/10%; subiu porque a conta de
 custo (~R$ 2,25 por esfiha com embalagem e luz, mais ~R$ 1,50 da hora do
 dono) deixava o combo 12 quase sem lucro. O combo vale pelo total do pedido,
@@ -50,9 +51,9 @@ misturando sabores à vontade.
 | Combo    | Esfihas | Por unidade | Total    |
 |----------|---------|-------------|----------|
 | Avulsa   | 1 a 3   | R$ 5,90     | (avulsa) |
-| Combo 4  | 4 a 7   | R$ 5,75     | R$ 23,00 |
-| Combo 8  | 8 a 11  | R$ 5,50     | R$ 44,00 |
-| Combo 12 | 12+     | R$ 5,25     | R$ 63,00 |
+| Combo 4  | 4 a 7   | R$ 5,50     | R$ 22,00 |
+| Combo 8  | 8 a 11  | R$ 5,35     | R$ 42,80 |
+| Combo 12 | 12+     | R$ 5,20     | R$ 62,40 |
 
 ## Como o texto tem que soar
 
