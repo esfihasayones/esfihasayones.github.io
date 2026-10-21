@@ -312,6 +312,7 @@ main,header,footer{position:relative;z-index:1}
 .horarios b{font-weight:700;color:var(--carvao)}
 .horarios span{color:var(--texto-suave);text-align:right}
 .horarios li.off span{font-style:italic}
+.horarios i{display:block;font-style:normal;white-space:nowrap}
 
 /* ---------- sobre ---------- */
 .sobre{background:var(--carvao);color:#EDEDEA;border-radius:22px;padding:clamp(34px,5vw,66px);position:relative;overflow:hidden}
@@ -498,6 +499,8 @@ main,header,footer{position:relative;z-index:1}
 
 /* iPhone SE e afins */
 @media(max-width:360px){
+  .horarios li{flex-direction:column;gap:4px}
+  .horarios span{text-align:left}
   .card{grid-template-columns:52px 1fr auto;column-gap:10px;padding:11px}
   .card-ilu{width:52px;height:52px}
   .card h3{font-size:18px}
@@ -529,7 +532,8 @@ main,header,footer{position:relative;z-index:1}
   ],
   "openingHoursSpecification": [
     { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "08:00", "closes": "16:30" },
-    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Thursday", "opens": "18:30", "closes": "20:30" },
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Thursday"], "opens": "18:30", "closes": "20:00" },
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Tuesday","Wednesday"], "opens": "18:30", "closes": "22:00" },
     { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "14:00", "closes": "17:00" }
   ],
   "hasMenu": {
@@ -833,9 +837,9 @@ main,header,footer{position:relative;z-index:1}
     <div class="painel">
       <h3><svg aria-hidden="true"><use href="#ic-pin"/></svg> Pontos e dias</h3>
       <ul class="horarios">
-        <li><b>Trindade</b><span>Quinta · 18h30 às 20h30</span></li>
-        <li><b>Itacorubi</b><span>Segunda a sexta · 8h às 16h30</span></li>
-        <li><b>Centro</b><span>Sábado · 14h às 17h</span></li>
+        <li><b>Trindade e UFSC</b><span><i>Seg e qui · 18h30 às 20h</i><i>Ter e qua · 18h30 às 22h</i></span></li>
+        <li><b>Itacorubi</b><span><i>Seg a sex · 8h às 16h30</i></span></li>
+        <li><b>Centro</b><span><i>Sábado · 14h às 17h</i></span></li>
       </ul>
       <div class="taxa">
         <span class="cifra">R$0</span>
@@ -1043,9 +1047,12 @@ main,header,footer{position:relative;z-index:1}
   // `prep` é a preposição do bairro ("na Trindade", "no Centro").
   var PONTOS = [
     // dias: 0 = domingo ... 6 = sábado. `quando` é como a frase fala dos dias.
-    { nome:"Trindade",  prep:"na", dias:[4],         diaNome:"quinta",          quando:"na quinta",          janela:"18h30 às 20h30" },
-    { nome:"Itacorubi", prep:"no", dias:[1,2,3,4,5], diaNome:"segunda a sexta", quando:"de segunda a sexta", janela:"8h às 16h30" },
-    { nome:"Centro",    prep:"no", dias:[6],         diaNome:"sábado",          quando:"no sábado",          janela:"14h às 17h" },
+    // `janela` é o horário; quando muda conforme o dia, `janelas` diz o de
+    // cada um e `janela` fica sendo o resumo que aparece no seletor.
+    { nome:"Trindade",  prep:"na", dias:[1,2,3,4],   diaNome:"segunda a quinta", quando:"de segunda a quinta", janela:"a partir das 18h30",
+      janelas:{ 1:"18h30 às 20h", 2:"18h30 às 22h", 3:"18h30 às 22h", 4:"18h30 às 20h" } },
+    { nome:"Itacorubi", prep:"no", dias:[1,2,3,4,5], diaNome:"segunda a sexta",  quando:"de segunda a sexta",  janela:"8h às 16h30" },
+    { nome:"Centro",    prep:"no", dias:[6],         diaNome:"sábado",           quando:"no sábado",           janela:"14h às 17h" },
     { nome:"Combinar outro ponto", dias:null }
   ];
 
@@ -1243,6 +1250,7 @@ main,header,footer{position:relative;z-index:1}
   function pontoAtual(){ return PONTOS[+fPonto.value] || PONTOS[0]; }
 
   function diaDaData(valor){ return new Date(valor + "T12:00:00").getDay(); }
+  function janelaDe(pt, dia){ return (pt.janelas && pt.janelas[dia]) || pt.janela; }
 
   // Primeira data válida que caia num dos dias da semana do ponto.
   function proximaDataDe(dias){
@@ -1268,7 +1276,7 @@ main,header,footer{position:relative;z-index:1}
     el.className = bate ? "dica ok" : "dica";
     el.textContent = bate
       ? "✓ " + NOMES_DIA[dia].charAt(0).toUpperCase() + NOMES_DIA[dia].slice(1) + ", " +
-        dataBR(fData.value) + " · das " + pt.janela + " " + pt.prep + " " + pt.nome
+        dataBR(fData.value) + " · das " + janelaDe(pt, dia) + " " + pt.prep + " " + pt.nome
       : "Nesse dia a gente não está " + pt.prep + " " + pt.nome + ", só " +
         pt.quando + ". A mais próxima é " +
         dataBR(proximaDataDe(pt.dias)) + ".";
@@ -1611,7 +1619,7 @@ main,header,footer{position:relative;z-index:1}
 
     var retiradaTxt = pt.dias === null
       ? "Combinar ponto e horário"
-      : pt.nome + ", " + NOMES_DIA[diaDaData(fData.value)] + " " + dataBR(fData.value) + ", das " + pt.janela;
+      : pt.nome + ", " + NOMES_DIA[diaDaData(fData.value)] + " " + dataBR(fData.value) + ", das " + janelaDe(pt, diaDaData(fData.value));
 
     var msg =
       "Olá, Esfihas Sayones! Quero fazer uma encomenda de esfiha congelada.\n\n" +

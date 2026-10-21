@@ -408,7 +408,7 @@
     igual(ponto.value, "0", "o primeiro ponto deveria vir selecionado");
     contem(ponto.options[0].textContent, "Trindade");
     var dia = new Date(c.el("#fData").value + "T12:00:00").getDay();
-    igual(dia, 4, "Trindade é na quinta");
+    ok([1, 2, 3, 4].indexOf(dia) !== -1, "Trindade é de segunda a quinta, veio o dia " + dia);
   });
 
   teste("Retirada", "trocar de ponto ajusta a data para o dia daquele ponto", function (c) {
@@ -446,6 +446,23 @@
     }
   });
 
+  teste("Retirada", "na Trindade o horário muda conforme o dia", function (c) {
+    c.abrirGaveta();
+    var data = c.el("#fData");
+    var d = new Date(data.min + "T12:00:00");
+    d.setDate(d.getDate() + 7);
+    while (d.getDay() !== 1) d.setDate(d.getDate() + 1);
+    var esperado = { 1: "18h30 às 20h", 2: "18h30 às 22h", 3: "18h30 às 22h", 4: "18h30 às 20h" };
+    for (var i = 0; i < 4; i++) {                 // segunda a quinta
+      data.value = c.iso(d);
+      data.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+      var dica = c.texto("#dicaData");
+      contem(dica, "✓", "dia " + d.getDay() + " deveria valer");
+      contem(dica, "das " + esperado[d.getDay()] + " ");
+      d.setDate(d.getDate() + 1);
+    }
+  });
+
   teste("Retirada", "a mensagem diz o dia da semana da data escolhida", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
@@ -473,7 +490,7 @@
     c.abrirGaveta();
     var data = c.el("#fData");
     var d = new Date(data.value + "T12:00:00");
-    d.setDate(d.getDate() + 1);                 // sexta, mas o ponto é o da quinta
+    while (d.getDay() !== 5) d.setDate(d.getDate() + 1);   // sexta, fora dos dias da Trindade
     data.value = c.iso(d);
     data.dispatchEvent(new c.win.Event("change", { bubbles: true }));
     var dica = c.texto("#dicaData");
@@ -554,11 +571,18 @@
 
   teste("WhatsApp", "a mensagem traz o ponto, o dia e a janela de retirada", function (c) {
     c.definir("calabresa", 4);
+    c.abrirGaveta();
+    var data = c.el("#fData");
+    var d = new Date(data.min + "T12:00:00");
+    d.setDate(d.getDate() + 7);
+    while (d.getDay() !== 2) d.setDate(d.getDate() + 1);   // uma terça, que vai até as 22h
+    data.value = c.iso(d);
+    data.dispatchEvent(new c.win.Event("change", { bubbles: true }));
     var msg = c.pedidoCompleto();
     contem(msg, "*Retirada:*");
     contem(msg, "Trindade");
-    contem(msg, "quinta");
-    contem(msg, "das 18h30 às 20h30");
+    contem(msg, "terça");
+    contem(msg, "das 18h30 às 22h");
   });
 
   teste("WhatsApp", "a mensagem não usa travessão", function (c) {
