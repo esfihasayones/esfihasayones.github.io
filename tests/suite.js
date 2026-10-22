@@ -749,6 +749,95 @@
   });
 
   /* =========================================================
+     CUPOM
+     ========================================================= */
+  teste("Cupom", "o campo de cupom escreve tudo em maiúscula", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "primeiraCompra");
+    igual(c.el("#fCupom").value, "PRIMEIRACOMPRA");
+  });
+
+  teste("Cupom", "PRIMEIRACOMPRA tira 10% e soma com o combo", function (c) {
+    c.definir("queijo", 12);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "primeiracompra");
+    igual(c.texto("#rsTotal"), "R$ 56,16");     // 62,40 - 10%
+    igual(c.texto("#barraTotal"), "R$ 56,16");
+    contem(c.texto("#rsCupom"), "R$ 6,24");
+    contem(c.texto("#dicaCupom"), "10%");
+  });
+
+  teste("Cupom", "espaço em volta do cupom não atrapalha", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "  primeiracompra ");
+    igual(c.texto("#rsTotal"), "R$ 19,80");     // 22,00 - 10%
+  });
+
+  teste("Cupom", "sem cupom a linha de desconto não aparece", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    igual(c.el("#rsLinhaCupom").getBoundingClientRect().height, 0);
+    igual(c.texto("#rsTotal"), "R$ 22,00");
+  });
+
+  teste("Cupom", "cupom que não existe avisa, não desconta e barra o envio", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "BLACKFRIDAY");
+    igual(c.texto("#rsTotal"), "R$ 22,00");
+    contem(c.texto("#dicaCupom"), "não existe");
+    igual(c.el("#rsLinhaCupom").getBoundingClientRect().height, 0);
+    c.el("#fNome").value = "Breno";
+    igual(c.enviar(), null, "não deveria mandar pedido com cupom errado");
+    contem(c.texto("#aviso"), "cupom");
+  });
+
+  teste("Cupom", "apagar o cupom errado libera o envio", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "ERRADO");
+    c.digitar(c.el("#fCupom"), "");
+    ok(c.el("#dicaCupom").getBoundingClientRect().height === 0, "a dica deveria sumir");
+    c.enviarValido();
+  });
+
+  teste("Cupom", "a mensagem leva o cupom e o total com desconto", function (c) {
+    c.definir("calabresa", 12);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "primeiracompra");
+    var msg = c.enviarValido();
+    contem(msg, "R$ 62,40 (R$ 5,20 cada)");
+    contem(msg, "*Cupom:* PRIMEIRACOMPRA, 10% de desconto");
+    contem(msg, "*Total com cupom:* R$ 56,16");
+  });
+
+  teste("Cupom", "sem cupom a mensagem não fala em cupom", function (c) {
+    c.definir("calabresa", 4);
+    naoContem(c.pedidoCompleto(), "upom");
+  });
+
+  teste("Cupom", "o aviso do próximo combo já conta o cupom", function (c) {
+    c.definir("calabresa", 6);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "PRIMEIRACOMPRA");
+    // 8 x 5,35 = 42,80, menos 10% = 38,52; hoje 6 x 5,50 = 33,00, menos 10% = 29,70
+    contem(c.texto("#rsProgresso"), "R$ 38,52");
+    contem(c.texto("#rsProgresso"), "R$ 8,82");
+  });
+
+  teste("Cupom", "o cupom sobrevive ao recarregar", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "primeiracompra");
+    return c.recarregar().then(function (c2) {
+      igual(c2.el("#fCupom").value, "PRIMEIRACOMPRA");
+      igual(c2.texto("#barraTotal"), "R$ 19,80");
+    });
+  });
+
+  /* =========================================================
      GAVETA, FOCO E TECLADO
      ========================================================= */
   teste("Gaveta", "fechada, fica fora do caminho do teclado", function (c) {

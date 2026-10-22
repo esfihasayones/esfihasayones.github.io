@@ -56,6 +56,7 @@ var ANTECEDENCIA_H = 24;          // antecedência mínima do pedido, em horas
 
 var SABORES = [ ... ];            // nome, descrição e cores da ilustração
 var FAIXAS  = [ ... ];            // combos: quantidade mínima e preço por unidade
+var CUPONS  = { PRIMEIRACOMPRA: 0.10 };  // código do cupom e desconto (0.10 = 10%)
 ```
 
 ### Combos (o desconto entra sozinho)
@@ -69,6 +70,13 @@ var FAIXAS  = [ ... ];            // combos: quantidade mínima e preço por uni
 
 Não é caixa fechada: o cliente mistura os sabores à vontade e o preço do combo
 entra sozinho quando o **total** do pedido chega em 4, 8 ou 12 unidades.
+
+### Cupons
+
+O cliente digita o cupom na gaveta do pedido (vira maiúscula sozinho). O
+desconto entra sobre o total, já com o combo, e o cupom vai escrito na
+mensagem do WhatsApp. Pra criar ou tirar um cupom, mexa em `CUPONS`. O site
+não sabe se é a primeira compra de alguém: isso se confere na conversa.
 
 ### Pontos de retirada
 
@@ -132,7 +140,7 @@ python3 -m http.server 8791
 # depois: http://127.0.0.1:8791/tests/index.html
 ```
 
-São 127 testes cobrindo preço por combo, carrinho, formulário de retirada,
+São 137 testes cobrindo preço por combo, carrinho, formulário de retirada,
 mensagem do WhatsApp, persistência, acessibilidade e layout no celular.
 Os casos ficam em `tests/suite.js`, em português e sem dependência nenhuma.
 

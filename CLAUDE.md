@@ -112,6 +112,14 @@ misturando sabores à vontade.
 | Combo 8  | 8 a 11  | R$ 5,35     | R$ 42,80 |
 | Combo 12 | 12+     | R$ 5,20     | R$ 62,40 |
 
+**Cupom (22/10/2026).** `CUPONS` no bloco de configuração, código em
+maiúscula e desconto sobre o total já com o combo. O primeiro é
+`PRIMEIRACOMPRA`, 10%, pra trazer cliente e sair depois. O dono pensou em
+15% acima de R$ 50 e desistiu: somado ao combo 12 dava uns 25% abaixo do
+avulso. O site não sabe quem já comprou; o cupom chega escrito na mensagem e
+ele confere no WhatsApp. Cupom digitado errado barra o envio, pra ninguém
+mandar o pedido achando que tem desconto.
+
 ## Como o texto tem que soar
 
 O dono reconhece e não gosta de texto com cara de IA. Isso não é preferência
@@ -182,7 +190,7 @@ python3 -m http.server 8791
 # http://127.0.0.1:8791/tests/index.html
 ```
 
-127 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
+137 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
 iframe limpo, um teste por vez. `window.RESULTADO` expõe o resultado para
 automação.
 
