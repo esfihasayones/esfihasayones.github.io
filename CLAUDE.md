@@ -39,10 +39,22 @@ faça commit e push logo, sem deixar nada solto.
   cativa", nas palavras dele.
 - Abraão: segunda a sexta, das 9h ao meio-dia.
 
-### Ainda em aberto
+- Air fryer: 6 minutos em todo o site (era "6 a 8" na seção de esquentar).
 
-- Air fryer: "6 minutos" no topo e no og:description contra "6 a 8 minutos"
-  na seção de esquentar. Perguntar qual vale.
+### Pendente, por decisão dele
+
+- Cadastrar o Google Meu Negócio.
+- Gerar o arquivo final da camiseta pra gráfica (ver a memória do projeto).
+
+### Próxima ideia: guardar os pedidos
+
+O WhatsApp Business já está funcionando, e o pedido chega lá como mensagem.
+O Breno quer um jeito de registrar os pedidos (o que, de quem, pra quando, se
+já foi pago e entregue), talvez um site simples à parte, de preferência em
+HTML puro como este. Ainda não foi discutido nem decidido: comece
+conversando sobre o que ele precisa ver no dia a dia antes de propor
+solução. Lembre que este site não tem servidor; o que for gravado só no
+navegador fica preso num aparelho.
 
 ### Falta testar com o celular dele
 
