@@ -1,4 +1,5 @@
 import { SABORES } from "../../public/regras.js";
+import { cupomDe } from "./cupons.js";
 import { validarItens, precificar, dataIsoValida, texto } from "./pedido.js";
 
 export const STATUS = ["aguardando", "confirmado", "cancelado", "fora_da_regra"];
@@ -67,6 +68,7 @@ export function validarCampos(c) {
   if ("cupom" in c) {
     if (c.cupom !== null && !texto(c.cupom, 30)) return { erro: "cupom inválido" };
     f.cupom = c.cupom && c.cupom.trim() ? c.cupom : null;
+    if (f.cupom && !cupomDe(f.cupom)) return { erro: "cupom inexistente" };
   }
   if ("total_centavos" in c) {
     if (!Number.isInteger(c.total_centavos) || c.total_centavos < 0 || c.total_centavos > 10000000) return { erro: "total inválido" };
@@ -74,6 +76,7 @@ export function validarCampos(c) {
   }
   if ("valor_manual" in c) {
     if (typeof c.valor_manual !== "boolean") return { erro: "valor_manual inválido" };
+    if (c.valor_manual && !("total_centavos" in c)) return { erro: "valor_manual exige total_centavos" };
     f.valor_manual = c.valor_manual;
   }
   return { campos: f };

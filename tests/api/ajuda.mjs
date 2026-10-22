@@ -4,14 +4,8 @@ export async function pedir(caminho, opcoes) {
   return fetch(BASE + caminho, opcoes);
 }
 
-// Acrescenta o cabeçalho que o Cloudflare Access injeta depois do login do dono.
+// O painel local roda com DEV_SEM_LOGIN=1 (.dev.vars), que libera /api/painel sem
+// JWT do Access. A verificação do JWT é coberta por painel-acesso.test.mjs.
 export function comoDono(opcoes) {
-  const o = opcoes || {};
-  return {
-    ...o,
-    headers: {
-      ...(o.headers || {}),
-      "Cf-Access-Authenticated-User-Email": "brenojulianom@gmail.com",
-    },
-  };
+  return opcoes || {};
 }

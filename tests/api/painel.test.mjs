@@ -26,20 +26,29 @@ const sabado = () => {
   for (let i = 3; i < 15; i++) { const d = isoBrasilia(Date.now() + i * 86400000); if (diaDaData(d) === 6) return d; }
 };
 
-test("sem o cabeçalho do Access dá 403", async () => {
-  for (const [caminho, m] of [["/api/painel/pedidos?dia=2030-01-01", "GET"], ["/api/painel/agenda", "GET"],
-    ["/api/painel/pedidos", "POST"], ["/api/painel/pedidos/1", "PATCH"], ["/api/painel/agenda", "PUT"]]) {
-    const r = await pedir(caminho, { method: m });
-    assert.equal(r.status, 403, caminho);
-    assert.deepEqual(await r.json(), { erro: "proibido" });
-    assert.equal(r.headers.get("cache-control"), "no-store");
-    assert.equal(r.headers.get("x-robots-tag"), "noindex");
-  }
-  const outro = await pedir("/api/painel/agenda", { headers: { "Cf-Access-Authenticated-User-Email": "intruso@example.com" } });
-  assert.equal(outro.status, 403);
+test("painel responde com no-store e noindex", async () => {
   const ok = await pedir("/api/painel/agenda", comoDono());
   assert.equal(ok.status, 200);
   assert.equal(ok.headers.get("cache-control"), "no-store");
+  assert.equal(ok.headers.get("x-robots-tag"), "noindex");
+});
+
+test("valor_manual sem total dá 400 e cupom inexistente dá 400", async () => {
+  zerar();
+  const base = { nome: "M", itens: [{ sabor: "carne", qtd: 2 }], ponto: "Rua" };
+  for (const extra of [{ valor_manual: true }, { cupom: "NAOEXISTE" }]) {
+    const r = await pedir("/api/painel/pedidos", json({ ...base, ...extra }));
+    assert.equal(r.status, 400, JSON.stringify(extra));
+    assert.ok((await r.json()).erro);
+  }
+  const ok = await pedir("/api/painel/pedidos", json({ ...base, valor_manual: true, total_centavos: 900, cupom: "primeiracompra" }));
+  assert.equal(ok.status, 201);
+  const id = (await ok.json()).id;
+  assert.equal((await patch(id, { valor_manual: true })).status, 400);
+  const c = await patch(id, { cupom: "NAOEXISTE" });
+  assert.equal(c.status, 400);
+  assert.equal((await c.json()).erro, "cupom inexistente");
+  assert.equal((await patch(id, { cupom: null })).status, 200);
 });
 
 test("lista do dia soma por sabor só os confirmados", async () => {
