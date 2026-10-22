@@ -46,15 +46,48 @@ faça commit e push logo, sem deixar nada solto.
 - Cadastrar o Google Meu Negócio.
 - Gerar o arquivo final da camiseta pra gráfica (ver a memória do projeto).
 
-### Próxima ideia: guardar os pedidos
+### Em andamento: guardar os pedidos numa planilha (22/10/2026)
 
-O WhatsApp Business já está funcionando, e o pedido chega lá como mensagem.
-O Breno quer um jeito de registrar os pedidos (o que, de quem, pra quando, se
-já foi pago e entregue), talvez um site simples à parte, de preferência em
-HTML puro como este. Ainda não foi discutido nem decidido: comece
-conversando sobre o que ele precisa ver no dia a dia antes de propor
-solução. Lembre que este site não tem servidor; o que for gravado só no
-navegador fica preso num aparelho.
+Decidido: cada pedido do site vai pra uma planilha Google da conta da
+esfiharia, via Apps Script publicado como app da Web ("executar como eu",
+"qualquer pessoa"). O endereço `/exec` só acrescenta linha: não lê, não
+edita, não apaga, então pode ficar no código público. O site manda o
+pedido (`fetch` com `no-cors` e corpo texto, pra não ter preflight) e
+abre o WhatsApp do mesmo jeito; se a gravação falhar, o pedido segue pelo
+WhatsApp. O Nº do pedido é gerado pelo script, em sequência, e só existe
+na planilha: o cliente não vê.
+
+Cabeçalho da planilha (o script preenche pelo nome da coluna):
+`Nº, Data do pedido, Cliente, Calabresa, Carne, Queijo, Marguerita, Total
+esfihas, Valor, Cupom, Ponto, Dia da retirada, Pago, Entregue, Obs`.
+O código do script foi passado ao dono no chat de 22/10; ele precisa colar,
+implantar e mandar o endereço `/exec`. **Falta:** receber o endereço,
+ligar no envio do site, testar e publicar. Pedidos combinados direto no
+WhatsApp ele lança à mão. As perguntas sobre o que ele quer ver no dia
+(total por sabor do dia, quem marca pago/entregue) ficaram sem resposta.
+
+### Pagamento (22/10/2026)
+
+Pix na chave dele e cartão na retirada pelo Tap do Mercado Pago (celular
+como maquininha, 0,89% débito e 3,09% crédito na época). Sem maquininha e
+sem link de pagamento: o link custava ~5% e a garantia de pagar antes dá
+pra ter com Pix. O site ainda não fala de pagamento; se for falar, "Pix ou
+cartão na retirada".
+
+### Repositório público e domínio (22/10/2026)
+
+Fica público: o dono decidiu que não precisa esconder. Ofereci tirar do
+README/CLAUDE.md o nome da conta do trabalho e a conta de custo; ele não
+respondeu, então ainda está lá. `esfihasayones.com.br` estava livre no
+registro.br em 22/10; não foi registrado. O GitHub Pro dele (pacote de
+estudante) ficou na conta `brenisio` e não muda nada aqui.
+
+### Figurinhas de WhatsApp
+
+Ficam fora do repositório, em `~/Documents/brenisio/esfihas-figurinhas/`
+(`divertidas/` com a esfiha personagem, `simples/` com cartão e selo,
+`gerador/` com os scripts e um `LEIA.txt`). Ele pediu o emblema grande;
+está em 180px num quadro de 512.
 
 ### Falta testar com o celular dele
 
