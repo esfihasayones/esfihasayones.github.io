@@ -1238,8 +1238,10 @@
 
   teste("Regressões", "a gravação não acontece a cada tecla", function (c) {
     var escritas = 0;
-    var original = c.win.localStorage.setItem.bind(c.win.localStorage);
-    c.win.localStorage.setItem = function(k, v){ escritas++; return original(k, v); };
+    // no Firefox e no Safari, atribuir localStorage.setItem grava uma chave
+    // "setItem" em vez de trocar o método: o espião vai no protótipo
+    var proto = c.win.Storage.prototype, original = proto.setItem;
+    proto.setItem = function(k, v){ escritas++; return original.call(this, k, v); };
     c.definir("calabresa", 4);
     c.abrirGaveta();
     var linha = c.doc.querySelector('#linhas [data-sabor="calabresa"]');
@@ -1251,7 +1253,7 @@
     });
     var durante = escritas;
     return c.dormir(400).then(function () {
-      c.win.localStorage.setItem = original;
+      proto.setItem = original;
       ok(durante <= 3, "22 teclas geraram " + durante + " gravações no disco");
       ok(escritas > durante, "mas precisa gravar depois que a digitação para");
     });

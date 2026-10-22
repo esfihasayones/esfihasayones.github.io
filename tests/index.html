@@ -37,7 +37,10 @@ main{padding:18px 22px 60px;max-width:1000px}
 .t .ms{color:var(--suave);font-size:11.5px;font-variant-numeric:tabular-nums}
 .t pre{margin:7px 0 0;padding:11px 13px;background:#241512;border-left:3px solid var(--vermelho);
   border-radius:0 7px 7px 0;color:#FFC9BD;font-size:12.5px;white-space:pre-wrap;overflow-x:auto}
-#palco{position:fixed;left:-9999px;top:0;width:1200px;height:900px;border:0}
+/* Na tela mas invisível: fora dela (left:-9999px) o Safari e o Firefox quase
+   param o requestAnimationFrame do iframe e a suíte travava esperando quadro. */
+#palco{position:fixed;left:0;top:0;width:1200px;height:900px;border:0;
+  opacity:.01;pointer-events:none;z-index:-1}
 .barra{height:3px;background:var(--borda);border-radius:3px;overflow:hidden;margin-top:12px;width:100%}
 .barra i{display:block;height:100%;background:var(--dourado);width:0;transition:width .2s}
 </style>

@@ -193,6 +193,16 @@ x diferente e o rótulo longo quebra no meio ("Micro-/ondas:"). O conteúdo do
 Se alguém estiver digitando numa linha, ela não pode sair: há uma exceção
 que segura na lista o sabor cuja linha está em uso.
 
+**O iframe dos testes fica na tela, quase transparente.** Fora da tela
+(`left:-9999px`) o Safari e o Firefox quase param o `requestAnimationFrame`
+dele e a suíte travava; com `opacity:0` o Firefox também desacelerava a
+rolagem suave. Hoje passa nos três motores (Chromium, Firefox e WebKit).
+Espião de `localStorage` vai no `Storage.prototype`: atribuir
+`localStorage.setItem` no Firefox e no Safari grava uma chave, não troca o
+método.
+
+**Campos com 16px.** Abaixo disso o Safari do iPhone dá zoom ao focar.
+
 **No harness de testes, o `pagehide` vazava estado.** A página grava o
 carrinho ao sair, então limpar o `localStorage` antes de navegar não bastava:
 a gravação voltava depois da limpeza. A navegação passa pelo `about:blank`
