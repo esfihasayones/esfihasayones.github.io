@@ -555,6 +555,59 @@
     contem(retirada(c, "2026-10-21T10:00:00", 2, "2026-10-24"), "de segunda a sexta");
   });
 
+  teste("Retirada", "trocar de ponto mantém a data se ela serve no ponto novo", function (c) {
+    c.definir("calabresa", 4);
+    retirada(c, "2026-10-21T10:00:00", 0, "2026-10-29");   // Trindade, quinta
+    var p = c.el("#fPonto");
+    p.value = "1";                                          // Itacorubi também abre na quinta
+    p.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    igual(c.el("#fData").value, "2026-10-29", "a data escolhida não podia mudar");
+  });
+
+  teste("Retirada", "trocar pra um ponto fechado naquele dia move a data", function (c) {
+    c.definir("calabresa", 4);
+    retirada(c, "2026-10-21T10:00:00", 1, "2026-10-30");   // Itacorubi, sexta
+    var p = c.el("#fPonto");
+    p.value = "0";                                          // Trindade não abre na sexta
+    p.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    ok([1, 2, 3, 4].indexOf(new Date(c.el("#fData").value + "T12:00:00").getDay()) !== -1,
+       "a data tinha que ir pra um dia da Trindade");
+  });
+
+  teste("Retirada", "no combinar outro ponto o campo de data some", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    var p = c.el("#fPonto");
+    p.value = String(p.options.length - 1);
+    p.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    igual(c.el("#campoData").getBoundingClientRect().height, 0, "o campo de data continua na tela");
+    p.value = "0";
+    p.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    ok(c.el("#campoData").getBoundingClientRect().height > 0, "o campo de data tinha que voltar");
+  });
+
+  teste("Retirada", "o aviso vermelho some quando o cliente corrige", function (c) {
+    c.definir("calabresa", 4);
+    retirada(c, "2026-10-21T10:00:00", 1, "2026-10-24");   // sábado no Itacorubi
+    c.el("#fNome").value = "";
+    igual(c.enviar(), null);
+    ok(c.el("#aviso").getBoundingClientRect().height > 0, "precondição: o aviso tinha que aparecer");
+    contem(c.texto("#aviso"), "seu nome");
+    var d = c.el("#fData");
+    d.value = "2026-10-27";
+    d.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    igual(c.el("#aviso").getBoundingClientRect().height, 0, "o aviso velho continuou na tela");
+  });
+
+  teste("Retirada", "o aviso junta o que falta com e", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.el("#fData").value = "";
+    c.el("#fNome").value = "";
+    igual(c.enviar(), null);
+    contem(c.texto("#aviso"), "seu nome e o dia da retirada");
+  });
+
   teste("Retirada", "combinar outro ponto não exige data", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
@@ -575,6 +628,44 @@
     ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
     contem(c.texto("#dicaData"), "no Abraão");
     naoContem(c.texto("#dicaData"), "na Abraão");
+  });
+
+  teste("Gaveta", "com a gaveta aberta o resto da página não recebe foco", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    ok(c.doc.querySelector("header").closest("[inert]"), "o cabeçalho continua focável atrás do véu");
+    ok(!c.el("#gaveta").closest("[inert]"), "a gaveta não pode ficar inerte");
+    c.el("#btnFechar").click();
+    ok(!c.doc.querySelector("header").closest("[inert]"), "o cabeçalho tinha que voltar ao normal");
+  });
+
+  teste("Gaveta", "a barra escondida não recebe foco", function (c) {
+    ok(c.el("#barra").inert, "carrinho vazio: a barra está fora da tela e não pode receber Tab");
+    c.definir("calabresa", 1);
+    ok(!c.el("#barra").inert, "com pedido a barra tem que ser usável");
+  });
+
+  teste("Gaveta", "fechar e reabrir rápido mantém o véu", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.el("#btnFechar").click();
+    c.abrirGaveta();
+    return c.dormir(400).then(function () {
+      ok(!c.el("#veu").hidden, "a gaveta ficou aberta sem o véu");
+    });
+  });
+
+  teste("WhatsApp", "clique duplo em enviar abre uma conversa só", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.el("#fNome").value = "Breno";
+    var abertas = 0, original = c.win.open;
+    c.win.open = function () { abertas++; return null; };
+    c.el("#btnEnviar").click();
+    c.el("#btnEnviar").click();
+    c.el("#btnEnviar").click();
+    c.win.open = original;
+    igual(abertas, 1);
   });
 
   /* =========================================================
@@ -621,9 +712,9 @@
   teste("WhatsApp", "a observação geral vai na mensagem", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
-    c.el("#fObs").value = "entregar no portão";
+    c.el("#fObs").value = "embalar separado";
     var msg = c.enviarValido();
-    contem(msg, "entregar no portão");
+    contem(msg, "embalar separado");
   });
 
   teste("WhatsApp", "a mensagem traz o ponto, o dia e a janela de retirada", function (c) {

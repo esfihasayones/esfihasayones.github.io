@@ -229,6 +229,7 @@
       var q = soma(qtds), f = faixaDe(q);
 
       var pi = r.int(0, PONTOS.length - 1);
+      var anterior = fData.value;
       fPonto.value = String(pi); ev(fPonto, "change");
       var sugerida = fData.value;
       var dataTxt;
@@ -245,9 +246,10 @@
                  ", data " + (dataTxt || "(vazia)") + ", " + q + " esfihas, nome " + JSON.stringify(nome);
       F.caso();
 
-      // a data sugerida ao trocar de ponto tem que ser a primeira que serve
+      // ao trocar de ponto a data fica se ainda serve; senão vira a primeira que serve
       if (PONTOS[pi].dias) {
-        var esperada = primeiraData(pi, agora, q);
+        var esperada = anterior && situacao(pi, anterior, agora, q) === "ok"
+          ? anterior : primeiraData(pi, agora, q);
         F.checa(sugerida === esperada, "data sugerida",
                 caso + ": esperado " + esperada + ", veio " + sugerida);
       }

@@ -15,8 +15,8 @@ conta do trabalho e não enxerga esta; o remoto usa o alias
 `github-esfiharia` do `~/.ssh/config`, com chave própria.
 
 Falta antes de divulgar: os três depoimentos são inventados e não podem ficar
-no ar como reais, o Instagram `@esfihasayones` do rodapé não existe e o
-Google Meu Negócio não foi cadastrado. Os detalhes estão no `README.md`.
+no ar como reais, e o Google Meu Negócio não foi cadastrado. O Instagram
+`@esfihasayones` existe desde 19/10/2026. Os detalhes estão no `README.md`.
 
 ## O negócio (decisões tomadas com o dono, não invente outras)
 
@@ -83,7 +83,7 @@ pedido mais feito. Quando faltar informação, pergunte.
 ## Arquitetura
 
 Tudo em `index.html`: markup, CSS e JS num arquivo. É de propósito, para
-publicar sem passo de build. `logo.svg`, `favicon.svg` e `og.png` são
+publicar sem passo de build. `logo.svg`, `favicon.svg` e `og-v2.png` são
 gerados; `tests/` tem a suíte.
 
 **O bloco de configuração** fica no começo do `<script>`, marcado com
@@ -129,7 +129,7 @@ python3 -m http.server 8791
 # http://127.0.0.1:8791/tests/index.html
 ```
 
-117 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
+126 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
 iframe limpo, um teste por vez. `window.RESULTADO` expõe o resultado para
 automação.
 
@@ -161,6 +161,14 @@ ganha e a coluna passa da viewport. Use sempre `minmax(min(Npx, 100%), 1fr)`.
 por cima do atributo, e o aviso de combo aparecia com 12 esfihas. Há
 `[hidden]{display:none!important}` no começo do CSS. Teste de "sumiu" tem que
 medir a altura na tela, não olhar o atributo.
+
+**Datas valem no horário de Brasília.** `iso()` formata com
+`Intl.DateTimeFormat` no fuso `America/Sao_Paulo` e o começo da janela leva
+`-03:00` fixo; com o celular em outro fuso a antecedência saía errada.
+
+**A gaveta deixa o resto da página `inert`** enquanto está aberta (sem isso o
+Tab escapava pra trás do véu), e a barra fixa fica `inert` quando está
+escondida embaixo da tela.
 
 **Antecedência é em horas até o começo da janela**, não em dias do
 calendário: 24h, ou 3 dias acima de 40 esfihas. O envio é barrado se a data

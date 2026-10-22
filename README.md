@@ -91,9 +91,11 @@ e o `openingHoursSpecification` do JSON-LD, se as janelas mudarem.
 
 ```js
 var PONTOS = [
-  { nome:"Trindade", dia:4, diaNome:"quinta", janela:"18h30 às 20h30" },
-  // dia: 0 = domingo … 6 = sábado
-  { nome:"Combinar outro ponto", dia:null }
+  // dias: 0 = domingo … 6 = sábado; janelas, quando o horário muda conforme o dia
+  { nome:"Trindade", prep:"na", dias:[1,2,3,4], diaNome:"segunda a quinta",
+    quando:"de segunda a quinta", janela:"18h30 às 20h",
+    janelas:{ 1:"18h30 às 20h", 2:"18h30 às 22h", 3:"18h30 às 22h", 4:"18h30 às 20h" } },
+  { nome:"Combinar outro ponto", dias:null }
 ];
 ```
 
@@ -130,7 +132,7 @@ python3 -m http.server 8791
 # depois: http://127.0.0.1:8791/tests/index.html
 ```
 
-São 117 testes cobrindo preço por combo, carrinho, formulário de retirada,
+São 126 testes cobrindo preço por combo, carrinho, formulário de retirada,
 mensagem do WhatsApp, persistência, acessibilidade e layout no celular.
 Os casos ficam em `tests/suite.js`, em português e sem dependência nenhuma.
 
