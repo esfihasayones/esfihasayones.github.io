@@ -4,7 +4,7 @@ Site de encomendas de uma esfiharia caseira de verdade, do Breno, em
 Florianópolis. Negócio novo. HTML/CSS/JS puro num arquivo só, sem build e sem
 backend, servido pelo GitHub Pages.
 
-## Estado (16/09/2026)
+## Estado (21/10/2026)
 
 No ar em <https://esfihasayones.github.io/>, repositório
 `esfihasayones/esfihasayones.github.io`. O Pages republica sozinho a cada
@@ -17,6 +17,44 @@ conta do trabalho e não enxerga esta; o remoto usa o alias
 Falta antes de divulgar: os três depoimentos são inventados e não podem ficar
 no ar como reais, e o Google Meu Negócio não foi cadastrado. O Instagram
 `@esfihasayones` existe desde 19/10/2026. Os detalhes estão no `README.md`.
+
+**Mais de uma sessão do Claude mexe nesta pasta ao mesmo tempo.** Em
+21/10/2026 uma sessão rodou `git stash` no meio do trabalho da outra. Antes de
+editar, rode `git status` e `git stash list`; depois de cada mudança testada,
+faça commit e push logo, sem deixar nada solto.
+
+### Perguntas em aberto pro dono (levantadas em 21/10/2026)
+
+Não resolva sem perguntar; são fato do negócio.
+
+1. Depoimentos: os três são inventados e um cita o Centro, que deixou de ser
+   ponto. Tirar a seção até haver depoimentos de verdade?
+2. Feriados: o site aceita 02/11, 20/11 e 25/12. Quais dias ele não trabalha?
+   (Não existe lista de datas fechadas no código.)
+3. Forno: o site diz "assamos, embalamos e congelamos no mesmo dia" e também
+   "só começamos a assar depois do seu ok". Qual vale?
+4. Frases nunca confirmadas: "receita de família", "moída na hora",
+   "temperada na hora de fazer", "Quantidade limitada por dia" (o código aceita
+   até 800), "Leva menos de um minuto", "Fica igual à que sai do forno".
+5. Air fryer: "6 minutos" no topo e no og:description contra "6 a 8 minutos"
+   na seção de esquentar.
+6. Horário do Abraão: só "de manhã"; o código usa `inicio:7` pra antecedência
+   e o JSON-LD diz 08:00.
+
+### Falta testar com o celular dele
+
+- Abrir o site num iPhone de verdade (o WebKit do Playwright é o de Linux e não
+  reproduz zoom ao focar, seletor nativo de data nem área segura).
+- Mandar um pedido real com emoji digitado no nome e na observação e ver se
+  chega inteiro no WhatsApp (o 🥟 fixo da mensagem chegava como �).
+
+### Como rodar a suíte em outros motores
+
+Playwright 1.63 já baixado em `~/.npm/_npx/e41f203b7505f1fb/node_modules/playwright`,
+com chromium e firefox no cache. O WebKit precisou de bibliotecas extraídas
+sem sudo e de um lançador próprio, que ficaram na pasta temporária da sessão
+de 21/10 e podem ter sumido; se precisar de novo, `apt-get download` dos
+pacotes que o instalador pedir e `LD_LIBRARY_PATH` apontando pra eles.
 
 ## O negócio (decisões tomadas com o dono, não invente outras)
 
