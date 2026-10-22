@@ -1,0 +1,454 @@
+// Painel do dia. Lê e grava só pela API em /api/painel; nada de cliente fica
+// no navegador. Preço, sabores e pontos vêm de /regras.js, mas quem manda no
+// valor é o servidor: depois de salvar, a tela mostra o que ele devolveu.
+import { SABORES, PONTOS, NOMES_DIA, isoBrasilia, diaDaData, precoCentavos } from "../regras.js";
+
+const CUPOM_PCT = { PRIMEIRACOMPRA: 0.10 };   // só pra prévia do valor; o servidor decide
+const MOTIVOS = {
+  cedo: "Pediu com menos antecedência que o mínimo",
+  feriado: "Dia de feriado",
+  dia: "O ponto não abre nesse dia",
+  lotado: "Dia já estava cheio",
+  bloqueado: "Dia bloqueado",
+  pausado: "Pedidos estavam pausados",
+  cupom: "Cupom não existe",
+};
+const NOME_SABOR = Object.fromEntries(SABORES.map((s) => [s.id, s.nome]));
+const PONTOS_FIXOS = PONTOS.filter((p) => p.dias);
+const OUTRO = "__outro";
+
+const $ = (s) => document.querySelector(s);
+
+// ---------- utilidades ----------
+const brl = (centavos) => {
+  const [r, c] = (centavos / 100).toFixed(2).split(".");
+  return "R$ " + r.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "," + c;
+};
+const virgula = (centavos) => (centavos / 100).toFixed(2).replace(".", ",");
+const somaDias = (dia, n) => new Date(Date.parse(dia + "T12:00:00Z") + n * 86400000).toISOString().slice(0, 10);
+const dataCurta = (dia) => dia.slice(8, 10) + "/" + dia.slice(5, 7);
+const diaSemana = (dia) => NOMES_DIA[diaDaData(dia)];
+const dataLonga = (dia) => {
+  const s = diaSemana(dia);
+  return s[0].toUpperCase() + s.slice(1) + ", " + dataCurta(dia);
+};
+const plural = (n, um, varios) => n + " " + (n === 1 ? um : varios);
+const validoIso = (d) => /^\d{4}-\d\d-\d\d$/.test(d || "") && !Number.isNaN(Date.parse(d + "T12:00:00Z"));
+
+function h(tag, atributos, ...filhos) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(atributos || {})) {
+    if (v == null || v === false) continue;
+    if (k === "texto") e.textContent = v;
+    else if (k.startsWith("data-") || k.startsWith("aria-") || k === "type") e.setAttribute(k, v === true ? "" : v);
+    else e[k] = v;
+  }
+  for (const f of filhos.flat()) if (f != null) e.append(f);
+  return e;
+}
+
+async function api(metodo, caminho, corpo) {
+  let r;
+  try {
+    r = await fetch(caminho, {
+      method: metodo,
+      headers: corpo ? { "content-type": "application/json" } : {},
+      body: corpo ? JSON.stringify(corpo) : undefined,
+    });
+  } catch (e) {
+    throw new Error("Sem conexão com o servidor. Nada foi alterado.");
+  }
+  let j = null;
+  try { j = await r.json(); } catch (e) { /* resposta sem JSON */ }
+  if (!r.ok) throw new Error((j && j.erro) || "O servidor recusou (erro " + r.status + "). Nada foi alterado.");
+  return j;
+}
+
+// ---------- aviso ----------
+let tAviso = null;
+function aviso(texto, opcoes) {
+  const el = $("#aviso");
+  const o = opcoes || {};
+  clearTimeout(tAviso);
+  el.replaceChildren(h("span", { texto }));
+  if (o.acao) el.append(h("button", { type: "button", texto: o.acao.rotulo, onclick: () => { avisoFora(); o.acao.fazer(); } }));
+  el.classList.toggle("bom", !!o.bom);
+  el.hidden = false;
+  tAviso = setTimeout(avisoFora, o.bom ? 5000 : 9000);
+}
+function avisoFora() { clearTimeout(tAviso); $("#aviso").hidden = true; }
+
+// ---------- estado ----------
+const estado = { dia: null, dados: null, agenda: null, seq: 0 };
+const hoje = () => isoBrasilia(Date.now());
+
+async function carregarDia(dia) {
+  const meu = ++estado.seq;
+  try {
+    const j = await api("GET", "/api/painel/pedidos?dia=" + encodeURIComponent(dia));
+    if (meu !== estado.seq) return false;
+    estado.dados = j;
+    estado.dia = j.dia;
+    try { history.replaceState(null, "", "?dia=" + j.dia); } catch (e) { /* sem histórico */ }
+    renderDia();
+    document.body.dataset.pronto = j.dia;
+    $("#situacao").textContent = "";
+    return true;
+  } catch (e) {
+    if (meu !== estado.seq) return false;
+    $("#dia").value = estado.dia || "";
+    aviso(e.message, { acao: { rotulo: "Tentar de novo", fazer: () => carregarDia(dia) } });
+    return false;
+  }
+}
+const irPara = (dia) => carregarDia(dia);
+
+// ---------- desenho ----------
+const itensTexto = (itens) => itens.map((i) => i.qtd + " " + (NOME_SABOR[i.sabor] || i.sabor)).join(", ");
+
+function renderDia() {
+  const d = estado.dados;
+  const confirmados = d.pontos.flatMap((p) => p.pedidos).filter((p) => p.status === "confirmado");
+  const esfihas = confirmados.reduce((s, p) => s + p.qtd, 0);
+  const dinheiro = confirmados.reduce((s, p) => s + p.total_centavos, 0);
+  const pago = confirmados.filter((p) => p.pago).reduce((s, p) => s + p.total_centavos, 0);
+
+  $("#dia").value = d.dia;
+  $("#nomeDia").textContent = dataLonga(d.dia) + (d.dia === hoje() ? " (hoje)" : "");
+  $("#resumoDia").replaceChildren(
+    h("span", {}, h("b", { id: "totalEsfihas", texto: String(esfihas) }), " esfihas"),
+    h("span", { texto: plural(confirmados.length, "pedido", "pedidos") }),
+    h("span", { texto: brl(dinheiro) + (pago ? ", " + brl(pago) + " pago" : "") }),
+  );
+  $("#sabores").replaceChildren(...SABORES.map((s) =>
+    h("li", { "data-sabor": s.id }, h("span", { className: "rotulo", texto: s.nome }), h("span", { className: "n", texto: String(d.porSabor[s.id] || 0) }))));
+
+  renderPendencias(d.pendencias);
+  renderPontos(d);
+  renderProximos(d.proximos);
+}
+
+function renderPendencias(lista) {
+  $("#blocoPendencias").hidden = lista.length === 0;
+  $("#nPendencias").textContent = String(lista.length);
+  $("#pendencias").replaceChildren(...lista.map((p) => {
+    const motivo = p.status === "aguardando" ? "Aguardando a sua confirmação" : (MOTIVOS[p.motivo] || "Fora da regra");
+    return cartao(p, {
+      pendencia: true,
+      topo: h("div", { className: "motivo", texto: motivo }),
+      botoes: [
+        h("button", { type: "button", className: "btn cheio", "data-acao": "confirmar", texto: "Confirmar", onclick: (e) => mudar(p, { status: "confirmado" }, e.currentTarget) }),
+        h("button", { type: "button", className: "btn perigo", "data-acao": "cancelar", texto: "Cancelar", onclick: (e) => cancelar(p, e.currentTarget) }),
+        h("button", { type: "button", className: "btn suave", "data-acao": "editar", texto: "Editar", onclick: () => abrirForm(p) }),
+      ],
+    });
+  }));
+}
+
+function renderPontos(d) {
+  const grupos = d.pontos
+    .map((g) => ({ ponto: g.ponto, pedidos: g.pedidos.filter((p) => p.status === "confirmado" || p.status === "cancelado") }))
+    .filter((g) => g.pedidos.length);
+  if (!grupos.length) {
+    $("#pontos").replaceChildren(h("p", { className: "vazio", texto: "Nenhum pedido confirmado pra este dia." }));
+    return;
+  }
+  $("#pontos").replaceChildren(...grupos.map((g) => {
+    const ativos = g.pedidos.filter((p) => p.status === "confirmado");
+    const total = ativos.reduce((s, p) => s + p.qtd, 0);
+    return h("div", { className: "ponto-grupo", "data-ponto": g.ponto },
+      h("h3", {}, g.ponto, h("span", { texto: plural(total, "esfiha", "esfihas") + ", " + plural(ativos.length, "pedido", "pedidos") })),
+      g.pedidos.map((p) => {
+        if (p.status === "cancelado") {
+          return cartao(p, {
+            botoes: [
+              h("button", { type: "button", className: "btn", "data-acao": "reativar", texto: "Reativar", onclick: (e) => mudar(p, { status: "confirmado" }, e.currentTarget) }),
+              h("button", { type: "button", className: "btn suave", "data-acao": "editar", texto: "Editar", onclick: () => abrirForm(p) }),
+            ],
+          });
+        }
+        return cartao(p, {
+          botoes: [
+            alternador(p, "pago", "Pago"),
+            alternador(p, "entregue", "Entregue"),
+            h("button", { type: "button", className: "btn suave", "data-acao": "editar", texto: "Editar", onclick: () => abrirForm(p) }),
+          ],
+        });
+      }));
+  }));
+}
+
+function alternador(p, campo, rotulo) {
+  return h("button", {
+    type: "button", className: "btn" + (p[campo] ? " marcado" : ""), "data-acao": campo,
+    "aria-pressed": p[campo] ? "true" : "false", texto: rotulo,
+    onclick: (e) => mudar(p, { [campo]: !p[campo] }, e.currentTarget),
+  });
+}
+
+function cartao(p, o) {
+  const dinheiro = brl(p.total_centavos) + (p.valor_manual ? " (valor combinado)" : "");
+  const onde = o.pendencia
+    ? [p.ponto, p.retirada ? dataLonga(p.retirada) : "sem data", p.janela].filter(Boolean).join(", ")
+    : p.janela;
+  return h("article", {
+    className: "cartao" + (o.pendencia ? " pendencia" : "") + (p.status === "cancelado" ? " cancelado" : "") + (p.entregue && p.status === "confirmado" ? " entregue-ok" : ""),
+    "data-id": String(p.id),
+  },
+    o.topo,
+    h("div", { className: "linha1" },
+      h("span", { className: "quem" }, p.nome, p.status === "cancelado" ? h("span", { className: "etiqueta", texto: "Cancelado" }) : null),
+      h("span", { className: "num", texto: "Nº " + p.id })),
+    h("div", { className: "itens", texto: itensTexto(p.itens) }),
+    h("div", { className: "linha1" },
+      h("span", { className: "dinheiro", texto: dinheiro }),
+      p.cupom ? h("span", { className: "detalhe", texto: "Cupom " + p.cupom + (p.desconto_centavos ? " (menos " + brl(p.desconto_centavos) + ")" : "") }) : null),
+    onde ? h("div", { className: "detalhe", texto: onde }) : null,
+    p.origem === "manual" ? h("div", { className: "detalhe", texto: "Lançado por você" }) : null,
+    p.obs ? h("div", { className: "obs", texto: p.obs }) : null,
+    h("div", { className: "botoes" }, o.botoes));
+}
+
+function renderProximos(lista) {
+  $("#proximos").replaceChildren(...lista.map((x) =>
+    h("li", {}, h("button", { type: "button", className: "proximo" + (x.qtd ? "" : " vazio-dia"), "data-dia": x.dia, onclick: () => irPara(x.dia) },
+      h("b", { texto: dataLonga(x.dia) }),
+      h("span", { texto: x.pedidos ? plural(x.qtd, "esfiha", "esfihas") + ", " + plural(x.pedidos, "pedido", "pedidos") : "sem pedidos" })))));
+}
+
+// ---------- ações sobre um pedido ----------
+const ocupados = new Set();
+async function mudar(p, campos, botao) {
+  if (ocupados.has(p.id)) return;
+  ocupados.add(p.id);
+  if (botao) botao.disabled = true;
+  let ok = false;
+  try {
+    const novo = await api("PATCH", "/api/painel/pedidos/" + p.id, campos);
+    Object.assign(p, novo);
+    renderDia();           // com o que o servidor devolveu
+    ok = true;
+  } catch (e) {
+    if (botao) botao.disabled = false;
+    aviso(e.message);
+  } finally {
+    ocupados.delete(p.id);
+  }
+  if (ok) await recarregarQuieto();   // grupos, totais e próximos dias
+}
+// Uma leitura mais velha nunca sobrescreve uma mais nova nem um clique em andamento.
+async function recarregarQuieto() {
+  const meu = ++estado.seq;
+  try {
+    const j = await api("GET", "/api/painel/pedidos?dia=" + encodeURIComponent(estado.dia));
+    if (meu !== estado.seq || ocupados.size) return;
+    estado.dados = j;
+    renderDia();
+  } catch (e) {
+    if (meu === estado.seq) aviso("Salvei, mas não consegui atualizar a tela. Toque em Hoje ou recarregue a página.");
+  }
+}
+function cancelar(p, botao) {
+  if (!confirm("Cancelar o pedido de " + p.nome + "?")) return;
+  mudar(p, { status: "cancelado" }, botao);
+}
+
+// ---------- formulário ----------
+const form = $("#form");
+let editando = null;      // pedido em edição, ou null pro novo
+let valorEditado = false;
+
+function montarFormulario() {
+  $("#fQtds").replaceChildren(...SABORES.map((s) =>
+    h("div", { className: "campo" },
+      h("label", { htmlFor: "fq-" + s.id, texto: s.nome }),
+      h("input", { id: "fq-" + s.id, type: "number", "data-sabor": s.id, min: "0", max: "200", step: "1", inputMode: "numeric", placeholder: "0" }))));
+  $("#fPonto").replaceChildren(
+    ...PONTOS_FIXOS.map((p) => h("option", { value: p.nome, texto: p.nome })),
+    h("option", { value: OUTRO, texto: "Outro" }));
+  for (const e of form.querySelectorAll("#fQtds input, #fCupom")) e.addEventListener("input", recalcular);
+  $("#fValor").addEventListener("input", () => { valorEditado = true; dicaValor(); });
+  $("#fPonto").addEventListener("change", () => { $("#campoPontoOutro").hidden = $("#fPonto").value !== OUTRO; });
+  $("#fUsarCalculo").addEventListener("click", () => { valorEditado = false; recalcular(); });
+}
+
+const qtdsForm = () => SABORES.map((s) => ({ sabor: s.id, qtd: parseInt($("#fq-" + s.id).value, 10) || 0 })).filter((i) => i.qtd > 0);
+
+function calculo() {
+  const qtd = qtdsForm().reduce((s, i) => s + i.qtd, 0);
+  if (!qtd) return 0;
+  const bruto = precoCentavos(qtd).total;
+  const pct = CUPOM_PCT[$("#fCupom").value.trim().toUpperCase()] || 0;
+  return bruto - Math.round(bruto * pct);
+}
+function recalcular() {
+  if (!valorEditado) $("#fValor").value = calculo() ? virgula(calculo()) : "";
+  dicaValor();
+}
+function dicaValor() {
+  const c = calculo();
+  $("#fValorDica").textContent = valorEditado
+    ? "Valor digitado por você." + (c ? " O cálculo daria R$ " + virgula(c) + "." : "")
+    : (c ? "Calculado pelas quantidades e pelo cupom." : "Preenche sozinho quando você põe as quantidades.");
+  $("#fUsarCalculo").hidden = !valorEditado;
+}
+
+function abrirForm(p) {
+  editando = p || null;
+  $("#formTitulo").textContent = p ? "Editar pedido Nº " + p.id : "Novo pedido";
+  $("#fSalvar").textContent = p ? "Salvar mudanças" : "Salvar pedido";
+  $("#fErro").hidden = true;
+  $("#fNome").value = p ? p.nome : "";
+  for (const s of SABORES) {
+    const item = p && p.itens.find((i) => i.sabor === s.id);
+    $("#fq-" + s.id).value = item ? String(item.qtd) : "";
+  }
+  const dia = p ? (p.retirada || estado.dia) : estado.dia;
+  const nomePonto = p ? p.ponto : ((PONTOS_FIXOS.find((x) => x.dias.includes(diaDaData(dia))) || {}).nome || OUTRO);
+  const conhecido = PONTOS_FIXOS.some((x) => x.nome === nomePonto);
+  $("#fPonto").value = conhecido ? nomePonto : OUTRO;
+  $("#campoPontoOutro").hidden = conhecido;
+  $("#fPontoOutro").value = conhecido ? "" : (p ? p.ponto : "");
+  $("#fDia").value = dia;
+  $("#fJanela").value = p && p.janela ? p.janela : "";
+  $("#fCupom").value = p && p.cupom ? p.cupom : "";
+  $("#fObs").value = p && p.obs ? p.obs : "";
+  valorEditado = !!(p && p.valor_manual);
+  if (p) $("#fValor").value = virgula(p.total_centavos);
+  recalcular();
+  if (p && !valorEditado) $("#fValor").value = virgula(p.total_centavos);
+  form.showModal();
+  $("#fNome").focus();
+}
+
+function erroForm(texto) {
+  $("#fErro").textContent = texto;
+  $("#fErro").hidden = false;
+  $("#fErro").scrollIntoView({ block: "nearest" });
+}
+
+let salvando = false;
+let idEnvio = null;
+async function salvar(ev) {
+  ev.preventDefault();
+  if (salvando) return;
+  $("#fErro").hidden = true;
+  const nome = $("#fNome").value.trim();
+  const itens = qtdsForm();
+  const ponto = $("#fPonto").value === OUTRO ? $("#fPontoOutro").value.trim() : $("#fPonto").value;
+  const dia = $("#fDia").value;
+  if (!nome) return erroForm("Falta o nome.");
+  if (!itens.length) return erroForm("Ponha a quantidade de pelo menos um sabor.");
+  if (!ponto) return erroForm("Falta dizer o ponto.");
+  if (!validoIso(dia)) return erroForm("Falta o dia.");
+  const corpo = {
+    nome, itens, ponto, retirada: dia,
+    janela: $("#fJanela").value.trim() || null,
+    cupom: $("#fCupom").value.trim() || null,
+    obs: $("#fObs").value.trim() || null,
+  };
+  if (valorEditado) {
+    const txt = $("#fValor").value.trim().replace(",", ".");
+    if (!/^\d+(\.\d{1,2})?$/.test(txt)) return erroForm("O valor precisa ser um número, como 56,16.");
+    corpo.valor_manual = true;
+    corpo.total_centavos = Math.round(parseFloat(txt) * 100);
+  } else if (editando) {
+    corpo.valor_manual = false;
+  }
+  salvando = true;
+  $("#fSalvar").disabled = true;
+  try {
+    let salvo;
+    if (editando) {
+      salvo = await api("PATCH", "/api/painel/pedidos/" + editando.id, corpo);
+    } else {
+      idEnvio = idEnvio || crypto.randomUUID();   // toque duplo não duplica o pedido
+      corpo.id_envio = idEnvio;
+      salvo = await api("POST", "/api/painel/pedidos", corpo);
+      idEnvio = null;
+    }
+    form.close();
+    aviso("Pedido Nº " + salvo.id + " salvo: " + brl(salvo.total_centavos) + ".", { bom: true });
+    if (salvo.retirada && salvo.retirada !== estado.dia) await irPara(salvo.retirada);
+    else await carregarDia(estado.dia);
+  } catch (e) {
+    erroForm(e.message);
+  } finally {
+    salvando = false;
+    $("#fSalvar").disabled = false;
+  }
+}
+
+// ---------- agenda ----------
+function renderAgenda() {
+  const a = estado.agenda;
+  if (document.activeElement !== $("#limite")) $("#limite").value = String(a.limite);
+  const pausa = $("#pausar");
+  pausa.setAttribute("aria-pressed", a.pausado ? "true" : "false");
+  pausa.textContent = a.pausado ? "Voltar a aceitar pedidos" : "Pausar pedidos";
+  pausa.classList.toggle("marcado", a.pausado);
+  $("#dicaPausa").textContent = a.pausado ? "Pausado: os pedidos do site chegam como pendência." : "Aberto: o site aceita pedidos normalmente.";
+  $("#bloqueios").replaceChildren(...(a.bloqueios.length ? a.bloqueios.map((b) =>
+    h("li", { "data-dia": b.dia },
+      h("span", { texto: dataLonga(b.dia) + (b.motivo ? ", " + b.motivo : "") }),
+      h("button", { type: "button", className: "btn suave", texto: "Liberar", "aria-label": "Liberar " + dataCurta(b.dia), onclick: (e) => salvarAgenda({ bloqueios: a.bloqueios.filter((x) => x.dia !== b.dia) }, e.currentTarget) })))
+    : [h("li", {}, h("span", { texto: "Nenhum dia bloqueado." }))]));
+}
+
+async function salvarAgenda(campos, botao, marca) {
+  if (botao) botao.disabled = true;
+  try {
+    estado.agenda = await api("PUT", "/api/painel/agenda", campos);
+    renderAgenda();
+    document.body.dataset.agenda = marca || "ok";
+    return true;
+  } catch (e) {
+    aviso(e.message);
+    return false;
+  } finally {
+    if (botao) botao.disabled = false;
+  }
+}
+
+async function carregarAgenda() {
+  try {
+    estado.agenda = await api("GET", "/api/painel/agenda");
+    renderAgenda();
+  } catch (e) {
+    aviso("Não consegui ler a agenda. " + e.message);
+  }
+}
+
+// ---------- ligações ----------
+function ligar() {
+  $("#anterior").addEventListener("click", () => irPara(somaDias(estado.dia, -1)));
+  $("#seguinte").addEventListener("click", () => irPara(somaDias(estado.dia, 1)));
+  $("#hoje").addEventListener("click", () => irPara(hoje()));
+  $("#dia").addEventListener("change", (e) => { if (validoIso(e.target.value)) irPara(e.target.value); });
+  $("#novo").addEventListener("click", () => abrirForm(null));
+  $("#fFechar").addEventListener("click", () => form.close());
+  $("#formPedido").addEventListener("submit", salvar);
+
+  $("#salvarLimite").addEventListener("click", async (e) => {
+    const n = Number($("#limite").value);
+    if (!Number.isInteger(n) || n < 1 || n > 10000) return aviso("O limite precisa ser um número de 1 a 10000.");
+    if (await salvarAgenda({ limite: n }, e.currentTarget, "limite-" + n)) aviso("Limite do dia: " + n + " esfihas.", { bom: true });
+  });
+  $("#pausar").addEventListener("click", (e) => salvarAgenda({ pausado: !estado.agenda.pausado }, e.currentTarget, "pausa"));
+  $("#bloquear").addEventListener("click", async (e) => {
+    const dia = $("#bloqDia").value;
+    if (!validoIso(dia)) return aviso("Escolha o dia a bloquear.");
+    const motivo = $("#bloqMotivo").value.trim();
+    const resto = estado.agenda.bloqueios.filter((b) => b.dia !== dia);
+    if (await salvarAgenda({ bloqueios: [...resto, { dia, motivo: motivo || null }] }, e.currentTarget, "bloqueio")) {
+      $("#bloqDia").value = "";
+      $("#bloqMotivo").value = "";
+    }
+  });
+}
+
+montarFormulario();
+ligar();
+const pedido = new URLSearchParams(location.search).get("dia");
+carregarDia(validoIso(pedido) ? pedido : hoje());
+carregarAgenda();
