@@ -8,3 +8,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Cloudflare local
+.wrangler/
+.dev.vars

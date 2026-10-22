@@ -1230,7 +1230,7 @@
 
   teste("Acessibilidade", "o scroll do JavaScript também respeita a preferência", function (c) {
     // scrollTo({behavior:"smooth"}) ignora o CSS, então o código tem que checar
-    return fetch("/public/app.js").then(function (r) { return r.text(); }).then(function (js) {
+    return fetch("/app.js").then(function (r) { return r.text(); }).then(function (js) {
       contem(js, "prefers-reduced-motion", "o script precisa consultar a preferência");
       var fixos = (js.match(/behavior:\s*"smooth"/g) || []).length;
       ok(fixos <= 1, "ainda há " + fixos + " scrolls com 'smooth' fixo no código");
@@ -1372,7 +1372,7 @@
   });
 
   teste("Regras", "regras.js carrega sem DOM", function () {
-    return import("/public/regras.js").then(function (r) {
+    return import("/regras.js").then(function (r) {
       igual(r.precoCentavos(12).total, 6240);
       igual(r.precoCentavos(1).unit, 590);
       igual(r.situacaoData(r.PONTOS[1], "2026-10-24", 4, Date.parse("2026-10-21T10:00:00-03:00")), "dia");
