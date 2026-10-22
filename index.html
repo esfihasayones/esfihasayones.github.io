@@ -337,18 +337,6 @@ main,header,footer{position:relative;z-index:1}
 .numeros div b{display:block;font-family:var(--display);font-size:34px;font-weight:600;color:#FFF;line-height:1}
 .numeros div span{font-size:14px;color:#A9A9A4;font-weight:500}
 
-/* ---------- depoimentos ---------- */
-.depos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:44px}
-@media(max-width:920px){.depos{grid-template-columns:1fr}}
-.depo{background:var(--branco);border:1px solid var(--areia-esc);border-radius:var(--raio);padding:26px 24px;
-  display:flex;flex-direction:column;gap:14px}
-.estrelas{color:var(--dourado);font-size:17px;letter-spacing:2px}
-.depo blockquote{margin:0;font-size:17.5px;font-weight:500;line-height:1.55;color:var(--carvao)}
-.depo footer{display:flex;align-items:center;gap:11px;margin-top:auto}
-.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--areia);
-  font-weight:700;color:var(--terracota);font-size:15px;flex:0 0 auto}
-.depo footer b{font-size:14.5px;display:block}
-.depo footer small{color:var(--texto-suave);font-size:13px}
 
 /* ---------- CTA final ---------- */
 .cta-final{text-align:center;background:var(--branco);border:1px solid var(--areia-esc);
@@ -833,7 +821,7 @@ body.tem-barra{padding-bottom:96px}
   <div class="passos">
     <div class="passo"><h3>Monte o pedido</h3><p>Escolha os sabores e as quantidades aqui no site. O total e o desconto aparecem na hora.</p></div>
     <div class="passo"><h3>Manda no WhatsApp</h3><p>Um clique e a mensagem vai pronta, com tudo listado. Você só aperta enviar.</p></div>
-    <div class="passo"><h3>A gente confirma</h3><p>Respondemos confirmando o ponto e o horário. Só começamos a assar depois do seu ok.</p></div>
+    <div class="passo"><h3>A gente confirma</h3><p>Respondemos confirmando o ponto e o horário. Aí a gente monta e assa as suas esfihas.</p></div>
     <div class="passo"><h3>Você pega no ponto</h3><p>No dia combinado a gente leva suas esfihas até o ponto do bairro, e você passa lá pra pegar.</p></div>
   </div>
 
@@ -841,7 +829,7 @@ body.tem-barra{padding-bottom:96px}
     <div class="preparo fria">
       <div class="ico"><svg width="24" height="24" aria-hidden="true"><use href="#ic-floco"/></svg></div>
       <h3>Por que congelada?</h3>
-      <p>Assamos, embalamos e congelamos no mesmo dia. Assim você não fica preso ao nosso horário de forno e come na hora que quiser.</p>
+      <p>Cada esfiha é montada e assada depois da sua encomenda, e aí embalada e congelada. Assim você não fica preso ao nosso horário de forno e come na hora que quiser.</p>
       <ul>
         <li><span>Dura até 60 dias no freezer</span></li>
         <li><span>Esquenta só o que você vai comer na hora</span></li>
@@ -854,7 +842,7 @@ body.tem-barra{padding-bottom:96px}
       <h3>Como esquentar</h3>
       <p>Sempre direto do freezer, sem descongelar. Escolha o que for mais prático:</p>
       <ul>
-        <li><span><b>Air fryer:</b> 180&nbsp;°C por 6 a 8 minutos. Fica igual à que sai do forno.</span></li>
+        <li><span><b>Air fryer:</b> 180&nbsp;°C por 6 a 8 minutos.</span></li>
         <li><span><b>Forno:</b> 180&nbsp;°C por 12 a 15 minutos.</span></li>
         <li><span><b>Micro-ondas:</b> 50 a 70 segundos por unidade. É o mais rápido, mas a massa fica mais mole.</span></li>
       </ul>
@@ -875,7 +863,7 @@ body.tem-barra{padding-bottom:96px}
       <ul class="horarios">
         <li><b>Trindade e UFSC</b><span><i>Seg e qui · 18h30 às 20h</i><i>Ter e qua · 18h30 às 22h</i></span></li>
         <li><b>Itacorubi</b><span><i>Seg a sex · 8h às 16h30</i></span></li>
-        <li><b>Abraão</b><span><i>Seg a sex · de manhã</i></span></li>
+        <li><b>Abraão</b><span><i>Seg a sex · 9h às 12h</i></span></li>
       </ul>
       <div class="taxa">
         <span class="cifra">R$0</span>
@@ -888,7 +876,7 @@ body.tem-barra{padding-bottom:96px}
       <ul class="horarios">
         <li><b>1. Peça com 24h de antecedência</b><span>Contadas até o começo do horário do ponto</span></li>
         <li><b>2. A gente confirma o ponto</b><span>Endereço exato no WhatsApp</span></li>
-        <li><b>3. Passe no horário do ponto</b><span>Leva menos de um minuto</span></li>
+        <li><b>3. Passe no horário do ponto</b><span>Os horários estão ao lado</span></li>
         <li><b>4. Leve pra casa congelada</b><span>Direto pro seu freezer</span></li>
       </ul>
       <p style="margin-top:18px;font-size:15px;color:var(--texto-suave)">Mora fora desses bairros? Chama no WhatsApp mesmo assim, que a gente vê se dá pra encaixar em algum ponto. Pra mais de 40 esfihas, peça com 3 dias de antecedência.</p>
@@ -901,38 +889,13 @@ body.tem-barra{padding-bottom:96px}
   <div class="sobre">
     <span class="olho">A nossa história</span>
     <h2 class="secao-titulo" style="font-size:clamp(28px,4.4vw,44px)">A cozinha é a de casa mesmo</h2>
-    <p>A Sayones começou com uma receita de família. Sempre que vinha gente aqui em casa, todo mundo saía levando esfiha, e uma hora a gente resolveu vender. O recheio é temperado à mão e a fornada é pequena, o que dá tempo de olhar cada esfiha antes de embalar.</p>
+    <p>A Sayones nasceu de uma receita de família, feita com amor que cativa.</p>
     <p style="margin-bottom:0">Como a cozinha é de casa, trabalhamos por encomenda e a esfiha vai congelada. Assim dá pra fazer tudo com calma, e você guarda no freezer pra comer na hora que bater a fome.</p>
     <div class="numeros">
       <div><b>4</b><span>sabores</span></div>
       <div><b>6min</b><span>na air fryer</span></div>
       <div><b id="nPontos">3</b><span>pontos na cidade</span></div>
       <div><b>60d</b><span>de freezer</span></div>
-    </div>
-  </div>
-</section>
-
-<!-- ====== depoimentos ====== -->
-<section class="secao wrap">
-  <div class="centro">
-    <span class="olho">Depoimentos</span>
-    <h2 class="secao-titulo">O que os clientes falam</h2>
-  </div>
-  <div class="depos">
-    <div class="depo">
-      <div class="estrelas" aria-label="5 de 5 estrelas">★★★★★</div>
-      <blockquote>“Peguei 12 no combo e deixei no freezer. Tem dia que a de calabresa é o que salva o almoço.”</blockquote>
-      <footer><span class="avatar">MA</span><span><b>Mariana A.</b><small>Trindade</small></span></footer>
-    </div>
-    <div class="depo">
-      <div class="estrelas" aria-label="5 de 5 estrelas">★★★★★</div>
-      <blockquote>“Jantar resolvido a semana toda. 6 minutos de air fryer e parece que saiu do forno agora.”</blockquote>
-      <footer><span class="avatar">RC</span><span><b>Rafael C.</b><small>Itacorubi</small></span></footer>
-    </div>
-    <div class="depo">
-      <div class="estrelas" aria-label="5 de 5 estrelas">★★★★★</div>
-      <blockquote>“A massa é leve, não fica pesada no estômago. E a de carne tem bastante cebola, do jeito que eu gosto.”</blockquote>
-      <footer><span class="avatar">JP</span><span><b>Juliana P.</b><small>Centro</small></span></footer>
     </div>
   </div>
 </section>
@@ -994,7 +957,6 @@ body.tem-barra{padding-bottom:96px}
     </div>
     <div class="creditos">
       <span>© <span id="ano">2026</span> Esfihas Sayones · Feito em casa</span>
-      <span>Quantidade limitada por dia</span>
     </div>
   </div>
 </footer>
@@ -1080,6 +1042,20 @@ body.tem-barra{padding-bottom:96px}
   var PEDIDO_GRANDE = 40;                   // acima disso...
   var ANTECEDENCIA_GRANDE_H = 72;           // ...a antecedência sobe pra 3 dias
 
+  // Dias sem retirada, em qualquer ponto. Feriados nacionais e o aniversário
+  // de Florianópolis; Carnaval e Corpus Christi são ponto facultativo e ficam
+  // de fora. Acrescente aqui as folgas e os próximos anos.
+  var FERIADOS = {
+    "2026-11-02":"Finados", "2026-11-15":"Proclamação da República",
+    "2026-11-20":"Consciência Negra", "2026-12-25":"Natal",
+    "2027-01-01":"Ano-Novo", "2027-03-23":"aniversário de Florianópolis",
+    "2027-03-26":"Sexta-feira Santa", "2027-04-21":"Tiradentes",
+    "2027-05-01":"Dia do Trabalho", "2027-09-07":"Independência",
+    "2027-10-12":"Nossa Senhora Aparecida", "2027-11-02":"Finados",
+    "2027-11-15":"Proclamação da República", "2027-11-20":"Consciência Negra",
+    "2027-12-25":"Natal"
+  };
+
   // Pontos de retirada. Não há entrega porta a porta: em cada dia levamos as
   // encomendas a um ponto do bairro.
   // `prep` é a preposição do bairro ("na Trindade", "no Itacorubi").
@@ -1089,8 +1065,7 @@ body.tem-barra{padding-bottom:96px}
     { nome:"Trindade",  prep:"na", dias:[1,2,3,4],   diaNome:"segunda a quinta", quando:"de segunda a quinta", janela:"18h30 às 20h",
       janelas:{ 1:"18h30 às 20h", 2:"18h30 às 22h", 3:"18h30 às 22h", 4:"18h30 às 20h" } },
     { nome:"Itacorubi", prep:"no", dias:[1,2,3,4,5], diaNome:"segunda a sexta",  quando:"de segunda a sexta",  janela:"8h às 16h30" },
-    // Sem horário fechado: `inicio` é a hora que entra na conta da antecedência.
-    { nome:"Abraão",    prep:"no", dias:[1,2,3,4,5], diaNome:"segunda a sexta",  quando:"de segunda a sexta",  janela:"de manhã", inicio:7 },
+    { nome:"Abraão",    prep:"no", dias:[1,2,3,4,5], diaNome:"segunda a sexta",  quando:"de segunda a sexta",  janela:"9h às 12h" },
     { nome:"Combinar outro ponto", dias:null }
   ];
 
@@ -1099,11 +1074,11 @@ body.tem-barra{padding-bottom:96px}
   var SABORES = [
     // `curta` é a versão que aparece no card compacto do celular.
     { id:"calabresa", nome:"Calabresa",
-      desc:"Calabresa moída na hora, com molho de tomate, cebola e muçarela.",
+      desc:"Calabresa moída com molho de tomate, cebola e muçarela.",
       curta:"Molho, cebola e muçarela",
       icone:"#ic-calabresa" },
     { id:"carne", nome:"Carne",
-      desc:"Carne bovina moída com cebola e tomate, temperada na hora de fazer.",
+      desc:"Carne bovina moída com cebola e tomate.",
       curta:"Cebola, tomate e tempero",
       icone:"#ic-carne" },
     { id:"queijo", nome:"Queijo",
@@ -1321,8 +1296,9 @@ body.tem-barra{padding-bottom:96px}
     return new Date(valor + "T" + dois(h) + ":" + dois(min) + ":00-03:00");
   }
 
-  // "ok", "dia" (o ponto não abre nesse dia) ou "cedo" (falta antecedência).
+  // "ok", "feriado", "dia" (o ponto não abre nesse dia) ou "cedo" (falta antecedência).
   function situacaoData(pt, valor){
+    if (FERIADOS[valor]) return "feriado";
     if (pt.dias.indexOf(diaDaData(valor)) === -1) return "dia";
     return inicioRetirada(pt, valor) < limite() ? "cedo" : "ok";
   }
@@ -1340,6 +1316,9 @@ body.tem-barra{padding-bottom:96px}
 
   function textoData(pt, valor){
     var sit = situacaoData(pt, valor);
+    if (sit === "feriado")
+      return "Dia " + dataBR(valor) + " é feriado (" + FERIADOS[valor] + ") e não tem retirada. " +
+             "A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
     if (sit === "dia")
       return "Nesse dia a gente não está " + pt.prep + " " + pt.nome + ", só " +
              pt.quando + ". A mais próxima é " + comDia(proximaDataDe(pt)) + ".";

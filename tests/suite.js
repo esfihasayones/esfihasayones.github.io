@@ -427,13 +427,12 @@
   });
 
   teste("Retirada", "Itacorubi aceita de segunda a sexta e recusa o sábado", function (c) {
+    c.win.Date.now = function () { return new c.win.Date("2026-10-21T10:00:00").getTime(); };
     c.abrirGaveta();
     var ponto = c.el("#fPonto"), data = c.el("#fData");
     ponto.value = "1";
     ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
-    var d = new Date(data.min + "T12:00:00");
-    d.setDate(d.getDate() + 7);                   // longe do mínimo, qualquer dia vale
-    while (d.getDay() !== 1) d.setDate(d.getDate() + 1);
+    var d = new Date("2026-10-26T12:00:00");      // segunda de uma semana sem feriado
     for (var i = 0; i < 6; i++) {                 // segunda a sábado
       data.value = c.iso(d);
       data.dispatchEvent(new c.win.Event("change", { bubbles: true }));
@@ -450,11 +449,10 @@
   });
 
   teste("Retirada", "na Trindade o horário muda conforme o dia", function (c) {
+    c.win.Date.now = function () { return new c.win.Date("2026-10-21T10:00:00").getTime(); };
     c.abrirGaveta();
     var data = c.el("#fData");
-    var d = new Date(data.min + "T12:00:00");
-    d.setDate(d.getDate() + 7);
-    while (d.getDay() !== 1) d.setDate(d.getDate() + 1);
+    var d = new Date("2026-10-26T12:00:00");      // segunda de uma semana sem feriado
     var esperado = { 1: "18h30 às 20h", 2: "18h30 às 22h", 3: "18h30 às 22h", 4: "18h30 às 20h" };
     for (var i = 0; i < 4; i++) {                 // segunda a quinta
       data.value = c.iso(d);
@@ -468,13 +466,12 @@
 
   teste("Retirada", "a mensagem diz o dia da semana da data escolhida", function (c) {
     c.definir("calabresa", 4);
+    c.win.Date.now = function () { return new c.win.Date("2026-10-21T10:00:00").getTime(); };
     c.abrirGaveta();
     var ponto = c.el("#fPonto"), data = c.el("#fData");
     ponto.value = "1";
     ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
-    var d = new Date(data.min + "T12:00:00");
-    d.setDate(d.getDate() + 7);
-    while (d.getDay() !== 2) d.setDate(d.getDate() + 1);   // uma terça
+    var d = new Date("2026-10-27T12:00:00");   // terça de uma semana sem feriado
     data.value = c.iso(d);
     data.dispatchEvent(new c.win.Event("change", { bubbles: true }));
     var msg = c.enviarValido();
@@ -545,13 +542,27 @@
     contem(retirada(c, "2026-10-21T10:00:00", 1, "2026-10-23"), "✓", "com 40 vale a regra de 24 horas");
   });
 
-  teste("Retirada", "o Abraão abre de segunda a sexta de manhã", function (c) {
+  teste("Retirada", "feriado não tem retirada e a sugestão pula ele", function (c) {
+    c.definir("calabresa", 4);
+    var dica = retirada(c, "2026-10-29T10:00:00", 1, "2026-11-02");   // Finados, segunda
+    contem(dica, "feriado");
+    contem(dica, "Finados");
+    contem(dica, "terça, 03/11/2026", "a próxima no Itacorubi é o dia seguinte");
+    c.el("#fNome").value = "Breno";
+    igual(c.enviar(), null, "pedido pra feriado não podia sair");
+    // trocar de ponto com o relógio na sexta 30/10: a primeira data livre pulou o feriado
+    var p = c.el("#fPonto");
+    c.win.Date.now = function () { return new c.win.Date("2026-10-31T10:00:00").getTime(); };
+    p.value = "2"; p.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    igual(c.el("#fData").value, "2026-11-03", "a sugestão caiu no feriado");
+  });
+
+  teste("Retirada", "o Abraão abre de segunda a sexta das 9h ao meio-dia", function (c) {
     c.definir("calabresa", 4);
     var dica = retirada(c, "2026-10-21T10:00:00", 2, "2026-10-23");
     contem(c.el("#fPonto").options[2].textContent, "Abraão");
     contem(dica, "✓");
-    contem(dica, "de manhã no Abraão");
-    naoContem(dica, "das de manhã");
+    contem(dica, "das 9h às 12h no Abraão");
     contem(retirada(c, "2026-10-21T10:00:00", 2, "2026-10-24"), "de segunda a sexta");
   });
 
@@ -719,11 +730,10 @@
 
   teste("WhatsApp", "a mensagem traz o ponto, o dia e a janela de retirada", function (c) {
     c.definir("calabresa", 4);
+    c.win.Date.now = function () { return new c.win.Date("2026-10-21T10:00:00").getTime(); };
     c.abrirGaveta();
     var data = c.el("#fData");
-    var d = new Date(data.min + "T12:00:00");
-    d.setDate(d.getDate() + 7);
-    while (d.getDay() !== 2) d.setDate(d.getDate() + 1);   // uma terça, que vai até as 22h
+    var d = new Date("2026-10-27T12:00:00");   // terça de uma semana sem feriado, que vai até as 22h
     data.value = c.iso(d);
     data.dispatchEvent(new c.win.Event("change", { bubbles: true }));
     var msg = c.pedidoCompleto();

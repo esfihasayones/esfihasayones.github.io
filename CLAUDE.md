@@ -23,23 +23,26 @@ no ar como reais, e o Google Meu Negócio não foi cadastrado. O Instagram
 editar, rode `git status` e `git stash list`; depois de cada mudança testada,
 faça commit e push logo, sem deixar nada solto.
 
-### Perguntas em aberto pro dono (levantadas em 21/10/2026)
+### Respondido pelo dono em 21/10/2026
 
-Não resolva sem perguntar; são fato do negócio.
+- Depoimentos inventados: seção removida. Volta só com elogio de verdade e
+  autorização de quem escreveu.
+- Feriados: sem retirada. Lista `FERIADOS` no bloco de configuração (nacionais
+  e aniversário de Florianópolis, até o fim de 2027); Carnaval e Corpus
+  Christi ficaram de fora por serem ponto facultativo. Estender a lista
+  pros anos seguintes.
+- Forno: a esfiha é montada e assada depois da encomenda, e aí congelada.
+- Frases sem confirmação saíram ("moída na hora", "temperada na hora de
+  fazer", "Quantidade limitada por dia", "Leva menos de um minuto", "Fica
+  igual à que sai do forno", e a história do "todo mundo saía levando
+  esfiha"). A história ficou só com "receita de família, feita com amor que
+  cativa", nas palavras dele.
+- Abraão: segunda a sexta, das 9h ao meio-dia.
 
-1. Depoimentos: os três são inventados e um cita o Centro, que deixou de ser
-   ponto. Tirar a seção até haver depoimentos de verdade?
-2. Feriados: o site aceita 02/11, 20/11 e 25/12. Quais dias ele não trabalha?
-   (Não existe lista de datas fechadas no código.)
-3. Forno: o site diz "assamos, embalamos e congelamos no mesmo dia" e também
-   "só começamos a assar depois do seu ok". Qual vale?
-4. Frases nunca confirmadas: "receita de família", "moída na hora",
-   "temperada na hora de fazer", "Quantidade limitada por dia" (o código aceita
-   até 800), "Leva menos de um minuto", "Fica igual à que sai do forno".
-5. Air fryer: "6 minutos" no topo e no og:description contra "6 a 8 minutos"
-   na seção de esquentar.
-6. Horário do Abraão: só "de manhã"; o código usa `inicio:7` pra antecedência
-   e o JSON-LD diz 08:00.
+### Ainda em aberto
+
+- Air fryer: "6 minutos" no topo e no og:description contra "6 a 8 minutos"
+  na seção de esquentar. Perguntar qual vale.
 
 ### Falta testar com o celular dele
 
@@ -59,7 +62,8 @@ pacotes que o instalador pedir e `LD_LIBRARY_PATH` apontando pra eles.
 ## O negócio (decisões tomadas com o dono, não invente outras)
 
 **Só congelada.** Assar e entregar quente exige rota apertada e cliente em
-casa na hora certa. Congelada, ele produz em lote e entrega quando dá. O
+casa na hora certa. Congelada, ele monta e assa depois da encomenda (confirmado em
+21/10/2026: "você encomenda, a gente monta e assa"), congela e entrega no ponto. O
 argumento de venda virou "pronta em 6 minutos na air fryer".
 
 **Não existe delivery porta a porta.** Em cada dia ele leva as encomendas a
@@ -68,8 +72,7 @@ há taxa de entrega. Nunca escreva "entregamos na sua casa".
 
 **Pontos e dias (21/10/2026):** Trindade/UFSC segunda e quinta 18h30–20h,
 terça e quarta 18h30–22h; Itacorubi de segunda a sexta 8h–16h30; Abraão de
-segunda a sexta de manhã (sem horário fechado; `inicio:7` só entra na conta
-da antecedência). O Centro saiu em 21/10/2026. Cada ponto em `PONTOS` tem uma lista `dias` e, quando o
+segunda a sexta 9h–12h. O Centro saiu em 21/10/2026. Cada ponto em `PONTOS` tem uma lista `dias` e, quando o
 horário muda conforme o dia, um mapa `janelas`. UFSC não é ponto separado, faz
 parte da Trindade.
 
@@ -167,7 +170,7 @@ python3 -m http.server 8791
 # http://127.0.0.1:8791/tests/index.html
 ```
 
-126 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
+127 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
 iframe limpo, um teste por vez. `window.RESULTADO` expõe o resultado para
 automação.
 

@@ -36,10 +36,13 @@
         3: janela(8, 0, "das 8h às 16h30"), 4: janela(8, 0, "das 8h às 16h30"),
         5: janela(8, 0, "das 8h às 16h30") } },
     { nome: "Abraão", dias: {
-        1: janela(7, 0, "de manhã"), 2: janela(7, 0, "de manhã"), 3: janela(7, 0, "de manhã"),
-        4: janela(7, 0, "de manhã"), 5: janela(7, 0, "de manhã") } },
+        1: janela(9, 0, "das 9h às 12h"), 2: janela(9, 0, "das 9h às 12h"), 3: janela(9, 0, "das 9h às 12h"),
+        4: janela(9, 0, "das 9h às 12h"), 5: janela(9, 0, "das 9h às 12h") } },
     { nome: "Combinar outro ponto", dias: null }
   ];
+  var FERIADOS = ["2026-11-02", "2026-11-15", "2026-11-20", "2026-12-25", "2027-01-01",
+                  "2027-03-23", "2027-03-26", "2027-04-21", "2027-05-01", "2027-09-07",
+                  "2027-10-12", "2027-11-02", "2027-11-15", "2027-11-20", "2027-12-25"];
   var DIAS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
   var MAX_ITEM = 200;
 
@@ -61,6 +64,7 @@
   function diaSemana(isoTxt) { return new Date(isoTxt + "T12:00:00").getDay(); }
   // a retirada serve? "ok", "dia" ou "cedo"
   function situacao(pi, isoTxt, agoraMs, q) {
+    if (FERIADOS.indexOf(isoTxt) !== -1) return "feriado";
     var j = PONTOS[pi].dias[diaSemana(isoTxt)];
     if (!j) return "dia";
     var p = isoTxt.split("-");

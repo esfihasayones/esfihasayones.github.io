@@ -80,7 +80,7 @@ ponto do bairro e o cliente passa lá pra pegar. Por isso não há taxa de entre
 | Trindade e UFSC | Seg e qui | 18h30 – 20h |
 | Trindade e UFSC | Ter e qua | 18h30 – 22h |
 | Itacorubi  | Seg a sex | 8h – 16h30   |
-| Abraão     | Seg a sex | de manhã     |
+| Abraão     | Seg a sex | 9h – 12h     |
 
 Os pontos vivem em **dois lugares** do `index.html`, que precisam andar juntos:
 
@@ -132,7 +132,7 @@ python3 -m http.server 8791
 # depois: http://127.0.0.1:8791/tests/index.html
 ```
 
-São 126 testes cobrindo preço por combo, carrinho, formulário de retirada,
+São 127 testes cobrindo preço por combo, carrinho, formulário de retirada,
 mensagem do WhatsApp, persistência, acessibilidade e layout no celular.
 Os casos ficam em `tests/suite.js`, em português e sem dependência nenhuma.
 
@@ -156,11 +156,10 @@ Em ordem. Os dois primeiros travam a publicação.
 Feito em 16/09/2026. Está em <https://esfihasayones.github.io/>, na conta
 `esfihasayones`. Como publicar de novo está em **O site no ar**, mais acima.
 
-### 2. Trocar os depoimentos
+### 2. Depoimentos
 
-Os três da seção "O que os clientes falam" são **inventados**, com nome e
-bairro fictícios. Não publique como se fossem reais. Assim que as primeiras
-encomendas saírem, peça autorização e troque por elogios de verdade.
+A seção saiu do ar em 21/10/2026: os três eram inventados. Quando houver
+elogios de verdade, com autorização de quem escreveu, ela pode voltar.
 
 ### 3. Ajustar o canonical
 
