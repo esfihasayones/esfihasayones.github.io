@@ -1,1 +1,3 @@
 DONO_EMAIL=brenojulianom@gmail.com
+# Em desenvolvimento local, DEV_SEM_LOGIN=1 libera /api/painel sem o cabeçalho do Access. Nunca use em produção.
+# DEV_SEM_LOGIN=1
