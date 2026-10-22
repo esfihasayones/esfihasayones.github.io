@@ -179,10 +179,11 @@ link do Instagram passam pro domínio novo.
 
 ## Boas práticas que entram com a mudança (revisão de dev staff)
 
-- **Deploy pelo Git, não pelo terminal.** O Cloudflare Pages liga direto no
-  repositório privado: push na `main` publica, como hoje; cada branch ganha
-  um endereço de prévia. Diretório de saída `public/`, `functions/` na
-  raiz. Dispensa o `wrangler login` pra publicar (continua útil pro D1).
+- **Deploy pelo terminal (`wrangler pages deploy public`)**, só depois da
+  suíte passar. Pesei a integração com Git (push publica, prévia por
+  branch), mas projeto de upload direto não vira Git depois e a integração
+  prende o deploy ao GitHub, que o dono quer largar; o upload direto também
+  tem endereço de prévia por branch (`--branch`).
 - **Banco separado pra prévia e testes.** Um D1 de produção e outro de
   prévia; a suíte nunca grava no de produção.
 - **Cabeçalhos de segurança** num `public/_headers`: CSP restrita (dá pra
