@@ -234,10 +234,44 @@ function antecedenciaTxt(){
 }
 function limite(){ return new Date(Date.now() + horasAntecedencia()*3600*1000); }
 
-function situacaoData(pt, valor){ return situacaoDataDe(pt, valor, totalQtd(), Date.now()); }
+/* ---------- agenda do servidor ---------- */
+// Dias lotados ou bloqueados e pedidos pausados, lidos ao abrir a gaveta.
+// Se a leitura falhar, fica tudo como estava: o site não bloqueia nada e
+// o servidor ainda decide na hora de gravar o pedido.
+var agenda = { pausado:false, bloqueados:new Map() };
+var dataMexida = false;   // true quando a pessoa escolheu a data
+var AVISO_PAUSA = "Os pedidos estão pausados por enquanto. Fala com a gente no WhatsApp.";
 
-// Primeira data em que o ponto abre e que respeita a antecedência.
-function proximaDataDe(pt){ return proximaData(pt, totalQtd(), Date.now()); }
+function situacaoData(pt, valor){ return situacaoDataDe(pt, valor, totalQtd(), Date.now(), agenda.bloqueados); }
+
+// Primeira data em que o ponto abre, que respeita a antecedência e que não
+// está lotada nem bloqueada.
+function proximaDataDe(pt){ return proximaData(pt, totalQtd(), Date.now(), agenda.bloqueados); }
+
+function mostrarPausa(){
+  if (!agenda.pausado) return;
+  aviso.textContent = AVISO_PAUSA;
+  aviso.classList.add("on");
+}
+function carregarAgenda(){
+  var p;
+  try { p = fetch("/api/agenda", { cache:"no-store" }); } catch(e){ return; }
+  if (!p || !p.then) return;
+  p.then(function(r){ return r.ok ? r.json() : Promise.reject(); })
+   .then(function(j){
+     var m = new Map();
+     var ind = (j && j.indisponiveis) || {};
+     Object.keys(ind).forEach(function(d){ if (ind[d] === "lotado" || ind[d] === "bloqueado") m.set(d, ind[d]); });
+     agenda = { pausado: !!(j && j.pausado), bloqueados: m };
+     if (!agenda.pausado && aviso.textContent === AVISO_PAUSA) aviso.classList.remove("on");
+     var pt = pontoAtual();
+     // a data que o site sugeriu sozinho não pode ser uma que acabou de aparecer como indisponível
+     if (!dataMexida && pt.dias !== null && situacaoData(pt, fData.value) !== "ok") fData.value = proximaDataDe(pt);
+     atualizarDica();
+     render();
+   })
+   .catch(function(){});
+}
 
 function comDia(valor){ return NOMES_DIA[diaDaData(valor)] + ", " + dataBR(valor); }
 
@@ -246,6 +280,10 @@ function textoData(pt, valor){
   if (sit === "feriado")
     return "Dia " + dataBR(valor) + " é feriado (" + FERIADOS[valor] + ") e não tem retirada. " +
            "A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
+  if (sit === "lotado")
+    return "Esse dia já está cheio. A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
+  if (sit === "bloqueado")
+    return "Nesse dia não tem retirada. A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
   if (sit === "dia")
     return "Nesse dia a gente não está " + pt.prep + " " + pt.nome + ", só " +
            pt.quando + ". A mais próxima é " + comDia(proximaDataDe(pt)) + ".";
@@ -277,12 +315,14 @@ function atualizarDica(){
 // antes ela pulava pra primeira data livre e o cliente não percebia.
 fPonto.addEventListener("change", function(){
   var pt = pontoAtual();
-  if (pt.dias !== null && (!fData.value || situacaoData(pt, fData.value) !== "ok"))
+  if (pt.dias !== null && (!fData.value || situacaoData(pt, fData.value) !== "ok")){
     fData.value = proximaDataDe(pt);
+    dataMexida = false;
+  }
   limparAviso();
   atualizarDica();
 });
-fData.addEventListener("change", function(){ limparAviso(); atualizarDica(); });
+fData.addEventListener("change", function(){ dataMexida = true; limparAviso(); atualizarDica(); });
 fData.value = proximaDataDe(PONTOS[0]);
 atualizarDica();
 
@@ -323,7 +363,8 @@ function render(){
   // gaveta
   blocoVazio.hidden = q > 0;
   blocoPedido.hidden = q === 0;
-  btnEnviar.disabled = q === 0;
+  btnEnviar.disabled = q === 0 || agenda.pausado;
+  mostrarPausa();
   $("#txtEnviar").textContent = q === 0 ? "Escolha pelo menos uma esfiha"
                                         : "Enviar pedido no WhatsApp";
 
@@ -589,6 +630,7 @@ function abrir(){
   barra.classList.remove("visivel");
   setTimeout(function(){ $("#btnFechar").focus(); }, 80);
   if (!idEnvio) idEnvio = novoIdEnvio();
+  carregarAgenda();
 }
 function fechar(){
   veu.classList.remove("aberta");
@@ -618,6 +660,7 @@ $("#btnIrCardapio").addEventListener("click", function(){
 function limparAviso(){
   aviso.classList.remove("on");
   [fNome, fData, fCupom].forEach(function(el){ marcarErro(el, false); });
+  mostrarPausa();   // o aviso de pausa vale enquanto durar a pausa
 }
 fNome.addEventListener("input", limparAviso);
 
@@ -649,7 +692,7 @@ function dataBR(v){
 var ultimoEnvio = { msg:"", em:0 };
 btnEnviar.addEventListener("click", function(){
   var q = totalQtd();
-  if (!q) return;
+  if (!q || agenda.pausado) return;
 
   var faltando = [];
   var pt = pontoAtual();
@@ -675,7 +718,7 @@ btnEnviar.addEventListener("click", function(){
     if (alvo) { alvo.focus(); alvo.scrollIntoView({behavior: comoRolar(), block:"center"}); }
     return;
   }
-  aviso.classList.remove("on");
+  limparAviso();
 
   var f = faixaDe(q), cupom = cupomAtual();
   var linhasTxt = SABORES.filter(function(s){ return carrinho[s.id] > 0; })

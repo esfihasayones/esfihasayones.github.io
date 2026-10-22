@@ -106,20 +106,23 @@ export function inicioRetirada(ponto, dataIso){
   return new Date(dataIso + "T" + dois(h) + ":" + dois(min) + ":00-03:00");
 }
 
-// "ok", "feriado", "dia" (o ponto não abre nesse dia) ou "cedo" (falta antecedência).
-export function situacaoData(ponto, dataIso, qtd, agoraMs){
+// "ok", "feriado", "dia" (o ponto não abre nesse dia), "lotado" ou "bloqueado"
+// (os dois vêm da agenda do servidor, em `bloqueados`: Map dia -> motivo) ou
+// "cedo" (falta antecedência).
+export function situacaoData(ponto, dataIso, qtd, agoraMs, bloqueados){
   if (FERIADOS[dataIso]) return "feriado";
   if (ponto.dias.indexOf(diaDaData(dataIso)) === -1) return "dia";
+  if (bloqueados && bloqueados.has(dataIso)) return bloqueados.get(dataIso);
   const limite = agoraMs + horasAntecedencia(qtd) * 3600 * 1000;
   return inicioRetirada(ponto, dataIso).getTime() < limite ? "cedo" : "ok";
 }
 
 // Primeira data em que o ponto abre, que respeita a antecedência e que não
-// está na lista de bloqueadas.
+// está lotada nem bloqueada (`bloqueados` é o mesmo Map de situacaoData).
 export function proximaData(ponto, qtd, agoraMs, bloqueados){
   for (let i = 0; i < 21; i++){
     const v = isoBrasilia(agoraMs + i*86400000);   // Brasília não tem horário de verão
-    if (situacaoData(ponto, v, qtd, agoraMs) === "ok" && !(bloqueados && bloqueados.has(v))) return v;
+    if (situacaoData(ponto, v, qtd, agoraMs, bloqueados) === "ok") return v;
   }
   return isoBrasilia(agoraMs + horasAntecedencia(qtd) * 3600 * 1000);
 }

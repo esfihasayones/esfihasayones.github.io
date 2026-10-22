@@ -984,6 +984,93 @@
   });
 
   /* =========================================================
+     AGENDA: DIA LOTADO, BLOQUEADO E PEDIDOS PAUSADOS
+     ========================================================= */
+  // Responde /api/agenda com o que o teste quiser; o resto segue o padrão.
+  function agendaFalsa(c, resposta) {
+    var anterior = c.win.fetch;
+    c.win.fetch = function (url, opcoes) {
+      if (String(url).indexOf("/api/agenda") !== -1) {
+        if (resposta === null) return Promise.reject(new TypeError("sem rede"));
+        return Promise.resolve(new c.win.Response(JSON.stringify(resposta), { status: 200 }));
+      }
+      return anterior(url, opcoes);
+    };
+  }
+  // Quarta 21/10 às 10h: o Itacorubi abre a partir de sexta 23/10.
+  function prepararAgenda(c, resposta) {
+    c.win.Date.now = function () { return new c.win.Date("2026-10-21T10:00:00").getTime(); };
+    agendaFalsa(c, resposta);
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    return c.dormir(60).then(function () {
+      var ponto = c.el("#fPonto");
+      ponto.value = "1";   // Itacorubi
+      ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    });
+  }
+  function escolherData(c, v) {
+    var d = c.el("#fData");
+    d.value = v;
+    d.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+  }
+
+  teste("Agenda", "dia lotado é recusado e a sugestão pula ele", function (c) {
+    return prepararAgenda(c, { pausado: false, indisponiveis: { "2026-10-23": "lotado" } }).then(function () {
+      // sem o dia lotado a primeira data seria 23/10; o campo já deve ter pulado
+      igual(c.el("#fData").value, "2026-10-26", "a data sugerida não pode ser a lotada");
+      escolherData(c, "2026-10-23");
+      var dica = c.texto("#dicaData");
+      contem(dica, "Esse dia já está cheio.");
+      contem(dica, "A mais próxima no Itacorubi é segunda, 26/10/2026.");
+      c.el("#fNome").value = "Breno";
+      igual(c.enviar(), null, "dia lotado não pode enviar");
+      ok(c.el("#aviso").classList.contains("on"), "o aviso deveria aparecer");
+      contem(c.texto("#aviso"), "Esse dia já está cheio.");
+    });
+  });
+
+  teste("Agenda", "dia bloqueado diz que não tem retirada e sugere outro", function (c) {
+    return prepararAgenda(c, { pausado: false, indisponiveis: { "2026-10-26": "bloqueado" } }).then(function () {
+      escolherData(c, "2026-10-26");
+      var dica = c.texto("#dicaData");
+      contem(dica, "Nesse dia não tem retirada.");
+      contem(dica, "A mais próxima no Itacorubi é sexta, 23/10/2026.");
+      c.el("#fNome").value = "Breno";
+      igual(c.enviar(), null);
+      escolherData(c, "2026-10-27");
+      ok(c.enviar() !== null, "outro dia deveria enviar");
+    });
+  });
+
+  teste("Agenda", "pedidos pausados desabilitam o envio e avisam", function (c) {
+    return prepararAgenda(c, { pausado: true, indisponiveis: {} }).then(function () {
+      ok(c.el("#btnEnviar").disabled, "o botão deveria estar desabilitado");
+      igual(c.texto("#aviso").trim(), "Os pedidos estão pausados por enquanto. Fala com a gente no WhatsApp.");
+      ok(c.el("#aviso").offsetHeight > 0, "o aviso precisa estar visível");
+      ok(c.doc.querySelectorAll('a[href^="https://wa.me/"]').length > 0, "os outros links do WhatsApp seguem na página");
+      c.el("#fNome").value = "Breno";
+      igual(c.enviar(), null, "pausado não pode enviar nem por clique forçado");
+    });
+  });
+
+  teste("Agenda", "se a agenda falhar, o site funciona como antes", function (c) {
+    return prepararAgenda(c, null).then(function () {
+      escolherData(c, "2026-10-23");
+      ok(c.texto("#dicaData").indexOf("cheio") === -1, "sem agenda não há dia lotado");
+      ok(!c.el("#btnEnviar").disabled);
+      c.el("#fNome").value = "Breno";
+      ok(c.enviar() !== null, "deveria enviar");
+    });
+  });
+
+  teste("Agenda", "dia indisponível não vira sugestão da primeira data", function (c) {
+    return prepararAgenda(c, { pausado: false, indisponiveis: { "2026-10-23": "bloqueado", "2026-10-26": "lotado" } }).then(function () {
+      igual(c.el("#fData").value, "2026-10-27");
+    });
+  });
+
+  /* =========================================================
      GAVETA, FOCO E TECLADO
      ========================================================= */
   teste("Gaveta", "fechada, fica fora do caminho do teclado", function (c) {

@@ -36,16 +36,33 @@ async function servirArquivo(url, res) {
   }
 }
 
+// Antes de o site rodar, avisa a página de testes (se houver uma) pra ela
+// poder trocar o `fetch` do iframe. Os módulos do site só executam depois.
+const GANCHO = "<script>try{parent.__preparar&&parent.__preparar(window)}catch(e){}</script>";
+
 function repassar(req, res) {
+  const ehPagina = req.method === "GET" && new URL(req.url, "http://local").pathname === "/";
   const saida = http.request(
     {
       hostname: DESTINO.hostname,
       port: DESTINO.port,
       path: req.url,
       method: req.method,
-      headers: { ...req.headers, host: DESTINO.host },
+      headers: { ...req.headers, host: DESTINO.host, ...(ehPagina ? { "accept-encoding": "identity" } : {}) },
     },
     (resp) => {
+      if (ehPagina && /text\/html/.test(resp.headers["content-type"] || "")) {
+        const partes = [];
+        resp.on("data", (p) => partes.push(p));
+        resp.on("end", () => {
+          const html = Buffer.concat(partes).toString("utf8").replace(/<head[^>]*>/i, (m) => m + GANCHO);
+          const cab = { ...resp.headers, "cache-control": "no-store" };
+          delete cab["content-length"]; delete cab["etag"];
+          res.writeHead(resp.statusCode, cab);
+          res.end(html);
+        });
+        return;
+      }
       res.writeHead(resp.statusCode, resp.headers);
       resp.pipe(res);
     }

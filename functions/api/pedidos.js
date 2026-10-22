@@ -1,4 +1,5 @@
 import { validar, avaliar } from "../_lib/pedido.js";
+import { lerAgenda } from "../_lib/agenda.js";
 
 const COLUNAS = ["id_envio", "criado_em", "origem", "status", "motivo", "nome", "itens", "qtd",
   "unit_centavos", "total_centavos", "cupom", "desconto_centavos", "ponto", "retirada", "janela", "obs"];
@@ -17,17 +18,7 @@ export async function onRequestPost({ request, env }) {
     .bind(corpo.id_envio).first();
   if (existente) return Response.json(publico(existente), { status: 200 });
 
-  const cfg = await env.DB.prepare("SELECT chave, valor FROM config").all();
-  const c = Object.fromEntries(cfg.results.map((r) => [r.chave, r.valor]));
-  const bl = await env.DB.prepare("SELECT dia FROM bloqueios").all();
-  const oc = await env.DB.prepare(
-    "SELECT retirada, SUM(qtd) AS q FROM pedidos WHERE status IN ('aguardando','confirmado') AND retirada IS NOT NULL GROUP BY retirada").all();
-  const agenda = {
-    limite: parseInt(c.limite_dia, 10) || 80,
-    pausado: c.pausado === "1",
-    bloqueados: new Set(bl.results.map((r) => r.dia)),
-    ocupado: new Map(oc.results.map((r) => [r.retirada, r.q])),
-  };
+  const agenda = await lerAgenda(env.DB, corpo.retirada, corpo.retirada);
 
   const { linha } = avaliar(corpo, Date.now(), agenda);
   await env.DB.prepare(
