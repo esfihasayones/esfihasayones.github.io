@@ -4,12 +4,11 @@ import {
   horasAntecedencia as horasAntecedenciaDe, situacaoData as situacaoDataDe
 } from "./regras.js";
 
-// Cupons: código em maiúscula e o desconto sobre o total, já com o combo.
-// O site não sabe quem já comprou; o cupom chega escrito no WhatsApp e a
-// regra (primeira compra etc.) é conferida lá.
-var CUPONS = {
-  PRIMEIRACOMPRA: 0.10
-};
+// Cupons: quem sabe quais existem é o servidor (GET /api/cupom). O site
+// guarda a resposta de cada código digitado em cupomRes: "ok" com o pct,
+// "nao" (404) ou "falha" (rede ou 5xx). Sem resposta ainda, o código está
+// pendente: o total sai sem desconto. A regra (primeira compra etc.) é
+// conferida depois pelo dono, no WhatsApp e no painel.
 
 
 var $  = function(s,c){ return (c||document).querySelector(s); };
@@ -26,6 +25,8 @@ var chaveLinhas = null;   // assinatura da lista montada na gaveta
 var carrinho = {};
 var obsItem = {};         // observação por sabor, ex.: {calabresa: "sem cebola"}
 var cupomTxt = "";        // o que está digitado no campo de cupom
+var cupomRes = {};        // resposta do servidor por código: {estado, pct}
+var tCupom = null;        // espera de 300 ms depois da última tecla
 SABORES.forEach(function(s){ carrinho[s.id] = 0; });
 try {
   var salvo = JSON.parse(localStorage.getItem(CHAVE) || "{}") || {};
@@ -75,10 +76,40 @@ function nomeDe(id){
 function totalQtd(){
   return SABORES.reduce(function(t,s){ return t + carrinho[s.id]; }, 0);
 }
-// Cupom válido digitado, ou null. Espaço em volta não conta.
+// Estado do cupom digitado: "vazio", "pendente", "ok", "nao" ou "falha".
+function estadoCupom(){
+  var cod = cupomTxt.trim();
+  if (!cod) return "vazio";
+  var r = cupomRes[cod];
+  return r ? r.estado : "pendente";
+}
+// Cupom que o servidor confirmou, ou null. Espaço em volta não conta.
 function cupomAtual(){
   var cod = cupomTxt.trim();
-  return CUPONS.hasOwnProperty(cod) ? { cod: cod, pct: CUPONS[cod] } : null;
+  return estadoCupom() === "ok" ? { cod: cod, pct: cupomRes[cod].pct } : null;
+}
+// Pergunta ao servidor se o código existe. Falha de rede nunca estoura: vira
+// "falha" e o pedido segue, com o cupom escrito na mensagem.
+function consultarCupom(cod){
+  if (!cod || cupomRes[cod]) return;
+  var guardar = function(res){ cupomRes[cod] = res; render(); };
+  try {
+    fetch("/api/cupom?codigo=" + encodeURIComponent(cod))
+      .then(function(r){
+        if (r.status === 404) return guardar({ estado: "nao" });
+        if (!r.ok) return guardar({ estado: "falha" });
+        return r.json().then(function(j){
+          guardar(typeof j.pct === "number" ? { estado: "ok", pct: j.pct } : { estado: "falha" });
+        });
+      })
+      .catch(function(){ guardar({ estado: "falha" }); });
+  } catch(e){ guardar({ estado: "falha" }); }
+}
+function agendarCupom(esperaMs){
+  clearTimeout(tCupom);
+  var cod = cupomTxt.trim();
+  if (!cod || cupomRes[cod]) return;
+  tCupom = setTimeout(function(){ consultarCupom(cod); }, esperaMs);
 }
 // Desconto do cupom em reais, arredondado no centavo.
 function descontoDe(valor){
@@ -368,10 +399,13 @@ function render(){
   if (document.activeElement !== fCupom) fCupom.value = cupomTxt;
   var dicaCupom = $("#dicaCupom"), digitado = cupomTxt.trim();
   dicaCupom.hidden = !digitado;
+  var estCupom = estadoCupom();
   dicaCupom.classList.toggle("ok", !!cup);
-  dicaCupom.classList.toggle("falha", !cup && !!digitado);
+  dicaCupom.classList.toggle("falha", estCupom === "nao");
   dicaCupom.textContent = cup ? "Cupom aplicado: " + pctTxt(cup.pct) + " de desconto no total."
-                              : "Esse cupom não existe. Confira se digitou certo.";
+                        : estCupom === "nao" ? "Esse cupom não existe. Confira se digitou certo."
+                        : estCupom === "falha" ? "Não deu pra conferir o cupom agora. Ele vai na mensagem e a gente confere."
+                        : "Conferindo o cupom...";
 
   // Quanto falta pro próximo desconto. Só aparece quando faltam 1 ou 2:
   // com mais que isso a sugestão vira empurrão. Mostra quanto o pedido
@@ -526,6 +560,14 @@ linhas.addEventListener("focusout", function(ev){
 });
 
 /* ---------- gaveta ---------- */
+// Identifica este envio. O servidor ignora o segundo POST com o mesmo id,
+// então um reenvio por rede ruim não vira pedido duplicado. Nasce na abertura
+// da gaveta e é renovado depois de cada envio.
+var idEnvio = null;
+function novoIdEnvio(){
+  try { if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); } catch(e){}
+  return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12);
+}
 var ultimoFoco = null, tVeu = null;
 // Com a gaveta aberta o resto da página fica inerte: sem isso o Tab saía
 // da gaveta e ia parar no cabeçalho atrás do véu.
@@ -546,6 +588,7 @@ function abrir(){
   document.body.style.overflow = "hidden";
   barra.classList.remove("visivel");
   setTimeout(function(){ $("#btnFechar").focus(); }, 80);
+  if (!idEnvio) idEnvio = novoIdEnvio();
 }
 function fechar(){
   veu.classList.remove("aberta");
@@ -589,6 +632,7 @@ fCupom.addEventListener("input", function(){
   cupomTxt = maiusc;
   marcarErro(fCupom, false);
   limparAviso();
+  agendarCupom(300);
   render();
 });
 fCupom.addEventListener("blur", function(){ cupomTxt = cupomTxt.trim(); render(); });
@@ -619,7 +663,7 @@ btnEnviar.addEventListener("click", function(){
   if (precisaData && !fData.value) faltando.push("o dia da retirada");
 
   // Cupom errado não some calado: o cliente achou que tinha desconto.
-  var cupomRuim = !!cupomTxt.trim() && !cupomAtual();
+  var cupomRuim = estadoCupom() === "nao";
   marcarErro(fCupom, cupomRuim);
 
   if (faltando.length || dataRuim || cupomRuim){
@@ -651,7 +695,8 @@ btnEnviar.addEventListener("click", function(){
     "Total: " + q + (q === 1 ? " esfiha" : " esfihas") +
     ", " + brl(q * f.preco) + " (" + brl(f.preco) + " cada)\n" +
     (cupom ? "*Cupom:* " + cupom.cod + ", " + pctTxt(cupom.pct) + " de desconto\n" +
-             "*Total com cupom:* " + brl(comCupom(q * f.preco)) + "\n" : "") +
+             "*Total com cupom:* " + brl(comCupom(q * f.preco)) + "\n"
+     : cupomTxt.trim() ? "*Cupom:* " + cupomTxt.trim() + " (a confirmar)\n" : "") +
     "\n" +
     "*Retirada:* " + retiradaTxt + "\n" +
     "*Nome:* " + fNome.value.trim() + "\n" +
@@ -662,8 +707,32 @@ btnEnviar.addEventListener("click", function(){
   // mensagem em menos de 2s é barrada; performance.now não volta com o relógio.
   if (msg === ultimoEnvio.msg && performance.now() - ultimoEnvio.em < 2000) return;
   ultimoEnvio = { msg:msg, em:performance.now() };
+  // Grava o pedido sem esperar: o WhatsApp abre no mesmo clique e não
+  // depende do servidor. Nunca vai total; quem calcula é o servidor.
+  gravarPedido(pt);
   window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
+  idEnvio = novoIdEnvio();
 });
+function gravarPedido(pt){
+  try {
+    var itens = SABORES.filter(function(s){ return carrinho[s.id] > 0; }).map(function(s){
+      var it = { sabor: s.id, qtd: carrinho[s.id] };
+      var o = (obsItem[s.id] || "").trim();
+      if (o) it.obs = o;
+      return it;
+    });
+    var corpo = { id_envio: idEnvio || novoIdEnvio(), nome: fNome.value.trim(), itens: itens, ponto: +fPonto.value || 0 };
+    if (pt.dias !== null) corpo.retirada = fData.value;
+    if (cupomTxt.trim()) corpo.cupom = cupomTxt.trim();
+    if (fObs.value.trim()) corpo.obs = fObs.value.trim();
+    var p = fetch("/api/pedidos", {
+      method: "POST", keepalive: true,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corpo)
+    });
+    if (p && p.catch) p.catch(function(){});
+  } catch(e){ /* sem servidor, o pedido segue só pelo WhatsApp */ }
+}
 
 [fNome, fData].forEach(function(el){
   el.addEventListener("input", function(){ marcarErro(el, false); });
@@ -702,4 +771,5 @@ window.addEventListener("scroll", aoRolar, {passive:true});
 aoRolar();
 
 $("#ano").textContent = new Date().getFullYear();
+consultarCupom(cupomTxt.trim());   // cupom que sobrou de uma visita anterior
 render();

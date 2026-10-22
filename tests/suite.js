@@ -751,6 +751,8 @@
   /* =========================================================
      CUPOM
      ========================================================= */
+  // A consulta ao servidor espera 300 ms após a última tecla; os testes
+  // esperam a resposta aparecer na dica antes de conferir.
   teste("Cupom", "o campo de cupom escreve tudo em maiúscula", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
@@ -762,17 +764,18 @@
     c.definir("queijo", 12);
     c.abrirGaveta();
     c.digitar(c.el("#fCupom"), "primeiracompra");
-    igual(c.texto("#rsTotal"), "R$ 56,16");     // 62,40 - 10%
-    igual(c.texto("#barraTotal"), "R$ 56,16");
-    contem(c.texto("#rsCupom"), "R$ 6,24");
-    contem(c.texto("#dicaCupom"), "10%");
+    return c.esperar(function () { return c.texto("#dicaCupom").indexOf("10%") !== -1; }, 3000).then(function () {
+      igual(c.texto("#rsTotal"), "R$ 56,16");     // 62,40 - 10%
+      igual(c.texto("#barraTotal"), "R$ 56,16");
+      contem(c.texto("#rsCupom"), "R$ 6,24");
+    });
   });
 
   teste("Cupom", "espaço em volta do cupom não atrapalha", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
     c.digitar(c.el("#fCupom"), "  primeiracompra ");
-    igual(c.texto("#rsTotal"), "R$ 19,80");     // 22,00 - 10%
+    return c.esperar(function () { return c.texto("#rsTotal") === "R$ 19,80"; }, 3000);   // 22,00 - 10%
   });
 
   teste("Cupom", "sem cupom a linha de desconto não aparece", function (c) {
@@ -782,16 +785,48 @@
     igual(c.texto("#rsTotal"), "R$ 22,00");
   });
 
+  teste("Cupom", "enquanto o servidor não responde, dá o total sem desconto e avisa que está conferindo", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "PRIMEIRACOMPRA");
+    contem(c.texto("#dicaCupom"), "Conferindo o cupom");
+    igual(c.texto("#rsTotal"), "R$ 22,00");
+  });
+
   teste("Cupom", "cupom que não existe avisa, não desconta e barra o envio", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
     c.digitar(c.el("#fCupom"), "BLACKFRIDAY");
-    igual(c.texto("#rsTotal"), "R$ 22,00");
-    contem(c.texto("#dicaCupom"), "não existe");
-    igual(c.el("#rsLinhaCupom").getBoundingClientRect().height, 0);
-    c.el("#fNome").value = "Breno";
-    igual(c.enviar(), null, "não deveria mandar pedido com cupom errado");
-    contem(c.texto("#aviso"), "cupom");
+    return c.esperar(function () { return c.texto("#dicaCupom").indexOf("não existe") !== -1; }, 3000).then(function () {
+      igual(c.texto("#rsTotal"), "R$ 22,00");
+      igual(c.el("#rsLinhaCupom").getBoundingClientRect().height, 0);
+      c.el("#fNome").value = "Breno";
+      igual(c.enviar(), null, "não deveria mandar pedido com cupom errado");
+      contem(c.texto("#aviso"), "cupom");
+    });
+  });
+
+  teste("Cupom", "se a consulta falha por rede, o pedido sai com o cupom na mensagem", function (c) {
+    c.win.fetch = function () { return Promise.reject(new TypeError("sem rede")); };
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "PRIMEIRACOMPRA");
+    return c.esperar(function () { return c.texto("#dicaCupom").indexOf("Não deu pra conferir") !== -1; }, 3000).then(function () {
+      igual(c.texto("#rsTotal"), "R$ 22,00");
+      var msg = c.enviarValido();
+      contem(msg, "*Cupom:* PRIMEIRACOMPRA");
+      ok(c.erros.length === 0, "não deveria estourar erro: " + c.erros.join("; "));
+    });
+  });
+
+  teste("Cupom", "se o servidor responde 500, também não barra o envio", function (c) {
+    c.win.fetch = function () { return Promise.resolve(new c.win.Response("{}", { status: 500 })); };
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "PRIMEIRACOMPRA");
+    return c.esperar(function () { return c.texto("#dicaCupom").indexOf("Não deu pra conferir") !== -1; }, 3000).then(function () {
+      contem(c.enviarValido(), "*Cupom:* PRIMEIRACOMPRA");
+    });
   });
 
   teste("Cupom", "apagar o cupom errado libera o envio", function (c) {
@@ -807,10 +842,12 @@
     c.definir("calabresa", 12);
     c.abrirGaveta();
     c.digitar(c.el("#fCupom"), "primeiracompra");
-    var msg = c.enviarValido();
-    contem(msg, "R$ 62,40 (R$ 5,20 cada)");
-    contem(msg, "*Cupom:* PRIMEIRACOMPRA, 10% de desconto");
-    contem(msg, "*Total com cupom:* R$ 56,16");
+    return c.esperar(function () { return c.texto("#dicaCupom").indexOf("10%") !== -1; }, 3000).then(function () {
+      var msg = c.enviarValido();
+      contem(msg, "R$ 62,40 (R$ 5,20 cada)");
+      contem(msg, "*Cupom:* PRIMEIRACOMPRA, 10% de desconto");
+      contem(msg, "*Total com cupom:* R$ 56,16");
+    });
   });
 
   teste("Cupom", "sem cupom a mensagem não fala em cupom", function (c) {
@@ -823,8 +860,9 @@
     c.abrirGaveta();
     c.digitar(c.el("#fCupom"), "PRIMEIRACOMPRA");
     // 8 x 5,35 = 42,80, menos 10% = 38,52; hoje 6 x 5,50 = 33,00, menos 10% = 29,70
-    contem(c.texto("#rsProgresso"), "R$ 38,52");
-    contem(c.texto("#rsProgresso"), "R$ 8,82");
+    return c.esperar(function () { return c.texto("#rsProgresso").indexOf("R$ 38,52") !== -1; }, 3000).then(function () {
+      contem(c.texto("#rsProgresso"), "R$ 8,82");
+    });
   });
 
   teste("Cupom", "o cupom sobrevive ao recarregar", function (c) {
@@ -833,7 +871,115 @@
     c.digitar(c.el("#fCupom"), "primeiracompra");
     return c.recarregar().then(function (c2) {
       igual(c2.el("#fCupom").value, "PRIMEIRACOMPRA");
-      igual(c2.texto("#barraTotal"), "R$ 19,80");
+      return c2.esperar(function () { return c2.texto("#barraTotal") === "R$ 19,80"; }, 3000);
+    });
+  });
+
+  teste("Cupom", "a lista de cupons não aparece no código do site", function (c) {
+    return Promise.all(["/app.js", "/regras.js"].map(function (u) {
+      return fetch(u).then(function (r) { return r.text(); });
+    })).then(function (textos) {
+      textos.forEach(function (t) { naoContem(t.toUpperCase(), "PRIMEIRACOMPRA"); });
+    });
+  });
+
+  /* =========================================================
+     GRAVAÇÃO DO PEDIDO
+     ========================================================= */
+  // Espia o fetch da página e o window.open, e clica em enviar.
+  function enviarEspiando(c) {
+    var chamadas = [], aberturas = [], ordem = [];
+    c.win.fetch = function (url, opcoes) {
+      chamadas.push({ url: String(url), opcoes: opcoes || {} });
+      ordem.push("fetch");
+      return Promise.resolve(new c.win.Response("{}", { status: 201 }));
+    };
+    var original = c.win.open;
+    c.win.open = function (u) { aberturas.push(u); ordem.push("open"); return null; };
+    c.el("#btnEnviar").click();
+    c.win.open = original;
+    return { chamadas: chamadas, aberturas: aberturas, ordem: ordem };
+  }
+  function postsDe(r) {
+    return r.chamadas.filter(function (x) { return x.url.indexOf("/api/pedidos") !== -1; });
+  }
+
+  teste("Gravação", "enviar grava o pedido sem atrasar o WhatsApp", function (c) {
+    c.definir("calabresa", 4);
+    c.definir("queijo", 2);
+    c.abrirGaveta();
+    c.el("#fNome").value = "Breno";
+    var r = enviarEspiando(c);
+    igual(r.aberturas.length, 1, "o WhatsApp deveria abrir no mesmo clique");
+    var posts = postsDe(r);
+    igual(posts.length, 1);
+    igual(posts[0].opcoes.method, "POST");
+    ok(posts[0].opcoes.keepalive === true, "precisa de keepalive pra não perder o pedido ao trocar de aba");
+    var corpo = JSON.parse(posts[0].opcoes.body);
+    ok(corpo.id_envio && corpo.id_envio.length >= 8, "falta id_envio");
+    igual(corpo.nome, "Breno");
+    ok(Array.isArray(corpo.itens) && corpo.itens.length === 2, "itens");
+    igual(corpo.itens[0].sabor, "calabresa");
+    igual(corpo.itens[0].qtd, 4);
+    ok(typeof corpo.ponto === "number", "ponto é o índice");
+    ok(!("total" in corpo), "o site nunca manda total");
+    ok(!("desconto" in corpo), "o site nunca manda desconto");
+  });
+
+  teste("Gravação", "a observação do sabor e a geral vão no corpo", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.el("#fNome").value = "Breno";
+    c.el("#fObs").value = "tocar a campainha";
+    c.digitar(c.el(".obs-item"), "sem cebola");
+    var corpo = JSON.parse(postsDe(enviarEspiando(c))[0].opcoes.body);
+    igual(corpo.obs, "tocar a campainha");
+    igual(corpo.itens[0].obs, "sem cebola");
+  });
+
+  teste("Gravação", "ponto com dias manda a retirada e o cupom digitado", function (c) {
+    c.win.Date.now = function () { return new c.win.Date("2026-10-21T10:00:00").getTime(); };
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.el("#fNome").value = "Breno";
+    var ponto = c.el("#fPonto"), data = c.el("#fData");
+    ponto.value = "1";   // Itacorubi
+    ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    data.value = "2026-10-26";
+    data.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+    c.digitar(c.el("#fCupom"), "primeiracompra");
+    var posts = postsDe(enviarEspiando(c));
+    igual(posts.length, 1);
+    var corpo = JSON.parse(posts[0].opcoes.body);
+    igual(corpo.ponto, 1);
+    igual(corpo.retirada, "2026-10-26");
+    igual(corpo.cupom, "PRIMEIRACOMPRA");
+  });
+
+  teste("Gravação", "sem servidor o WhatsApp abre normal e nada estoura", function (c) {
+    var abriu = [];
+    c.win.fetch = function () { return Promise.reject(new TypeError("sem rede")); };
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.el("#fNome").value = "Breno";
+    var original = c.win.open;
+    c.win.open = function (u) { abriu.push(u); return null; };
+    c.el("#btnEnviar").click();
+    c.win.open = original;
+    igual(abriu.length, 1);
+    return c.dormir(100).then(function () {
+      ok(c.erros.length === 0, "não deveria estourar erro: " + c.erros.join("; "));
+    });
+  });
+
+  teste("Gravação", "o id do envio muda depois de um envio", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.el("#fNome").value = "Breno";
+    var a = JSON.parse(postsDe(enviarEspiando(c))[0].opcoes.body).id_envio;
+    return c.dormir(2100).then(function () {
+      var b = JSON.parse(postsDe(enviarEspiando(c))[0].opcoes.body).id_envio;
+      ok(a !== b, "um segundo pedido não pode reaproveitar o id do primeiro");
     });
   });
 
