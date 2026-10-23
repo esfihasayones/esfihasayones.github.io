@@ -42,6 +42,11 @@ faça commit e push logo, sem deixar nada solto.
 
 ### Pendente, por decisão dele
 
+- Trocar os desenhos das esfihas por fotos de verdade (23/10/2026). Cliente
+  achou o desenho "de IA" e disse que a de carne parece pote de feijão. Ele
+  vai fotografar de cima, fundo claro liso, luz de janela; a gente recorta e
+  põe fundo em degradê igual nos quatro sabores.
+
 - Cadastrar o Google Meu Negócio.
 - Gerar o arquivo final da camiseta pra gráfica (ver a memória do projeto).
 
