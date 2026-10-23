@@ -14,14 +14,9 @@ SO_TESTAR=0
 dizer() { printf '\n==> %s\n' "$*"; }
 falhar() { printf '\nERRO: %s\n' "$*" >&2; exit 1; }
 
-dizer "Conferindo o repositório"
-RAMO_GIT="$(git symbolic-ref --short -q HEAD || true)"
-[ -n "$RAMO_GIT" ] || falhar "o repositório está sem branch (HEAD solto). Entre numa branch."
-[ -z "$(git status --porcelain)" ] || falhar "há mudanças sem commit. Faça commit antes de publicar."
-echo "Branch $RAMO_GIT, árvore limpa."
-
 dizer "Conferindo que nada de teste ou de segredo vai no deploy"
-SOBRA="$(find public \( -path '*/tests' -o -path '*/tests/*' -o -name '.dev.vars*' -o -name '.env*' \) -print)"
+# Arquivo oculto (.DS_Store, .env, .dev.vars) subiria junto, mesmo ignorado pelo git.
+SOBRA="$(find public \( -path '*/tests' -o -path '*/tests/*' -o -name '.*' \) ! -name . ! -path public -print)"
 [ -z "$SOBRA" ] || falhar "arquivos que não podem ir ao ar dentro de public/: $SOBRA"
 # DEV_SEM_LOGIN só pode ser lido do ambiente, nunca fixado no código.
 if grep -rnE 'DEV_SEM_LOGIN' functions public | grep -vE 'env\.DEV_SEM_LOGIN|^[^:]*:[0-9]+:\s*//'; then
@@ -30,7 +25,17 @@ fi
 if grep -rnE 'DEV_SEM_LOGIN\s*[:=]\s*["'"'"']?1' functions public | grep -vE '^[^:]*:[0-9]+:\s*//'; then
   falhar "DEV_SEM_LOGIN fixado em 1 no código."
 fi
+# Uma [vars] no wrangler.toml iria pro ar com o deploy.
+if grep -n 'DEV_SEM_LOGIN' wrangler.toml; then
+  falhar "wrangler.toml menciona DEV_SEM_LOGIN (iria pro ar)."
+fi
 echo "Nada indevido em public/ e DEV_SEM_LOGIN só vem do ambiente."
+
+dizer "Conferindo o repositório"
+RAMO_GIT="$(git symbolic-ref --short -q HEAD || true)"
+[ -n "$RAMO_GIT" ] || falhar "o repositório está sem branch (HEAD solto). Entre numa branch."
+[ -z "$(git status --porcelain)" ] || falhar "há mudanças sem commit. Faça commit antes de publicar."
+echo "Branch $RAMO_GIT, árvore limpa."
 
 PIDS=()
 encerrar() {
