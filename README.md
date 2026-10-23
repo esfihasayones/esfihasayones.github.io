@@ -36,7 +36,7 @@ Abra <http://127.0.0.1:8788/>. O banco local sai das `migrations/`
 
 ## Publicar
 
-O deploy é o script `ops/publicar.sh`. A branch `main` ainda publica o site
+O deploy é o script `ops/publicar.sh` (`--so-testar` roda só os testes). Backup: `ops/backup.sh`. Passos manuais nos painéis: `ops/PASSOS-NO-PAINEL.md`. Redirecionamento do endereço antigo: `ops/redirecionamento/`. A branch `main` ainda publica o site
 antigo no GitHub Pages: não dê push nela antes da troca de endereço. O push
 vai por SSH, no alias `github-esfiharia` do `~/.ssh/config`, e não pelo `gh`.
 

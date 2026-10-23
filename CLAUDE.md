@@ -230,7 +230,10 @@ node tests/rodar-playwright.cjs chromium "http://127.0.0.1:8792/tests/index.html
 `--test-concurrency=1` é obrigatório: os arquivos de API zeram o banco local e
 se atropelam em paralelo. O `.dev.vars` (copie de `.dev.vars.exemplo`) liga
 `DEV_SEM_LOGIN`, que os testes do painel usam. Publicar é com `ops/publicar.sh`
-(etapa 9 do plano).
+(`--so-testar` só testa). Backup: `ops/backup.sh`. No começo de cada mês, rode
+`ops/anonimizar.sh` (tira nome e observação de pedidos com mais de 12 meses).
+Passos do dono nos painéis: `ops/PASSOS-NO-PAINEL.md`; conteúdo do repositório
+público de redirecionamento: `ops/redirecionamento/`.
 
 O `servidor.mjs` injeta na home um script de gancho (a suíte troca o `fetch`
 do iframe por uma rede de mentira) e, só nas respostas que ele reescreve,
