@@ -56,15 +56,22 @@ dia, está pronto na branch `cloudflare`, no worktree
 reorganizado em `public/`. Já publicado em <https://esfihas-sayones.pages.dev>
 (banco de produção criado, segredo DONO_EMAIL gravado).
 
-Falta, na ordem do `ops/PASSOS-NO-PAINEL.md` da branch `cloudflare`: o dono
-liga o domínio `esfihas.sayones.com.br` no Pages e cria a aplicação do
-Cloudflare Access; manda o nome da equipe e o AUD; gravar `ACCESS_EQUIPE` e
-`ACCESS_AUD` e publicar de novo com `ops/publicar.sh`; lançar no painel os
-dois pedidos de 22/10 (na memória); redirecionar `sayones.com.br` e `www`;
-HTTPS estrito, limite por IP e Web Analytics; GitHub: renomear pra
-`esfiharia`, tornar privado, juntar a `cloudflare` na `main`, criar o repo
-público `esfihasayones.github.io` só com o redirecionamento
-(`ops/redirecionamento/`); link do Instagram e QR da camisa pro domínio novo.
+Feito em 23/10/2026: `esfihas.sayones.com.br` no ar (Pages, Custom domains);
+Access criado (equipe `wild-hill-d83e`, política "Dono" só com o e-mail
+dele, protegendo `/painel` e `/api/painel` nos dois domínios e as prévias
+`*.esfihas-sayones.pages.dev`); `ACCESS_EQUIPE` e `ACCESS_AUD` gravados;
+publicado de novo. Nessa publicação a suíte de navegador foi pulada a pedido
+dele: o Chromium dos testes caía por falta de memória (2,4 GB livres).
+Rodar a suíte quando a máquina estiver folgada.
+
+Falta, na ordem do `ops/PASSOS-NO-PAINEL.md`: ele entrar no `/painel` com o
+login e ver a lista; lançar no painel os dois pedidos de 22/10 (na memória);
+redirecionar `sayones.com.br` e `www`; HTTPS estrito, limite por IP e Web
+Analytics; GitHub: renomear pra `esfiharia`, tornar privado, juntar a
+`cloudflare` na `main`, criar o repo público `esfihasayones.github.io` só com
+o redirecionamento (`ops/redirecionamento/`); link do Instagram e QR da camisa
+pro domínio novo. Rede da Celesc bloqueia o domínio por ser novo ("Newly Seen
+Domains"); fora dela abre.
 
 ### Pagamento (22/10/2026)
 
