@@ -389,22 +389,37 @@
     A.contem(linha.textContent, "7 esfihas");
     A.contem(linha.textContent, "1 pedido");
     P.clicar(linha);
-    await esperar(function () { return P.el("#dia").value === d2 && P.cartao(ped.id); }, "ir pro dia");
-    A.igual(P.sabor("carne"), "7");
+    await esperar(function () { var c = P.cartao(ped.id); return c && P.el("#pontos2").contains(c); }, "dia aparecer na coluna da direita");
+    A.igual(P.texto('#sabores2 [data-sabor="carne"] .n').trim(), "7");
+    A.igual(P.doc().body.dataset.pronto, d, "a coluna do meio continua no mesmo dia");
+    A.igual(P.el('#proximos [data-dia="' + d2 + '"]').getAttribute("aria-pressed"), "true", "botão do dia fica marcado");
   }));
 
-  teste("setas e Hoje trocam o dia", comPainel(async function () {
-    var d = await diaLivre(util);
-    var P = await abrir(d);
-    var prox = new Date(Date.parse(d + "T12:00:00Z") + 86400000).toISOString().slice(0, 10);
-    P.clicar("#seguinte");
-    await esperar(function () { return P.doc().body.dataset.pronto === prox && P.el("#dia").value === prox; }, "dia seguinte");
-    P.clicar("#anterior");
-    await esperar(function () { return P.doc().body.dataset.pronto === d; }, "dia anterior");
-    P.clicar("#hoje");
+  teste("abre em hoje, com amanhã na coluna da direita", comPainel(async function () {
     var hoje = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-    await esperar(function () { return P.doc().body.dataset.pronto === hoje; }, "hoje");
-    A.contem(P.win().location.search, "dia=" + hoje, "endereço acompanha o dia");
+    var q = document.createElement("iframe");
+    q.style.cssText = "position:fixed;left:0;top:0;border:0;opacity:.01;pointer-events:none;z-index:-1;width:1280px;height:900px";
+    document.body.appendChild(q);
+    quadros.push(q);
+    q.src = "/painel/?t=" + Date.now();
+    var P = montar(q);
+    await esperar(function () { return P.doc().body && P.doc().body.dataset.pronto === hoje; }, "abrir em hoje", 10000);
+    A.contem(P.texto("#nomeDia"), "Hoje");
+    A.contem(P.texto("#nomeDia2"), "Amanhã");
+    A.ok(!P.el("#dia") && !P.el("#anterior"), "sem calendário nem setas");
+  }));
+
+  teste("aba Histórico mostra os totais e volta pra Pedidos", comPainel(async function () {
+    var d = await diaLivre(util);
+    var P = await abrir(d, 1280);
+    P.clicar("#abaHistorico");
+    await esperar(function () { return P.doc().body.dataset.historico === "pronto"; }, "histórico carregar");
+    A.ok(P.el("#telaPedidos").hidden && !P.el("#telaHistorico").hidden, "trocou de tela");
+    A.contem(P.texto("#quadros"), "Desde o começo");
+    A.contem(P.texto("#quadros"), "líquido");
+    A.ok(P.el("#tabelaDias th"), "tabela dia a dia");
+    P.clicar("#abaPedidos");
+    A.ok(!P.el("#telaPedidos").hidden && P.el("#telaHistorico").hidden, "voltou");
   }));
 
   teste("agenda: limite, pausa e bloqueio de dia", comPainel(async function () {

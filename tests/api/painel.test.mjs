@@ -317,3 +317,25 @@ test("contas do dia e do mês: bruto, ingredientes, marmita por pedido, taxa e l
   assert.equal(j.financas.dia.taxa, 0);
   assert.equal(j.financas.dia.pago, 2200);
 });
+
+test("histórico soma só confirmados com retirada até hoje, por dia, mês e total", async () => {
+  zerar();
+  const criar = async (retirada, qtd, extra) => {
+    const r = await pedir("/api/painel/pedidos", json({ nome: "H", itens: [{ sabor: "carne", qtd }], ponto: "Centro", retirada, ...extra }));
+    assert.equal(r.status, 201);
+    return (await r.json()).id;
+  };
+  await criar("2026-09-10", 12);            // R$ 62,40
+  await criar("2026-10-02", 4);             // R$ 22,00
+  const c = await criar("2026-10-03", 8);   // cancelado, não conta
+  assert.equal((await patch(c, { status: "cancelado" })).status, 200);
+  await criar(isoBrasilia(Date.now() + 5 * 86400000), 8);   // futuro, não conta
+  const j = await (await pedir("/api/painel/historico", comoDono())).json();
+  assert.equal(j.total.pedidos, 2);
+  assert.equal(j.total.esfihas, 16);
+  assert.equal(j.total.bruto, 6240 + 2200);
+  assert.deepEqual(j.meses.map((m) => m.mes), ["2026-10", "2026-09"]);
+  assert.equal(j.meses[1].embalagem, 2 * 210);
+  assert.deepEqual(j.dias.map((d) => d.dia), ["2026-10-02", "2026-09-10"]);
+  assert.equal(j.total.liquido, j.total.bruto - j.total.ingredientes - j.total.embalagem - j.total.taxa);
+});
