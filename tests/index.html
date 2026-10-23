@@ -223,10 +223,14 @@ main{padding:18px 22px 60px;max-width:1000px}
     var botao = document.getElementById("rodar");
     botao.disabled = true;
     saida.innerHTML = "";
-    // ?grupo=Varredura roda só um grupo
-    var soGrupo = /[?&]grupo=([^&]+)/.exec(location.search);
+    // ?grupo=Painel,Retirada roda só esses grupos; ?sem=Varredura pula grupos
+    var lista = function(nome){
+      var m = new RegExp("[?&]" + nome + "=([^&]+)").exec(location.search);
+      return m ? decodeURIComponent(m[1]).split(",") : null;
+    };
+    var soGrupos = lista("grupo"), semGrupos = lista("sem") || [];
     var testes = window.SUITE.testes.filter(function(t){
-      return !soGrupo || t.grupo === decodeURIComponent(soGrupo[1]);
+      return (!soGrupos || soGrupos.indexOf(t.grupo) >= 0) && semGrupos.indexOf(t.grupo) < 0;
     });
     var grupos = {}, elementos = [];
     testes.forEach(function(t){

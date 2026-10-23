@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
-# Testa tudo e publica o site no Cloudflare Pages.
-# Uso: ops/publicar.sh [--so-testar]
+# Testa e publica o site no Cloudflare Pages.
+# Uso: ops/publicar.sh [--so-testar] [--rapido | --completo]
 #   --so-testar  roda só as verificações e os testes, sem tocar na conta do Cloudflare.
+#   (padrão)     API + testes de navegador, menos a varredura aleatória.
+#   --rapido     API + só os testes do painel. Pra mudança que só mexe no painel.
+#   --completo   inclui a varredura de 8 mil casos. Use ao mexer em preço, ponto,
+#                horário ou feriado; ela pesa e derruba o Chromium com pouca memória.
 # Variável RAMO: ramo do Pages (padrão main, que é a produção).
 set -euo pipefail
 
@@ -9,7 +13,15 @@ RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$RAIZ"
 WRANGLER="npx --yes wrangler@4.152.0"
 SO_TESTAR=0
-[ "${1:-}" = "--so-testar" ] && SO_TESTAR=1
+FILTRO="?sem=Varredura"
+for a in "$@"; do
+  case "$a" in
+    --so-testar) SO_TESTAR=1 ;;
+    --rapido) FILTRO="?grupo=Painel" ;;
+    --completo) FILTRO="" ;;
+    *) echo "opção desconhecida: $a" >&2; exit 2 ;;
+  esac
+done
 
 dizer() { printf '\n==> %s\n' "$*"; }
 falhar() { printf '\nERRO: %s\n' "$*" >&2; exit 1; }
@@ -71,8 +83,8 @@ esperar "http://127.0.0.1:8792/tests/index.html" "O servidor de testes"
 dizer "Rodando a suíte de API"
 node --test --test-concurrency=1 'tests/api/*.test.mjs'
 
-dizer "Rodando a suíte de navegador (Chromium), leva alguns minutos"
-RESULTADO="$(node tests/rodar-playwright.cjs chromium "http://127.0.0.1:8792/tests/index.html")"
+dizer "Rodando a suíte de navegador (Chromium${FILTRO:+, $FILTRO})"
+RESULTADO="$(node tests/rodar-playwright.cjs chromium "http://127.0.0.1:8792/tests/index.html$FILTRO")"
 echo "$RESULTADO" | head -c 1500; echo
 echo "$RESULTADO" | grep -qE '"pronto": true' || falhar "a suíte de navegador não terminou."
 FALHOU="$(echo "$RESULTADO" | grep -oE '"falhou": [0-9]+' | grep -oE '[0-9]+' | head -1)"
