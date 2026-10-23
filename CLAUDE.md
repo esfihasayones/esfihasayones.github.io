@@ -62,11 +62,14 @@ dele, protegendo `/painel` e `/api/painel` nos dois domínios e as prévias
 `*.esfihas-sayones.pages.dev`); `ACCESS_EQUIPE` e `ACCESS_AUD` gravados;
 publicado de novo. Nessa publicação a suíte de navegador foi pulada a pedido
 dele: o Chromium dos testes caía por falta de memória (2,4 GB livres).
-Rodar a suíte quando a máquina estiver folgada.
+Rodar a suíte quando a máquina estiver folgada. Também em 23/10: SSL em
+Full (strict), Always Use HTTPS já ligado, regra de limite "Limite pedidos"
+(10 por 10 s por IP em `/api/pedidos` e `/api/cupom`, bloqueio de 10 s) e
+Web Analytics automático na zona `sayones.com.br`, já contando visitas.
+O Cloudflare está fechado.
 
 Falta, na ordem do `ops/PASSOS-NO-PAINEL.md`: ele entrar no `/painel` com o
-login e ver a lista; lançar no painel os dois pedidos de 22/10 (na memória); HTTPS estrito, limite por IP e Web
-Analytics; GitHub: renomear pra `esfiharia`, tornar privado, juntar a
+login e ver a lista; lançar no painel os dois pedidos de 22/10 (na memória); GitHub: renomear pra `esfiharia`, tornar privado, juntar a
 `cloudflare` na `main`, criar o repo público `esfihasayones.github.io` só com
 o redirecionamento (`ops/redirecionamento/`); link do Instagram e QR da camisa
 pro domínio novo. Rede da Celesc bloqueia o domínio por ser novo ("Newly Seen
