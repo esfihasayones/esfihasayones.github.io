@@ -74,6 +74,12 @@ sem link de pagamento: o link custava ~5% e a garantia de pagar antes dá
 pra ter com Pix. O site ainda não fala de pagamento; se for falar, "Pix ou
 cartão na retirada".
 
+Em 23/10/2026 ele decidiu: o Pix não sai do site. O pedido chega no WhatsApp e
+ele manda a chave ou o QR pra pessoa no privado. QR com valor gerado pelo
+site e confirmação automática (Mercado Pago, ~0,99%) ficaram pra depois. Se a
+mãe dele começar a entregar, a ideia é ela só entregar o que estiver "pago"
+no painel (o e-mail dela entra no Access), por causa do golpe do Pix agendado.
+
 ### Repositório público e domínio (22/10/2026)
 
 Fica público: o dono decidiu que não precisa esconder. Ofereci tirar do
