@@ -18,7 +18,7 @@ export function serializar(r) {
     itens: JSON.parse(r.itens), qtd: r.qtd, total_centavos: r.total_centavos,
     cupom: r.cupom, desconto_centavos: r.desconto_centavos, valor_manual: !!r.valor_manual,
     ponto: r.ponto, retirada: r.retirada, janela: r.janela, obs: r.obs,
-    pago: !!r.pago, entregue: !!r.entregue,
+    pago: !!r.pago, pagamento: r.pagamento || null, entregue: !!r.entregue,
   };
 }
 
@@ -39,6 +39,10 @@ export function validarCampos(c) {
       if (typeof c[k] !== "boolean") return { erro: k + " inválido" };
       f[k] = c[k];
     }
+  }
+  if ("pagamento" in c) {
+    if (c.pagamento !== null && !["pix", "debito", "credito"].includes(c.pagamento)) return { erro: "pagamento inválido" };
+    f.pagamento = c.pagamento;
   }
   if ("nome" in c) {
     if (!texto(c.nome, 60, 1)) return { erro: "nome inválido" };

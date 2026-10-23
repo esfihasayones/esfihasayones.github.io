@@ -1,6 +1,6 @@
 import { validarCampos, montar, serializar, erro, resposta, lerJson } from "../../../_lib/painel.js";
 
-const EDITAVEIS = ["status", "pago", "entregue", "nome", "itens", "ponto", "retirada", "janela", "obs", "cupom",
+const EDITAVEIS = ["status", "pago", "pagamento", "entregue", "nome", "itens", "ponto", "retirada", "janela", "obs", "cupom",
   "qtd", "unit_centavos", "total_centavos", "desconto_centavos", "valor_manual", "motivo"];
 
 export async function onRequestPatch({ request, env, params }) {

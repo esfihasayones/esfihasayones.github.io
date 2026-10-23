@@ -1,12 +1,13 @@
 import { isoBrasilia } from "../../../public/regras.js";
 import { dataIsoValida, texto } from "../../_lib/pedido.js";
+import { contas } from "../../_lib/custos.js";
 import { validarCampos, montar, serializar, vazioSabores, erro, resposta, lerJson } from "../../_lib/painel.js";
 
 const DIA_MS = 86400000;
 const somaDias = (dia, n) => new Date(Date.parse(dia + "T12:00:00Z") + n * DIA_MS).toISOString().slice(0, 10);
 
 const COLUNAS = ["id_envio", "criado_em", "origem", "status", "motivo", "nome", "itens", "qtd", "unit_centavos", "total_centavos",
-  "cupom", "desconto_centavos", "valor_manual", "ponto", "retirada", "janela", "obs", "pago", "entregue"];
+  "cupom", "desconto_centavos", "valor_manual", "ponto", "retirada", "janela", "obs", "pago", "pagamento", "entregue"];
 
 export async function onRequestGet({ request, env }) {
   const agora = Date.now();
@@ -18,7 +19,8 @@ export async function onRequestGet({ request, env }) {
   const de = somaDias(dia, 1), ate = somaDias(dia, 7);
   // As quatro consultas vão num lote só: o banco fica na América do Norte e
   // cada ida e volta saindo do Brasil custa mais de 100 ms.
-  const [doDia, pend, sd, px] = await env.DB.batch([
+  const mes = dia.slice(0, 7);
+  const [doDia, pend, sd, px, doMes] = await env.DB.batch([
     env.DB.prepare("SELECT * FROM pedidos WHERE retirada = ? ORDER BY id").bind(dia),
     env.DB.prepare(
       "SELECT * FROM pedidos WHERE status IN ('aguardando','fora_da_regra') AND (retirada IS NULL OR retirada >= ?) " +
@@ -29,6 +31,8 @@ export async function onRequestGet({ request, env }) {
     env.DB.prepare(
       "SELECT retirada, SUM(qtd) AS q, COUNT(*) AS n FROM pedidos WHERE status = 'confirmado' AND retirada BETWEEN ? AND ? GROUP BY retirada")
       .bind(de, ate),
+    env.DB.prepare("SELECT qtd, total_centavos, pago, pagamento FROM pedidos WHERE status = 'confirmado' AND retirada BETWEEN ? AND ?")
+      .bind(mes + "-01", mes + "-31"),
   ]);
   const porSabor = vazioSabores();
   // Um grupo por ponto; dentro dele os cancelados vão pro fim.
@@ -52,7 +56,9 @@ export async function onRequestGet({ request, env }) {
     proximos.push({ dia: d, qtd: m ? m.q : 0, pedidos: m ? m.n : 0 });
   }
 
-  return resposta({ dia, porSabor, pontos, pendencias: pend.results.map(serializar), semData: sd.results.map(serializar), proximos });
+  const confirmadosDia = doDia.results.filter((r) => r.status === "confirmado");
+  const financas = { dia: contas(confirmadosDia), mes: { mes, ...contas(doMes.results) } };
+  return resposta({ dia, porSabor, pontos, pendencias: pend.results.map(serializar), semData: sd.results.map(serializar), proximos, financas });
 }
 
 // Pedido manual: entra confirmado e sem checar regra de data, ponto livre.
@@ -74,7 +80,7 @@ export async function onRequestPost({ request, env }) {
 
   const base = {
     id_envio: c.id_envio || null, criado_em: new Date().toISOString(), origem: "manual", status: "confirmado", motivo: null,
-    itens: "[]", cupom: null, desconto_centavos: 0, valor_manual: 0, retirada: null, janela: null, obs: null, pago: 0, entregue: 0,
+    itens: "[]", cupom: null, desconto_centavos: 0, valor_manual: 0, retirada: null, janela: null, obs: null, pago: 0, pagamento: null, entregue: 0,
   };
   const l = montar(base, f);
   const r = await env.DB.prepare(`INSERT INTO pedidos (${COLUNAS.join(",")}) VALUES (${COLUNAS.map(() => "?").join(",")})`)
