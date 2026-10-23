@@ -553,7 +553,7 @@ function renderAgenda() {
     h("li", { "data-dia": b.dia },
       h("span", { texto: dataLonga(b.dia) + (b.motivo ? ", " + b.motivo : "") }),
       h("button", { type: "button", className: "btn suave", texto: "Liberar", "aria-label": "Liberar " + dataCurta(b.dia), onclick: (e) => salvarAgenda({ bloqueios: a.bloqueios.filter((x) => x.dia !== b.dia) }, e.currentTarget) })))
-    : [h("li", {}, h("span", { texto: "Nenhum dia bloqueado." }))]));
+    : [h("li", { className: "nenhum" }, h("span", { texto: "Nenhum dia bloqueado." }))]));
 }
 
 async function salvarAgenda(campos, botao, marca) {
