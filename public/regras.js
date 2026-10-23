@@ -3,6 +3,11 @@ export const WHATSAPP = "5548992210812";          // DDI 55 + DDD 48 + número
 export const ANTECEDENCIA_H = 24;                  // horas mínimas entre o pedido e o começo da retirada
 export const PEDIDO_GRANDE = 40;                   // acima disso...
 export const ANTECEDENCIA_GRANDE_H = 72;           // ...a antecedência sobe pra 3 dias
+// A esfiha é montada e assada depois do pedido, num dia de produção antes da
+// retirada. Terça e quarta não tem produção (retirada pode). Pedido feito até
+// as 18h ainda entra na produção do mesmo dia; depois disso, só no seguinte.
+export const DIAS_SEM_PRODUCAO = [2, 3];           // 0 = domingo ... 6 = sábado
+export const HORA_LIMITE_PRODUCAO = 18;
 
 // Dias sem retirada, em qualquer ponto. Feriados nacionais e o aniversário
 // de Florianópolis; Carnaval e Corpus Christi são ponto facultativo e ficam
@@ -113,15 +118,29 @@ export function inicioRetirada(ponto, dataIso){
   return new Date(dataIso + "T" + dois(h) + ":" + dois(min) + ":00-03:00");
 }
 
+const somaDiasIso = (dataIso, n) => new Date(Date.parse(dataIso + "T12:00:00Z") + n * 86400000).toISOString().slice(0, 10);
+
+// Existe dia de produção entre o pedido (feito agora) e a véspera da retirada?
+export function temProducao(dataIso, agoraMs){
+  const horaBrasilia = new Date(agoraMs - 3 * 3600 * 1000).getUTCHours();   // Brasília é -03:00 o ano todo
+  let d = isoBrasilia(agoraMs);
+  if (horaBrasilia >= HORA_LIMITE_PRODUCAO) d = somaDiasIso(d, 1);
+  for (; d < dataIso; d = somaDiasIso(d, 1)) {
+    if (DIAS_SEM_PRODUCAO.indexOf(diaDaData(d)) === -1) return true;
+  }
+  return false;
+}
+
 // "ok", "feriado", "dia" (o ponto não abre nesse dia), "lotado" ou "bloqueado"
-// (os dois vêm da agenda do servidor, em `bloqueados`: Map dia -> motivo) ou
-// "cedo" (falta antecedência).
+// (os dois vêm da agenda do servidor, em `bloqueados`: Map dia -> motivo),
+// "cedo" (falta antecedência) ou "producao" (não sobra dia de produção antes).
 export function situacaoData(ponto, dataIso, qtd, agoraMs, bloqueados){
   if (FERIADOS[dataIso]) return "feriado";
   if (ponto.dias.indexOf(diaDaData(dataIso)) === -1) return "dia";
   if (bloqueados && bloqueados.has(dataIso)) return bloqueados.get(dataIso);
   const limite = agoraMs + horasAntecedencia(qtd) * 3600 * 1000;
-  return inicioRetirada(ponto, dataIso).getTime() < limite ? "cedo" : "ok";
+  if (inicioRetirada(ponto, dataIso).getTime() < limite) return "cedo";
+  return temProducao(dataIso, agoraMs) ? "ok" : "producao";
 }
 
 // Primeira data em que o ponto abre, que respeita a antecedência e que não

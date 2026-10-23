@@ -5,6 +5,7 @@ import { SABORES, PONTOS, NOMES_DIA, isoBrasilia, diaDaData, precoCentavos } fro
 
 const MOTIVOS = {
   cedo: "Pediu com menos antecedência que o mínimo",
+  producao: "Não sobra dia de produção antes da retirada",
   feriado: "Dia de feriado",
   dia: "O ponto não abre nesse dia",
   lotado: "Dia já estava cheio",

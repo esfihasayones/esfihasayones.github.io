@@ -72,7 +72,14 @@
     if (!j) return "dia";
     var p = isoTxt.split("-");
     var inicio = new Date(+p[0], +p[1] - 1, +p[2], j.h, j.m).getTime();
-    return inicio < agoraMs + antecedenciaH(q) * 3600e3 ? "cedo" : "ok";
+    if (inicio < agoraMs + antecedenciaH(q) * 3600e3) return "cedo";
+    // produção: não tem terça nem quarta; pedido a partir das 18h só entra no dia seguinte
+    var d = new Date(agoraMs);
+    if (d.getHours() >= 18) d.setDate(d.getDate() + 1);
+    for (; iso(d) < isoTxt; d.setDate(d.getDate() + 1)) {
+      if (d.getDay() !== 2 && d.getDay() !== 3) return "ok";
+    }
+    return "producao";
   }
   function primeiraData(pi, agoraMs, q) {
     var d = new Date(agoraMs);

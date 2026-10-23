@@ -290,6 +290,9 @@ function textoData(pt, valor){
   if (sit === "cedo")
     return "Pra essa data não dá tempo: precisamos de " + antecedenciaTxt() +
            ". A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
+  if (sit === "producao")
+    return "Pra essa data não dá tempo: a gente não monta esfiha na terça nem na quarta, e pedido depois das 18h entra no dia seguinte. " +
+           "A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
   var dia = diaDaData(valor);
   return "✓ " + NOMES_DIA[dia].charAt(0).toUpperCase() + NOMES_DIA[dia].slice(1) + ", " +
          dataBR(valor) + " · " + horarioTxt(pt, dia) + " " + pt.prep + " " + pt.nome;
