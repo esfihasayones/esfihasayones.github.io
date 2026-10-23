@@ -37,7 +37,7 @@ body{
   padding-bottom:calc(96px + env(safe-area-inset-bottom));
 }
 h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.15;margin:0;color:var(--tinta);letter-spacing:-.01em}
-h2{font-size:15px;text-transform:uppercase;letter-spacing:.04em}
+h2{font-size:15px}
 h3{font-size:14px}
 button,input,select,textarea{font:inherit;color:inherit}
 input,select,textarea{font-size:16px}
@@ -116,7 +116,7 @@ section.bloco>h2{margin-bottom:10px;display:flex;align-items:center;gap:8px}
 
 /* agenda */
 details.agenda{background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio)}
-details.agenda>summary{cursor:pointer;padding:14px;font-family:var(--display);font-weight:600;font-size:15px;text-transform:uppercase;letter-spacing:.04em;min-height:48px}
+details.agenda>summary{cursor:pointer;padding:10px 14px;font-weight:600;font-size:14px;color:var(--suave)}
 .agenda-corpo{padding:0 14px 14px;display:grid;gap:16px}
 .campo{display:grid;gap:6px}
 .campo label,.campo .rot{font-weight:600;font-size:15px}
@@ -166,7 +166,7 @@ dialog#form::backdrop{background:rgba(18,18,18,.55)}
 .coluna>h2,.coluna>summary{display:flex;align-items:baseline;justify-content:space-between;gap:4px 10px;flex-wrap:wrap;margin:0 0 10px;padding:0 2px;list-style:none}
 .coluna>summary::-webkit-details-marker{display:none}
 .coluna .titulo{font-family:var(--display);font-size:15px;font-weight:600;color:var(--tinta)}
-.coluna>h2 small,.coluna>summary small{font-size:13px;color:var(--suave);font-weight:500}
+.coluna>h2 small,.coluna>summary small{font-family:var(--corpo);font-size:13px;color:var(--suave);font-weight:500;letter-spacing:0}
 .coluna h3{font-family:var(--corpo);font-size:13px;font-weight:600;color:var(--suave);margin:14px 2px 6px;display:flex;justify-content:space-between;gap:8px}
 .contagem{background:var(--tinta);color:var(--fundo);border-radius:99px;padding:0 8px;font-size:12px;font-weight:600;line-height:20px}
 .coluna .sabores{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--linha);border:1px solid var(--linha);border-radius:var(--raio-sm);overflow:hidden}
