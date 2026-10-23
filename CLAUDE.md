@@ -46,25 +46,25 @@ faça commit e push logo, sem deixar nada solto.
 - Cadastrar o Google Meu Negócio.
 - Gerar o arquivo final da camiseta pra gráfica (ver a memória do projeto).
 
-### Em andamento: guardar os pedidos numa planilha (22/10/2026)
+### Em andamento: mudança pro Cloudflare (22/10/2026)
 
-Decidido: cada pedido do site vai pra uma planilha Google da conta da
-esfiharia, via Apps Script publicado como app da Web ("executar como eu",
-"qualquer pessoa"). O endereço `/exec` só acrescenta linha: não lê, não
-edita, não apaga, então pode ficar no código público. O site manda o
-pedido (`fetch` com `no-cors` e corpo texto, pra não ter preflight) e
-abre o WhatsApp do mesmo jeito; se a gravação falhar, o pedido segue pelo
-WhatsApp. O Nº do pedido é gerado pelo script, em sequência, e só existe
-na planilha: o cliente não vê.
+A planilha foi abandonada. O site novo, com pedidos no banco D1 e painel do
+dia, está pronto na branch `cloudflare`, no worktree
+`../esfirraria-cloudflare` (design em `docs/superpowers/specs/`, plano em
+`docs/superpowers/plans/`, ambos de 22/10). **Não mexa no site por esta
+`main`**: ela ainda é o GitHub Pages no ar e a `cloudflare` já tem o site
+reorganizado em `public/`. Já publicado em <https://esfihas-sayones.pages.dev>
+(banco de produção criado, segredo DONO_EMAIL gravado).
 
-Cabeçalho da planilha (o script preenche pelo nome da coluna):
-`Nº, Data do pedido, Cliente, Calabresa, Carne, Queijo, Marguerita, Total
-esfihas, Valor, Cupom, Ponto, Dia da retirada, Pago, Entregue, Obs`.
-O código do script foi passado ao dono no chat de 22/10; ele precisa colar,
-implantar e mandar o endereço `/exec`. **Falta:** receber o endereço,
-ligar no envio do site, testar e publicar. Pedidos combinados direto no
-WhatsApp ele lança à mão. As perguntas sobre o que ele quer ver no dia
-(total por sabor do dia, quem marca pago/entregue) ficaram sem resposta.
+Falta, na ordem do `ops/PASSOS-NO-PAINEL.md` da branch `cloudflare`: o dono
+liga o domínio `esfihas.sayones.com.br` no Pages e cria a aplicação do
+Cloudflare Access; manda o nome da equipe e o AUD; gravar `ACCESS_EQUIPE` e
+`ACCESS_AUD` e publicar de novo com `ops/publicar.sh`; lançar no painel os
+dois pedidos de 22/10 (na memória); redirecionar `sayones.com.br` e `www`;
+HTTPS estrito, limite por IP e Web Analytics; GitHub: renomear pra
+`esfiharia`, tornar privado, juntar a `cloudflare` na `main`, criar o repo
+público `esfihasayones.github.io` só com o redirecionamento
+(`ops/redirecionamento/`); link do Instagram e QR da camisa pro domínio novo.
 
 ### Pagamento (22/10/2026)
 
