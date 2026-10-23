@@ -134,7 +134,8 @@ há taxa de entrega. Nunca escreva "entregamos na sua casa".
 
 **Pontos e dias (21/10/2026):** Trindade/UFSC segunda e quinta 18h30–20h,
 terça e quarta 18h30–22h; Itacorubi de segunda a sexta 8h–16h30; Abraão de
-segunda a sexta 9h–12h. O Centro saiu em 21/10/2026. Cada ponto em `PONTOS` tem uma lista `dias` e, quando o
+segunda a sexta 9h–12h; Centro de segunda a quinta 19h–21h (saiu em 21/10/2026 e
+voltou em 23/10/2026, entra antes de "Combinar outro ponto"). Cada ponto em `PONTOS` tem uma lista `dias` e, quando o
 horário muda conforme o dia, um mapa `janelas`. UFSC não é ponto separado, faz
 parte da Trindade.
 
