@@ -65,13 +65,14 @@ dele: o Chromium dos testes caía por falta de memória (2,4 GB livres).
 Rodar a suíte quando a máquina estiver folgada.
 
 Falta, na ordem do `ops/PASSOS-NO-PAINEL.md`: ele entrar no `/painel` com o
-login e ver a lista; lançar no painel os dois pedidos de 22/10 (na memória);
-redirecionar `sayones.com.br` e `www`; HTTPS estrito, limite por IP e Web
+login e ver a lista; lançar no painel os dois pedidos de 22/10 (na memória); HTTPS estrito, limite por IP e Web
 Analytics; GitHub: renomear pra `esfiharia`, tornar privado, juntar a
 `cloudflare` na `main`, criar o repo público `esfihasayones.github.io` só com
 o redirecionamento (`ops/redirecionamento/`); link do Instagram e QR da camisa
 pro domínio novo. Rede da Celesc bloqueia o domínio por ser novo ("Newly Seen
-Domains"); fora dela abre.
+Domains"); fora dela abre. `sayones.com.br` e `www` ficam sem nada, sem
+redirecionamento: o dono guardou o domínio principal pra outros projetos
+(23/10/2026). O passo 5 do `PASSOS-NO-PAINEL.md` não vale.
 
 ### Pagamento (22/10/2026)
 
