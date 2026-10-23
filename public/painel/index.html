@@ -217,6 +217,22 @@ details.feitos .cartao{opacity:.7}
 .outros .proximo[aria-pressed="true"]{border-color:var(--tinta)}
 .outros .proximo .nomes{flex-basis:100%;color:var(--suave);font-size:12px;font-weight:500}
 #agenda{margin-top:28px}
+#agenda .agenda-corpo{padding:4px 14px 14px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ajuste{border:1px solid var(--linha);border-radius:var(--raio-sm);padding:10px 12px;min-width:0}
+.ajuste h3{font-family:var(--corpo);font-size:14px;font-weight:600;margin:0 0 8px;color:var(--tinta)}
+.ajuste .linha{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ajuste input{min-height:34px;padding:4px 8px;border:1px solid #bdb9b0;border-radius:var(--raio-sm);background:#fff;min-width:0}
+.ajuste #limite{width:84px}
+.ajuste #bloqDia{flex:0 0 150px}
+.ajuste #bloqMotivo{flex:1 1 120px}
+.ajuste .un{color:var(--suave);font-size:14px}
+.ajuste .btn{min-height:34px;font-size:13px;padding:0 12px;border-width:1.5px}
+.ajuste .dica{font-size:13px;margin:6px 0 0}
+.ajuste .lista-bloqueios{gap:4px;margin-bottom:8px}
+.ajuste .lista-bloqueios li{padding:4px 4px 4px 10px;font-size:14px;background:var(--areia)}
+.ajuste .lista-bloqueios .btn{min-height:28px;font-size:12px}
+.ajuste .lista-bloqueios li.nenhum{background:none;padding:0;color:var(--suave)}
+@media (max-width:1000px){ #agenda .agenda-corpo{grid-template-columns:minmax(0,1fr)} }
 /* histórico */
 .quadros{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px}
 .quadro{background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio);padding:14px 16px}
@@ -293,26 +309,28 @@ section.bloco>h2{font-size:15px}
   <details class="agenda" id="agenda">
     <summary>Ajustes: limite por dia, pausar o site, dias bloqueados</summary>
     <div class="agenda-corpo">
-      <div class="campo">
-        <label for="limite">Limite de esfihas por dia</label>
-        <div class="dupla">
+      <div class="ajuste">
+        <h3><label for="limite">Limite por dia</label></h3>
+        <div class="linha">
           <input type="number" id="limite" inputmode="numeric" min="1" max="10000" step="1">
+          <span class="un">esfihas</span>
           <button type="button" class="btn" id="salvarLimite">Salvar</button>
         </div>
+        <p class="dica">Passou disso, o pedido do site cai em Novos pra você decidir.</p>
       </div>
-      <div class="campo">
-        <span class="rot">Pedidos pelo site</span>
-        <button type="button" class="btn" id="pausar" aria-pressed="false">Pausar pedidos</button>
+      <div class="ajuste">
+        <h3>Pedidos pelo site</h3>
+        <div class="linha"><button type="button" class="btn" id="pausar" aria-pressed="false">Pausar pedidos</button></div>
         <p class="dica" id="dicaPausa"></p>
       </div>
-      <div class="campo">
-        <span class="rot">Dias bloqueados</span>
+      <div class="ajuste">
+        <h3>Dias bloqueados</h3>
         <ul class="lista-bloqueios" id="bloqueios"></ul>
-        <label for="bloqDia">Bloquear um dia</label>
-        <input type="date" id="bloqDia">
-        <label for="bloqMotivo">Motivo (opcional)</label>
-        <input type="text" id="bloqMotivo" maxlength="100" autocomplete="off">
-        <button type="button" class="btn" id="bloquear">Bloquear dia</button>
+        <div class="linha">
+          <input type="date" id="bloqDia" aria-label="Dia a bloquear">
+          <input type="text" id="bloqMotivo" maxlength="100" autocomplete="off" placeholder="Motivo" aria-label="Motivo do bloqueio">
+          <button type="button" class="btn" id="bloquear">Bloquear</button>
+        </div>
       </div>
     </div>
   </details>
