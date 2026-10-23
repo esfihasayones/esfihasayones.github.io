@@ -164,7 +164,7 @@ function renderColuna(d, n, principal) {
   $("#nomeDia" + n).textContent = tituloDia(d.dia);
   $("#resumoDia" + n).replaceChildren(
     h("b", { id: principal ? "totalEsfihas" : null, texto: String(esfihas) }),
-    " esfihas" + (dinheiro ? " · " + brl(dinheiro) : "") + (feito && esfihas ? " · tudo entregue" : ""));
+    " esfihas" + (dinheiro ? " · " + brl(dinheiro) : "") + (feito && esfihas ? ", tudo entregue" : ""));
   $("#sabores" + n).replaceChildren(...SABORES.map((s) =>
     h("li", { "data-sabor": s.id }, h("span", { className: "n", texto: String(d.porSabor[s.id] || 0) }), h("span", { className: "rotulo", texto: s.nome }))));
   renderPontos(d, "#pontos" + n);
