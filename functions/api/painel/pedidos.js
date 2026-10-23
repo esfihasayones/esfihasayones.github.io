@@ -15,7 +15,21 @@ export async function onRequestGet({ request, env }) {
   const dia = pedido == null ? hoje : pedido;
   if (!dataIsoValida(dia)) return erro("dia inválido");
 
-  const doDia = await env.DB.prepare("SELECT * FROM pedidos WHERE retirada = ? ORDER BY id").bind(dia).all();
+  const de = somaDias(dia, 1), ate = somaDias(dia, 7);
+  // As quatro consultas vão num lote só: o banco fica na América do Norte e
+  // cada ida e volta saindo do Brasil custa mais de 100 ms.
+  const [doDia, pend, sd, px] = await env.DB.batch([
+    env.DB.prepare("SELECT * FROM pedidos WHERE retirada = ? ORDER BY id").bind(dia),
+    env.DB.prepare(
+      "SELECT * FROM pedidos WHERE status IN ('aguardando','fora_da_regra') AND (retirada IS NULL OR retirada >= ?) " +
+      "ORDER BY retirada IS NULL, retirada, id").bind(hoje),
+    // Confirmados sem data de retirada (ex.: "Combinar outro ponto"): sem isto
+    // sumiriam do painel depois de Confirmar.
+    env.DB.prepare("SELECT * FROM pedidos WHERE status = 'confirmado' AND retirada IS NULL AND entregue = 0 ORDER BY id"),
+    env.DB.prepare(
+      "SELECT retirada, SUM(qtd) AS q, COUNT(*) AS n FROM pedidos WHERE status = 'confirmado' AND retirada BETWEEN ? AND ? GROUP BY retirada")
+      .bind(de, ate),
+  ]);
   const porSabor = vazioSabores();
   // Um grupo por ponto; dentro dele os cancelados vão pro fim.
   const grupos = new Map();
@@ -30,19 +44,6 @@ export async function onRequestGet({ request, env }) {
     pedidos: [...lista.filter((p) => p.status !== "cancelado"), ...lista.filter((p) => p.status === "cancelado")],
   }));
 
-  const pend = await env.DB.prepare(
-    "SELECT * FROM pedidos WHERE status IN ('aguardando','fora_da_regra') AND (retirada IS NULL OR retirada >= ?) " +
-    "ORDER BY retirada IS NULL, retirada, id").bind(hoje).all();
-
-  // Confirmados sem data de retirada (ex.: "Combinar outro ponto"): sem isto
-  // sumiriam do painel depois de Confirmar.
-  const sd = await env.DB.prepare(
-    "SELECT * FROM pedidos WHERE status = 'confirmado' AND retirada IS NULL AND entregue = 0 ORDER BY id").all();
-
-  const de = somaDias(dia, 1), ate = somaDias(dia, 7);
-  const px = await env.DB.prepare(
-    "SELECT retirada, SUM(qtd) AS q, COUNT(*) AS n FROM pedidos WHERE status = 'confirmado' AND retirada BETWEEN ? AND ? GROUP BY retirada")
-    .bind(de, ate).all();
   const mapa = new Map(px.results.map((r) => [r.retirada, r]));
   const proximos = [];
   for (let i = 1; i <= 7; i++) {
