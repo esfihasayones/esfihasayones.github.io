@@ -150,84 +150,147 @@ dialog#form::backdrop{background:rgba(18,18,18,.55)}
   .topo .pagina{gap:14px}
   .nome-dia{font-size:24px}
 }
+
+/* ---------- painel em colunas (23/10/2026) ---------- */
+.barra{background:var(--tinta);color:var(--fundo);position:sticky;top:0;z-index:4}
+.barra-dentro{max-width:1320px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:18px;min-height:60px;flex-wrap:wrap}
+.barra h1{color:var(--fundo);font-size:16px;margin-right:6px}
+.abas{display:flex;gap:4px}
+.aba{min-height:60px;padding:0 14px;background:none;border:0;border-bottom:3px solid transparent;color:var(--fundo);opacity:.65;font:inherit;font-weight:700;cursor:pointer}
+.aba[aria-pressed="true"]{opacity:1;border-bottom-color:var(--fundo)}
+.barra small{color:#bdbab3;margin-left:auto}
+.barra #novo{min-height:42px;background:var(--fundo);color:var(--tinta);border-color:var(--fundo)}
+.tela{max-width:1320px;margin:0 auto;padding:16px 16px 40px}
+.colunas{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,1.25fr);gap:14px;align-items:start}
+.coluna{background:var(--areia);border-radius:var(--raio);padding:12px;min-width:0}
+.coluna>h2,.faixa>h2{font-size:14px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px}
+.coluna>h2 small{font-family:var(--corpo);text-transform:none;letter-spacing:0;font-weight:600;font-size:14px;color:var(--suave)}
+.coluna h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px}
+.coluna .sabores{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.coluna .sabores li{background:var(--tinta);color:var(--fundo);border:0;border-radius:var(--raio-sm);padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:0;text-align:center;min-width:0}
+.coluna .sabores .rotulo{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.coluna .sabores .n{font-size:22px}
+.coluna .ponto-grupo>h3{display:flex;justify-content:space-between;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;margin:6px 0 6px}
+.faixa{margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.faixa>h2{margin:0}
+.faixa .proximos{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
+.faixa .proximo{width:auto;min-height:44px;border-radius:99px;padding:6px 16px;border:2px solid var(--tinta);display:flex;flex-direction:column;align-items:flex-start;gap:0}
+.faixa .proximo[aria-pressed="true"]{background:var(--tinta);color:var(--fundo)}
+.faixa .proximo[aria-pressed="true"] span,.faixa .proximo[aria-pressed="true"] .nomes{color:var(--fundo)}
+.faixa .proximo span{font-size:13px;text-align:left}
+.faixa .nada{color:var(--suave)}
+details.mais-acoes{position:relative}
+details.mais-acoes>summary{list-style:none;min-height:48px;display:flex;align-items:center;justify-content:center;border:2px solid var(--linha);border-radius:var(--raio-sm);font-weight:700;cursor:pointer;background:var(--branco)}
+details.mais-acoes>summary::-webkit-details-marker{display:none}
+details.mais-acoes[open]>summary{border-color:var(--tinta)}
+details.mais-acoes .menu-acoes{display:grid;gap:6px;margin-top:6px}
+#agenda{margin-top:22px}
+.quadros{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px}
+.quadro{background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio);padding:14px 16px}
+.quadro .rot{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);font-weight:700}
+.quadro .grande{font-family:var(--display);font-size:26px;font-weight:700;margin:6px 0 2px;color:var(--tinta)}
+.quadro .det{color:var(--suave);font-size:14px}
+.tabela-rola{overflow-x:auto;max-width:100%}
+.tabela{width:100%;border-collapse:collapse;background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio);font-variant-numeric:tabular-nums}
+.tabela th,.tabela td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--linha);white-space:nowrap}
+.tabela th:first-child,.tabela td:first-child{text-align:left}
+.tabela th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--suave);background:var(--areia)}
+.tabela td.liq{font-weight:700;color:var(--tinta)}
+.tabela tr.total td{font-weight:700;background:var(--areia)}
+.tabela tr.clicavel{cursor:pointer}
+.tabela tr.clicavel:hover td,.tabela tr[aria-current="true"] td{background:var(--verde-fundo)}
+@media (max-width:1000px){
+  .colunas{grid-template-columns:minmax(0,1fr)}
+  .barra small{display:none}
+}
 </style>
 </head>
 <body>
-<header class="topo">
-  <div class="pagina">
-    <div class="marca"><h1>Painel Sayones</h1><small id="situacao"></small></div>
-    <div class="navdia">
-      <button type="button" id="anterior" aria-label="Dia anterior">‹</button>
-      <input type="date" id="dia" aria-label="Escolher o dia">
-      <button type="button" id="seguinte" aria-label="Próximo dia">›</button>
-      <button type="button" id="hoje">Hoje</button>
-    </div>
-    <p class="nome-dia" id="nomeDia" aria-live="polite">Carregando…</p>
-    <div class="resumo-dia" id="resumoDia"></div>
-    <ul class="sabores" id="sabores" aria-label="Quanto montar de cada sabor"></ul>
+<header class="barra">
+  <div class="barra-dentro">
+    <h1>Esfihas Sayones</h1>
+    <nav class="abas" aria-label="Seções do painel">
+      <button type="button" class="aba" id="abaPedidos" aria-pressed="true">Pedidos</button>
+      <button type="button" class="aba" id="abaHistorico" aria-pressed="false">Histórico</button>
+    </nav>
+    <small id="situacao"></small>
+    <button type="button" class="btn cheio" id="novo">+ Novo pedido</button>
   </div>
 </header>
 
-<main class="pagina">
-  <section class="bloco">
-    <h2>Pedidos do dia</h2>
-    <div id="pontos"><p class="vazio">Carregando…</p></div>
-  </section>
+<main class="tela" id="telaPedidos">
+  <div class="colunas">
+    <section class="coluna" id="colNovos">
+      <h2>Novos <span class="contagem" id="nPendencias">0</span></h2>
+      <div id="blocoPendencias">
+        <div id="pendencias"></div>
+        <p class="vazio" id="semPendencias">Nenhum pedido novo pra confirmar.</p>
+      </div>
+      <div id="blocoSemData" hidden>
+        <h3>Sem data <span class="contagem" id="nSemData">0</span></h3>
+        <div id="semData"></div>
+      </div>
+    </section>
 
-  <section class="bloco">
-    <h2>Próximos dias</h2>
+    <section class="coluna" id="colDia">
+      <h2><span id="nomeDia" aria-live="polite">Carregando…</span><small id="resumoDia"></small></h2>
+      <ul class="sabores" id="sabores" aria-label="Quanto montar de cada sabor"></ul>
+      <div id="pontos"><p class="vazio">Carregando…</p></div>
+    </section>
+
+    <section class="coluna" id="colSeguinte">
+      <h2><span id="nomeDia2">Carregando…</span><small id="resumoDia2"></small></h2>
+      <ul class="sabores" id="sabores2" aria-label="Quanto montar de cada sabor nesse dia"></ul>
+      <div id="pontos2"><p class="vazio">Carregando…</p></div>
+    </section>
+  </div>
+
+  <section class="faixa" aria-labelledby="tituloProximos">
+    <h2 id="tituloProximos">Mais pra frente</h2>
     <ul class="proximos" id="proximos"></ul>
   </section>
 
-  <section class="bloco" id="blocoPendencias" hidden>
-    <h2>Pendências <span class="contagem" id="nPendencias">0</span></h2>
-    <div id="pendencias"></div>
-  </section>
-
-  <section class="bloco" id="blocoSemData" hidden>
-    <h2>Sem data <span class="contagem" id="nSemData">0</span></h2>
-    <div id="semData"></div>
-  </section>
-
-
-  <section class="bloco" id="blocoContas">
-    <h2>Contas</h2>
-    <div class="contas" id="contas"></div>
-    <p class="dica">Estimativa: R$ 2,05 de ingredientes e luz por esfiha, uma marmita de R$ 2,10 a cada 8 esfihas do pedido e a taxa do Tap (0,89% no débito, 3,09% no crédito) nos pedidos pagos no cartão. Sua hora não entra.</p>
-  </section>
-
-
-  <section class="bloco">
-    <details class="agenda" id="agenda">
-      <summary>Agenda</summary>
-      <div class="agenda-corpo">
-        <div class="campo">
-          <label for="limite">Limite de esfihas por dia</label>
-          <div class="dupla">
-            <input type="number" id="limite" inputmode="numeric" min="1" max="10000" step="1">
-            <button type="button" class="btn" id="salvarLimite">Salvar</button>
-          </div>
-        </div>
-        <div class="campo">
-          <span class="rot">Pedidos pelo site</span>
-          <button type="button" class="btn" id="pausar" aria-pressed="false">Pausar pedidos</button>
-          <p class="dica" id="dicaPausa"></p>
-        </div>
-        <div class="campo">
-          <span class="rot">Dias bloqueados</span>
-          <ul class="lista-bloqueios" id="bloqueios"></ul>
-          <label for="bloqDia">Bloquear um dia</label>
-          <input type="date" id="bloqDia">
-          <label for="bloqMotivo">Motivo (opcional)</label>
-          <input type="text" id="bloqMotivo" maxlength="100" autocomplete="off">
-          <button type="button" class="btn" id="bloquear">Bloquear dia</button>
+  <details class="agenda" id="agenda">
+    <summary>Ajustes: limite por dia, pausar o site, dias bloqueados</summary>
+    <div class="agenda-corpo">
+      <div class="campo">
+        <label for="limite">Limite de esfihas por dia</label>
+        <div class="dupla">
+          <input type="number" id="limite" inputmode="numeric" min="1" max="10000" step="1">
+          <button type="button" class="btn" id="salvarLimite">Salvar</button>
         </div>
       </div>
-    </details>
-  </section>
+      <div class="campo">
+        <span class="rot">Pedidos pelo site</span>
+        <button type="button" class="btn" id="pausar" aria-pressed="false">Pausar pedidos</button>
+        <p class="dica" id="dicaPausa"></p>
+      </div>
+      <div class="campo">
+        <span class="rot">Dias bloqueados</span>
+        <ul class="lista-bloqueios" id="bloqueios"></ul>
+        <label for="bloqDia">Bloquear um dia</label>
+        <input type="date" id="bloqDia">
+        <label for="bloqMotivo">Motivo (opcional)</label>
+        <input type="text" id="bloqMotivo" maxlength="100" autocomplete="off">
+        <button type="button" class="btn" id="bloquear">Bloquear dia</button>
+      </div>
+    </div>
+  </details>
 </main>
 
-<div class="barra-fixa"><button type="button" class="btn cheio" id="novo">Novo pedido</button></div>
+<main class="tela" id="telaHistorico" hidden>
+  <div class="quadros" id="quadros"></div>
+  <section class="bloco">
+    <h2 id="tituloMes">Dia a dia</h2>
+    <div class="tabela-rola"><table class="tabela" id="tabelaDias"></table></div>
+  </section>
+  <section class="bloco" id="blocoMeses" hidden>
+    <h2>Meses</h2>
+    <div class="tabela-rola"><table class="tabela" id="tabelaMeses"></table></div>
+  </section>
+  <p class="dica">Conta os pedidos confirmados com retirada até hoje. Custo estimado: R$ 2,05 de ingredientes e luz por esfiha, uma marmita de R$ 2,10 a cada 8 esfihas do pedido e a taxa do Tap (0,89% no débito, 3,09% no crédito) nos pedidos pagos no cartão. Sua hora não entra.</p>
+</main>
+
 <div id="aviso" role="alert" hidden></div>
 
 <dialog id="form" aria-labelledby="formTitulo">
