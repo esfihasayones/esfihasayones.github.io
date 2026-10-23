@@ -37,7 +37,7 @@ body{
   padding-bottom:calc(96px + env(safe-area-inset-bottom));
 }
 h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.15;margin:0;color:var(--tinta);letter-spacing:-.01em}
-h2{font-size:15px;text-transform:uppercase;letter-spacing:.04em}
+h2{font-size:15px}
 h3{font-size:14px}
 button,input,select,textarea{font:inherit;color:inherit}
 input,select,textarea{font-size:16px}
@@ -116,7 +116,7 @@ section.bloco>h2{margin-bottom:10px;display:flex;align-items:center;gap:8px}
 
 /* agenda */
 details.agenda{background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio)}
-details.agenda>summary{cursor:pointer;padding:14px;font-family:var(--display);font-weight:600;font-size:15px;text-transform:uppercase;letter-spacing:.04em;min-height:48px}
+details.agenda>summary{cursor:pointer;padding:10px 14px;font-weight:600;font-size:14px;color:var(--suave)}
 .agenda-corpo{padding:0 14px 14px;display:grid;gap:16px}
 .campo{display:grid;gap:6px}
 .campo label,.campo .rot{font-weight:600;font-size:15px}
@@ -153,58 +153,90 @@ dialog#form::backdrop{background:rgba(18,18,18,.55)}
 
 /* ---------- painel em colunas (23/10/2026) ---------- */
 .barra{background:var(--tinta);color:var(--fundo);position:sticky;top:0;z-index:4}
-.barra-dentro{max-width:1320px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:18px;min-height:60px;flex-wrap:wrap}
-.barra h1{color:var(--fundo);font-size:16px;margin-right:6px}
-.abas{display:flex;gap:4px}
-.aba{min-height:60px;padding:0 14px;background:none;border:0;border-bottom:3px solid transparent;color:var(--fundo);opacity:.65;font:inherit;font-weight:700;cursor:pointer}
+.barra-dentro{max-width:1320px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:20px;height:56px}
+.barra h1{color:var(--fundo);font-size:15px;margin-right:4px;white-space:nowrap}
+.abas{display:flex;gap:2px;height:100%}
+.aba{height:100%;padding:0 12px;background:none;border:0;border-bottom:2px solid transparent;color:var(--fundo);opacity:.6;font:inherit;font-size:15px;font-weight:600;cursor:pointer}
 .aba[aria-pressed="true"]{opacity:1;border-bottom-color:var(--fundo)}
 .barra small{color:#bdbab3;margin-left:auto}
-.barra #novo{min-height:42px;background:var(--fundo);color:var(--tinta);border-color:var(--fundo)}
-.tela{max-width:1320px;margin:0 auto;padding:16px 16px 40px}
-.colunas{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:start}
-.coluna{background:var(--areia);border-radius:var(--raio);padding:12px;min-width:0}
-.coluna>h2,.faixa>h2{font-size:14px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px}
-.coluna>h2 small{font-family:var(--corpo);text-transform:none;letter-spacing:0;font-weight:600;font-size:14px;color:var(--suave)}
-.coluna h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px}
-.coluna .sabores{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.coluna .sabores li{background:var(--tinta);color:var(--fundo);border:0;border-radius:var(--raio-sm);padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:0;text-align:center;min-width:0}
-.coluna .sabores .rotulo{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-.coluna .sabores .n{font-size:22px}
-.coluna .ponto-grupo>h3{display:flex;justify-content:space-between;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;margin:6px 0 6px}
-.faixa{margin-top:16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
-.faixa>h2{margin:0}
-.faixa .proximos{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
-.faixa .proximo{width:auto;min-height:44px;border-radius:99px;padding:6px 16px;border:2px solid var(--tinta);display:flex;flex-direction:column;align-items:flex-start;gap:0}
-.faixa .proximo[aria-pressed="true"]{background:var(--tinta);color:var(--fundo)}
-.faixa .proximo[aria-pressed="true"] span,.faixa .proximo[aria-pressed="true"] .nomes{color:var(--fundo)}
-.faixa .proximo span{font-size:13px;text-align:left}
-.faixa .nada{color:var(--suave)}
-details.mais-acoes{position:relative}
-details.feitos{margin-top:8px}
-details.feitos>summary{cursor:pointer;color:var(--suave);font-weight:600;padding:6px 2px}
-details.feitos .cartao{opacity:.75}
-details.mais-acoes>summary{list-style:none;min-height:48px;display:flex;align-items:center;justify-content:center;border:2px solid var(--linha);border-radius:var(--raio-sm);font-weight:700;cursor:pointer;background:var(--branco)}
+.barra #novo{margin-left:auto;min-height:36px;padding:0 14px;font-size:14px;background:var(--fundo);color:var(--tinta);border:0;border-radius:99px}
+.tela{max-width:1320px;margin:0 auto;padding:20px 20px 48px}
+.colunas{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.82fr);gap:16px;align-items:start}
+.coluna{min-width:0}
+.coluna>h2,.coluna>summary{display:flex;align-items:baseline;justify-content:space-between;gap:4px 10px;flex-wrap:wrap;margin:0 0 10px;padding:0 2px;list-style:none}
+.coluna>summary::-webkit-details-marker{display:none}
+.coluna .titulo{font-family:var(--display);font-size:15px;font-weight:600;color:var(--tinta)}
+.coluna>h2 small,.coluna>summary small{font-family:var(--corpo);font-size:13px;color:var(--suave);font-weight:500;letter-spacing:0}
+.coluna h3{font-family:var(--corpo);font-size:13px;font-weight:600;color:var(--suave);margin:14px 2px 6px;display:flex;justify-content:space-between;gap:8px}
+.contagem{background:var(--tinta);color:var(--fundo);border-radius:99px;padding:0 8px;font-size:12px;font-weight:600;line-height:20px}
+.coluna .sabores{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--linha);border:1px solid var(--linha);border-radius:var(--raio-sm);overflow:hidden}
+.coluna .sabores li{background:var(--branco);color:var(--tinta);padding:6px 4px;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0;border:0;border-radius:0}
+.coluna .sabores .n{font-family:var(--display);font-size:18px;font-weight:700;line-height:1.1}
+.coluna .sabores .rotulo{font-size:11px;color:var(--suave);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.coluna .ponto-grupo>h3{margin:12px 2px 6px}
+.coluna .ponto-grupo>h3 span{font-weight:500}
+.coluna .vazio{font-size:14px;padding:10px 12px}
+/* dia já feito: vira uma faixa fina em cima, que abre se quiser */
+details.dia.recolhido{grid-column:1 / -1;background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio-sm);padding:8px 12px}
+details.dia.recolhido>summary{margin:0;cursor:pointer}
+details.dia.recolhido>summary .titulo{font-size:13px}
+details.dia.recolhido>summary::after{content:"ver ▾";font-size:13px;color:var(--suave);margin-left:auto}
+details.dia.recolhido[open]>summary::after{content:"fechar ▴"}
+details.dia.recolhido[open]>summary{margin-bottom:10px}
+details.dia:not(.recolhido)>summary{pointer-events:none}
+/* cartões e botões enxutos */
+.cartao{padding:12px;gap:4px;margin-bottom:8px;border-radius:var(--raio-sm)}
+.cartao .quem{font-weight:700;font-size:15px}
+.cartao .dinheiro{font-weight:700;font-size:15px;white-space:nowrap}
+.cartao .itens{font-size:14px}
+.cartao .detalhe{font-size:13px}
+.cartao .obs{font-size:13px;padding:6px 8px}
+.cartao .motivo{display:inline-block;justify-self:start;background:var(--alerta-fundo);color:var(--alerta);border-radius:99px;padding:1px 9px;font-size:12px;font-weight:600}
+.cartao .botoes{display:flex;gap:6px;margin-top:6px;align-items:flex-start}
+.cartao .botoes>.btn{flex:1;min-height:34px;font-size:13px;padding:0 10px;border-width:1.5px}
+details.mais-acoes{flex:0 0 auto}
+details.mais-acoes>summary{list-style:none;width:34px;min-height:34px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--linha);border-radius:var(--raio-sm);font-weight:700;cursor:pointer;background:var(--branco)}
 details.mais-acoes>summary::-webkit-details-marker{display:none}
 details.mais-acoes[open]>summary{border-color:var(--tinta)}
-details.mais-acoes .menu-acoes{display:grid;gap:6px;margin-top:6px}
-#agenda{margin-top:22px}
+details.mais-acoes .menu-acoes{position:absolute;right:0;z-index:3;display:grid;gap:4px;min-width:150px;margin-top:4px;padding:6px;background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio-sm);box-shadow:0 6px 18px rgba(18,18,18,.12)}
+details.mais-acoes{position:relative}
+details.mais-acoes .menu-acoes .btn{min-height:34px;font-size:13px;border-width:1.5px}
+.forma{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px}
+.forma.pergunta{background:var(--alerta-fundo);border-radius:var(--raio-sm);padding:6px 8px}
+.forma.pergunta span{color:var(--alerta);font-weight:600;font-size:13px;margin-right:2px}
+.btn.mini{min-height:30px;padding:0 10px;font-size:13px;border-width:1.5px}
+details.feitos{margin-top:4px}
+details.feitos>summary{cursor:pointer;color:var(--suave);font-size:13px;padding:4px 2px}
+details.feitos .cartao{opacity:.7}
+/* outros dias: lista curta, só quando há */
+.outros{margin-top:18px}
+.outros .proximos{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.outros .proximo{width:100%;display:flex;justify-content:space-between;align-items:baseline;gap:8px;min-height:0;padding:8px 10px;border:1px solid var(--linha);border-radius:var(--raio-sm);background:var(--branco);cursor:pointer;text-align:left;font:inherit;font-size:13px;flex-wrap:wrap}
+.outros .proximo b{font-weight:600}
+.outros .proximo span{color:var(--suave)}
+.outros .proximo[aria-pressed="true"]{border-color:var(--tinta)}
+.outros .proximo .nomes{flex-basis:100%;color:var(--suave);font-size:12px;font-weight:500}
+#agenda{margin-top:28px}
+/* histórico */
 .quadros{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px}
 .quadro{background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio);padding:14px 16px}
-.quadro .rot{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);font-weight:700}
-.quadro .grande{font-family:var(--display);font-size:26px;font-weight:700;margin:6px 0 2px;color:var(--tinta)}
-.quadro .det{color:var(--suave);font-size:14px}
+.quadro .rot{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--suave);font-weight:600}
+.quadro .grande{font-family:var(--display);font-size:24px;font-weight:700;margin:6px 0 2px;color:var(--tinta)}
+.quadro .det{color:var(--suave);font-size:13px}
 .tabela-rola{overflow-x:auto;max-width:100%}
-.tabela{width:100%;border-collapse:collapse;background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio);font-variant-numeric:tabular-nums}
-.tabela th,.tabela td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--linha);white-space:nowrap}
+.tabela{width:100%;border-collapse:collapse;background:var(--branco);border:1px solid var(--linha);font-variant-numeric:tabular-nums;font-size:14px}
+.tabela th,.tabela td{padding:8px 12px;text-align:right;border-bottom:1px solid var(--linha);white-space:nowrap}
 .tabela th:first-child,.tabela td:first-child{text-align:left}
-.tabela th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--suave);background:var(--areia)}
+.tabela th{font-size:12px;font-weight:600;color:var(--suave);background:var(--areia)}
 .tabela td.liq{font-weight:700;color:var(--tinta)}
 .tabela tr.total td{font-weight:700;background:var(--areia)}
 .tabela tr.clicavel{cursor:pointer}
 .tabela tr.clicavel:hover td,.tabela tr[aria-current="true"] td{background:var(--verde-fundo)}
+section.bloco>h2{font-size:15px}
 @media (max-width:1000px){
   .colunas{grid-template-columns:minmax(0,1fr)}
   .barra small{display:none}
+  .barra h1{display:none}
 }
 </style>
 </head>
@@ -222,35 +254,41 @@ details.mais-acoes .menu-acoes{display:grid;gap:6px;margin-top:6px}
 </header>
 
 <main class="tela" id="telaPedidos">
-  <div class="colunas">
-    <section class="coluna" id="colDia">
-      <h2><span id="nomeDia" aria-live="polite">Carregando…</span><small id="resumoDia"></small></h2>
+  <div class="colunas" id="colunas">
+    <details class="coluna dia" id="colDia" open>
+      <summary><span class="titulo" id="nomeDia" aria-live="polite">Carregando…</span><small id="resumoDia"></small></summary>
       <ul class="sabores" id="sabores" aria-label="Quanto montar de cada sabor"></ul>
       <div id="pontos"><p class="vazio">Carregando…</p></div>
-    </section>
+    </details>
 
-    <section class="coluna" id="colSeguinte">
-      <h2><span id="nomeDia2">Carregando…</span><small id="resumoDia2"></small></h2>
+    <section class="coluna dia" id="colSeguinte">
+      <h2><span class="titulo" id="nomeDia2">Carregando…</span><small id="resumoDia2"></small></h2>
       <ul class="sabores" id="sabores2" aria-label="Quanto montar de cada sabor nesse dia"></ul>
       <div id="pontos2"><p class="vazio">Carregando…</p></div>
     </section>
-    <section class="coluna" id="colNovos">
-      <h2>Novos <span class="contagem" id="nPendencias">0</span></h2>
+
+    <section class="coluna dia" id="colTerceiro" hidden>
+      <h2><span class="titulo" id="nomeDia3"></span><small id="resumoDia3"></small></h2>
+      <ul class="sabores" id="sabores3" aria-label="Quanto montar de cada sabor nesse dia"></ul>
+      <div id="pontos3"></div>
+    </section>
+
+    <section class="coluna novos" id="colNovos">
+      <h2><span class="titulo">Novos</span><span class="contagem" id="nPendencias">0</span></h2>
       <div id="blocoPendencias">
         <div id="pendencias"></div>
-        <p class="vazio" id="semPendencias">Nenhum pedido novo pra confirmar.</p>
+        <p class="vazio" id="semPendencias">Nenhum pedido novo.</p>
       </div>
       <div id="blocoSemData" hidden>
         <h3>Sem data <span class="contagem" id="nSemData">0</span></h3>
         <div id="semData"></div>
       </div>
+      <div class="outros" id="blocoProximos" hidden>
+        <h3 id="tituloProximos">Outros dias</h3>
+        <ul class="proximos" id="proximos"></ul>
+      </div>
     </section>
   </div>
-
-  <section class="faixa" aria-labelledby="tituloProximos">
-    <h2 id="tituloProximos">Mais pra frente</h2>
-    <ul class="proximos" id="proximos"></ul>
-  </section>
 
   <details class="agenda" id="agenda">
     <summary>Ajustes: limite por dia, pausar o site, dias bloqueados</summary>

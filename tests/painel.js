@@ -379,25 +379,23 @@
     A.contem(P.cartao(ped.id).textContent, "R$ 42,80");
   }));
 
-  teste("próximos dias mostra e leva ao dia", comPainel(async function () {
+  teste("dia sem nada a fazer recolhe e a fila anda pro próximo dia com pedido", comPainel(async function () {
     var d = await diaLivre(util);
     var d2 = new Date(Date.parse(d + "T12:00:00Z") + 2 * 86400000).toISOString().slice(0, 10);
     var r = await api("GET", "/api/painel/pedidos?dia=" + d2);
     if (r.json.pontos.length) return;   // dia vizinho já ocupado por outra rodada
     var ped = await manual(d2, [{ sabor: "carne", qtd: 7 }]);
-    var P = await abrir(d);
-    var linha = P.el('#proximos [data-dia="' + d2 + '"]');
-    A.ok(linha, "linha do dia");
-    A.contem(linha.textContent, "7 esfihas");
-    A.contem(linha.textContent, "1 pedido");
-    P.clicar(linha);
-    await esperar(function () { var c = P.cartao(ped.id); return c && P.el("#pontos2").contains(c); }, "dia aparecer na coluna da direita");
+    var P = await abrir(d, 1280);
+    A.ok(P.el("#colDia").classList.contains("recolhido") && !P.el("#colDia").open, "dia base vazio fica recolhido");
+    var c = P.cartao(ped.id);
+    A.ok(c && P.el("#pontos2").contains(c), "o próximo dia com pedido vira a primeira coluna");
     A.igual(P.texto('#sabores2 [data-sabor="carne"] .n').trim(), "7");
-    A.igual(P.doc().body.dataset.pronto, d, "a coluna do meio continua no mesmo dia");
-    A.igual(P.el('#proximos [data-dia="' + d2 + '"]').getAttribute("aria-pressed"), "true", "botão do dia fica marcado");
+    A.igual(P.doc().body.dataset.pronto, d, "o dia base continua o mesmo");
+    P.el("#colDia").open = true;
+    A.ok(P.el("#colDia").open, "dá pra abrir o dia recolhido");
   }));
 
-  teste("abre em hoje, com amanhã na coluna da direita", comPainel(async function () {
+  teste("abre em hoje, sem calendário", comPainel(async function () {
     var hoje = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
     var q = document.createElement("iframe");
     q.style.cssText = "position:fixed;left:0;top:0;border:0;opacity:.01;pointer-events:none;z-index:-1;width:1280px;height:900px";
@@ -407,7 +405,6 @@
     var P = montar(q);
     await esperar(function () { return P.doc().body && P.doc().body.dataset.pronto === hoje; }, "abrir em hoje", 10000);
     A.contem(P.texto("#nomeDia"), "Hoje");
-    A.contem(P.texto("#nomeDia2"), "Amanhã");
     A.ok(!P.el("#dia") && !P.el("#anterior"), "sem calendário nem setas");
   }));
 
