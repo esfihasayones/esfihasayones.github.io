@@ -1,21 +1,20 @@
 # Esfihas Sayones
 
 Site de encomendas de uma esfiharia caseira de verdade, do Breno, em
-Florianópolis. Negócio novo. HTML/CSS/JS puro num arquivo só, sem build e sem
-backend, servido pelo GitHub Pages.
+Florianópolis. Negócio novo. Site em HTML/CSS/JS puro, sem build e sem
+framework, servido pelo Cloudflare Pages em <https://esfihas.sayones.com.br/>.
+Os pedidos ficam num banco D1 (Cloudflare) e o dono vê o dia num painel.
 
-## Estado (21/10/2026)
+## Estado (23/10/2026)
 
-No ar em <https://esfihasayones.github.io/>, repositório
-`esfihasayones/esfihasayones.github.io`. O Pages republica sozinho a cada
-push na `main`, porque o nome do repositório é `<usuário>.github.io`.
+No ar no Cloudflare (seção "Site no Cloudflare" abaixo). A `cloudflare` foi
+juntada na `main`; push no GitHub não publica nada, quem publica é
+`ops/publicar.sh`. O repositório `esfihasayones/esfiharia` (antigo
+`esfihasayones.github.io`) é privado; o push vai por SSH (alias
+`github-esfiharia` do `~/.ssh/config`), nunca pelo `gh`, que nesta máquina
+está logado em outra conta.
 
-**O push vai por SSH, nunca pelo `gh`.** O `gh` desta máquina está logado na
-conta do trabalho e não enxerga esta; o remoto usa o alias
-`github-esfiharia` do `~/.ssh/config`, com chave própria.
-
-Falta antes de divulgar: os três depoimentos são inventados e não podem ficar
-no ar como reais, e o Google Meu Negócio não foi cadastrado. O Instagram
+Falta antes de divulgar: o Google Meu Negócio não foi cadastrado. O Instagram
 `@esfihasayones` existe desde 19/10/2026. Os detalhes estão no `README.md`.
 
 **Mais de uma sessão do Claude mexe nesta pasta ao mesmo tempo.** Em
@@ -27,8 +26,8 @@ faça commit e push logo, sem deixar nada solto.
 
 - Depoimentos inventados: seção removida. Volta só com elogio de verdade e
   autorização de quem escreveu.
-- Feriados: sem retirada. Lista `FERIADOS` no bloco de configuração (nacionais
-  e aniversário de Florianópolis, até o fim de 2027); Carnaval e Corpus
+- Feriados: sem retirada. Lista `FERIADOS` em `public/regras.js` (nacionais
+  e aniversário de Florianópolis, até o fim de 2028); Carnaval e Corpus
   Christi ficaram de fora por serem ponto facultativo. Estender a lista
   pros anos seguintes.
 - Forno: a esfiha é montada e assada depois da encomenda, e aí congelada.
@@ -43,39 +42,46 @@ faça commit e push logo, sem deixar nada solto.
 
 ### Pendente, por decisão dele
 
+- Trocar os desenhos das esfihas por fotos de verdade (23/10/2026). Cliente
+  achou o desenho "de IA" e disse que a de carne parece pote de feijão. Ele
+  vai fotografar de cima, fundo claro liso, luz de janela; a gente recorta e
+  põe fundo em degradê igual nos quatro sabores.
+
 - Cadastrar o Google Meu Negócio.
 - Camiseta: arquivo final pronto em 23/10/2026 em `~/Documents/brenisio/esfihas-camisa/` (QR pro domínio novo, texto em curva, 300 dpi). Falta ele testar o QR com a câmera do celular.
 
-### Em andamento: mudança pro Cloudflare (22/10/2026)
+### Site no Cloudflare (desde 23/10/2026)
 
-A planilha foi abandonada. O site novo, com pedidos no banco D1 e painel do
-dia, está pronto na branch `cloudflare`, no worktree
-`../esfirraria-cloudflare` (design em `docs/superpowers/specs/`, plano em
-`docs/superpowers/plans/`, ambos de 22/10). **Não mexa no site por esta
-`main`**: ela ainda é o GitHub Pages no ar e a `cloudflare` já tem o site
-reorganizado em `public/`. Já publicado em <https://esfihas-sayones.pages.dev>
-(banco de produção criado, segredo DONO_EMAIL gravado).
+No ar em <https://esfihas.sayones.com.br>, projeto Pages `esfihas-sayones`,
+com pedidos no banco D1 e painel do dia em `/painel` (design em
+`docs/superpowers/specs/`, plano em `docs/superpowers/plans/`, ambos de
+22/10). A branch `cloudflare` foi juntada na `main` em 23/10; publicar é
+`ops/publicar.sh` (o push no GitHub não publica mais nada).
 
-Feito em 23/10/2026: `esfihas.sayones.com.br` no ar (Pages, Custom domains);
-Access criado (equipe `wild-hill-d83e`, política "Dono" só com o e-mail
-dele, protegendo `/painel` e `/api/painel` nos dois domínios e as prévias
-`*.esfihas-sayones.pages.dev`); `ACCESS_EQUIPE` e `ACCESS_AUD` gravados;
-publicado de novo. Nessa publicação a suíte de navegador foi pulada a pedido
-dele: o Chromium dos testes caía por falta de memória (2,4 GB livres).
-Rodar a suíte quando a máquina estiver folgada. Também em 23/10: SSL em
-Full (strict), Always Use HTTPS já ligado, regra de limite "Limite pedidos"
-(10 por 10 s por IP em `/api/pedidos` e `/api/cupom`, bloqueio de 10 s) e
-Web Analytics automático na zona `sayones.com.br`, já contando visitas.
-O Cloudflare está fechado.
+Feito em 23/10/2026: domínio no Pages (Custom domains); Access (equipe
+`wild-hill-d83e`, política "Dono" só com o e-mail dele, protegendo `/painel`
+e `/api/painel` nos dois domínios e as prévias `*.esfihas-sayones.pages.dev`);
+`ACCESS_EQUIPE` e `ACCESS_AUD` gravados; SSL em Full (strict), Always Use
+HTTPS; regra de limite "Limite pedidos" (10 por 10 s por IP em `/api/pedidos`
+e `/api/cupom`, bloqueio de 10 s); Web Analytics automático na zona
+`sayones.com.br`. `sayones.com.br` e `www` ficam sem nada: o dono guardou o
+domínio principal pra outros projetos (o passo 5 do `PASSOS-NO-PAINEL.md` não
+vale). Rede da Celesc bloqueia o domínio por ser novo ("Newly Seen Domains").
 
-Falta, na ordem do `ops/PASSOS-NO-PAINEL.md`: ele entrar no `/painel` com o
-login e ver a lista; lançar no painel os dois pedidos de 22/10 (na memória); GitHub: renomear pra `esfiharia`, tornar privado, juntar a
-`cloudflare` na `main`, criar o repo público `esfihasayones.github.io` só com
-o redirecionamento (`ops/redirecionamento/`); link do Instagram e QR da camisa
-pro domínio novo. Rede da Celesc bloqueia o domínio por ser novo ("Newly Seen
-Domains"); fora dela abre. `sayones.com.br` e `www` ficam sem nada, sem
-redirecionamento: o dono guardou o domínio principal pra outros projetos
-(23/10/2026). O passo 5 do `PASSOS-NO-PAINEL.md` não vale.
+O `ops/publicar.sh` às vezes não passa porque o Chromium da suíte cai por
+falta de memória na varredura aleatória; rodando grupo por grupo
+(`tests/index.html?grupo=Retirada` etc.) os outros 150 passam.
+
+Falta: lançar no painel os dois pedidos de 22/10 (na memória); repo público
+`esfihasayones.github.io` só com o redirecionamento (`ops/redirecionamento/`);
+link do Instagram pro domínio novo.
+
+### Pedidos no banco (22/10/2026)
+
+A ideia da planilha com Apps Script foi trocada pelo banco D1 e pelo painel
+do dia, no Cloudflare (ver o spec). O pedido ainda abre o WhatsApp do mesmo
+jeito; a gravação no banco acontece antes e, se falhar, o pedido segue pelo
+WhatsApp. Pedidos combinados direto na conversa o dono lança à mão no painel.
 
 ### Pagamento (22/10/2026)
 
@@ -91,13 +97,11 @@ site e confirmação automática (Mercado Pago, ~0,99%) ficaram pra depois. Se a
 mãe dele começar a entregar, a ideia é ela só entregar o que estiver "pago"
 no painel (o e-mail dela entra no Access), por causa do golpe do Pix agendado.
 
-### Repositório público e domínio (22/10/2026)
+### Repositório e domínio (22/10/2026)
 
-Fica público: o dono decidiu que não precisa esconder. Ofereci tirar do
-README/CLAUDE.md o nome da conta do trabalho e a conta de custo; ele não
-respondeu, então ainda está lá. `esfihasayones.com.br` estava livre no
-registro.br em 22/10; não foi registrado. O GitHub Pro dele (pacote de
-estudante) ficou na conta `brenisio` e não muda nada aqui.
+O domínio é `esfihas.sayones.com.br`. O repositório passa a ser privado na
+última etapa do plano, porque agora há pedidos de clientes por perto. Nada de
+dado de cliente entra em arquivo do repositório nem em log.
 
 ### Figurinhas de WhatsApp
 
@@ -140,11 +144,11 @@ horário muda conforme o dia, um mapa `janelas`. UFSC não é ponto separado, fa
 parte da Trindade.
 
 **Sabores e receitas** (confirmadas pelo dono):
-- Calabresa: calabresa moída, molho de tomate, cebola e muçarela (azeitona e pimenta saíram
+- Calabresa: molho de tomate, calabresa moída, cebola e muçarela (azeitona e pimenta saíram
   em 21/10/2026)
 - Carne: carne bovina moída com cebola e tomate
 - Queijo: muçarela com requeijão e orégano
-- Marguerita: muçarela, tomate e manjericão (entrou em 19/10/2026, mesmo
+- Marguerita: molho de tomate, muçarela, tomate e manjericão (molho entrou em 23/10/2026) (entrou em 19/10/2026, mesmo
   preço e mesmos combos dos outros)
 
 **Preços (21/10/2026).** R$ 5,90 avulsa, com combos em 4, 8 e 12. O
@@ -163,7 +167,7 @@ misturando sabores à vontade.
 | Combo 8  | 8 a 11  | R$ 5,35     | R$ 42,80 |
 | Combo 12 | 12+     | R$ 5,20     | R$ 62,40 |
 
-**Cupom (22/10/2026).** `CUPONS` no bloco de configuração, código em
+**Cupom (22/10/2026).** `CUPONS` em `functions/_lib/cupons.js`, código em
 maiúscula e desconto sobre o total já com o combo. O primeiro é
 `PRIMEIRACOMPRA`, 10%, pra trazer cliente e sair depois. O dono pensou em
 15% acima de R$ 50 e desistiu: somado ao combo 12 dava uns 25% abaixo do
@@ -194,12 +198,27 @@ pedido mais feito. Quando faltar informação, pergunte.
 
 ## Arquitetura
 
-Tudo em `index.html`: markup, CSS e JS num arquivo. É de propósito, para
-publicar sem passo de build. `logo.svg`, `favicon.svg` e `og-v2.png` são
-gerados; `tests/` tem a suíte.
+```
+public/      o que o Cloudflare Pages serve: index.html (markup e CSS), app.js
+             (tela), regras.js (preço, datas e pontos, sem DOM), painel/,
+             fontes/ (woff2 próprios, com a licença OFL), _headers (CSP e
+             cache), 404.html, robots.txt, sitemap.xml, logo/favicon/og-v2.png
+functions/   API em Pages Functions: /api/pedidos, /api/agenda, /api/cupom,
+             /api/saude e /api/painel/* (atrás do Cloudflare Access)
+migrations/  SQL do D1
+tests/       suíte de navegador (index.html, suite.js, varredura.js),
+             servidor.mjs e tests/api/*.test.mjs
+```
 
-**O bloco de configuração** fica no começo do `<script>`, marcado com
-`CONFIGURAÇÃO`. Preço, sabor e ponto de retirada se mudam ali.
+Não há build. A CSP em `public/_headers` não aceita script inline: todo
+JavaScript fica em arquivo `.js` (o JSON-LD é `application/ld+json` e não
+executa). Estilo inline é permitido. As fontes são servidas do próprio
+domínio; não volte a apontar pro Google Fonts, a CSP bloqueia.
+`logo.svg`, `favicon.svg` e `og-v2.png` são gerados e saem com cache de um
+ano: ao trocar um deles, mude o nome do arquivo.
+
+**O bloco de configuração** fica em `public/regras.js` (WhatsApp, antecedência,
+feriados, pontos, sabores e combos); os cupons ficam em `functions/_lib/cupons.js`. Preço, sabor e ponto de retirada se mudam ali.
 
 **Os pontos vivem em dois lugares** que precisam andar juntos: a seção
 "Entrega e horários" (o que o visitante lê) e o array `PONTOS` no JS (o que
@@ -231,19 +250,38 @@ foi uma sacola, que tinha o mesmo corpo afunilado da lixeira do carrinho e a
 18px o dono leu como lixeira. Ícone novo de ação: compare ampliado e a 18px
 com os outros antes de escolher.
 
-**A mensagem do WhatsApp** é montada no cliente e aberta via `wa.me`. Não há
-servidor: o pedido chega como conversa normal no (48) 99221-0812.
+**A mensagem do WhatsApp** é montada no cliente e aberta via `wa.me`: o
+pedido chega como conversa normal no (48) 99221-0812. O banco guarda uma
+cópia pra o painel.
 
 ## Testes
 
+Em três terminais (ou em segundo plano), na raiz:
+
 ```bash
-python3 -m http.server 8791
-# http://127.0.0.1:8791/tests/index.html
+npx --yes wrangler@4.152.0 pages dev --port 8788 --local   # site + funções + D1 local
+node tests/servidor.mjs                                    # porta 8792: serve /tests e repassa o resto pra 8788
+node --test --test-concurrency=1 tests/api/*.test.mjs      # suíte de API
+node tests/rodar-playwright.cjs chromium "http://127.0.0.1:8792/tests/index.html"   # suíte de navegador (ou firefox)
 ```
 
-137 testes em `tests/suite.js`, sem dependência. O runner carrega o site num
-iframe limpo, um teste por vez. `window.RESULTADO` expõe o resultado para
-automação.
+`--test-concurrency=1` é obrigatório: os arquivos de API zeram o banco local e
+se atropelam em paralelo. O `.dev.vars` (copie de `.dev.vars.exemplo`) liga
+`DEV_SEM_LOGIN`, que os testes do painel usam. Publicar é com `ops/publicar.sh`
+(`--so-testar` só testa). Backup: `ops/backup.sh`. No começo de cada mês, rode
+`ops/anonimizar.sh` (tira nome e observação de pedidos com mais de 12 meses).
+Passos do dono nos painéis: `ops/PASSOS-NO-PAINEL.md`; conteúdo do repositório
+público de redirecionamento: `ops/redirecionamento/`.
+
+O `servidor.mjs` injeta na home um script de gancho (a suíte troca o `fetch`
+do iframe por uma rede de mentira) e, só nas respostas que ele reescreve,
+libera esse script na CSP por hash. O `public/_headers` nunca é enfraquecido;
+o teste `tests/api/cabecalhos.test.mjs` fala direto com a 8788 e confere a CSP
+exata.
+
+173 testes de navegador (`tests/suite.js` e `tests/painel.js`) e 55 de API, sem dependência. O
+runner carrega o site num iframe limpo, um teste por vez. `window.RESULTADO`
+expõe o resultado para automação.
 
 Rode depois de mexer em preço, sabor ou ponto. Um dos testes confere se o
 valor anunciado em cada combo bate com o que o carrinho realmente cobra.

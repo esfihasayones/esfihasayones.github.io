@@ -2,53 +2,47 @@
 
 Site de encomendas da Esfihas Sayones: esfiha caseira **congelada** em Florianópolis.
 Tudo é assado, embalado e congelado no mesmo dia; o cliente esquenta na air fryer.
-HTML/CSS/JS puro, sem build e sem servidor. Roda direto no GitHub Pages.
+HTML/CSS/JS puro, sem build e sem framework. Roda no Cloudflare Pages, com
+os pedidos num banco D1 e um painel do dia atrás do Cloudflare Access.
+Endereço: <https://esfihas.sayones.com.br/>.
 
 ## Arquivos
 
-| Arquivo        | O que é                                                        |
-|----------------|----------------------------------------------------------------|
-| `index.html`   | O site inteiro (HTML + CSS + JS num arquivo só)                |
-| `logo.svg`     | Logo horizontal, pra usar no Instagram, cardápio impresso, etiqueta |
-| `favicon.svg`  | Ícone da aba do navegador / selo quadrado                       |
-| `og-v2.png`    | Imagem 1200×630 do preview ao mandar o link no WhatsApp/Insta. Ao trocar, mude o nome (`og-v3.png`) e a meta `og:image`, senão o WhatsApp segue mostrando a antiga |
-| `.nojekyll`    | Faz o GitHub Pages servir os arquivos sem processar             |
-| `tests/`       | Suíte de testes, roda no navegador sem instalar nada            |
-| `CLAUDE.md`    | Contexto do projeto para o Claude Code, incluindo as decisões e as armadilhas já encontradas |
+| Caminho          | O que é                                                        |
+|------------------|----------------------------------------------------------------|
+| `public/`        | O que o Cloudflare Pages serve                                  |
+| `public/index.html` | Markup e CSS do site                                         |
+| `public/app.js`, `public/regras.js` | A tela, e as regras de preço, datas e pontos (sem DOM) |
+| `public/painel/` | Painel do dia (pedidos por data, pago e entregue)               |
+| `public/fontes/` | Fontes Unbounded e Space Grotesk em woff2, com a licença OFL    |
+| `public/_headers` | Cabeçalhos de segurança (CSP) e regras de cache                |
+| `public/logo.svg`, `favicon.svg` | Logo horizontal e ícone da aba                  |
+| `public/og-v2.png` | Imagem 1200×630 do preview no WhatsApp/Insta. Ao trocar, mude o nome (`og-v3.png`) e a meta `og:image`, senão o WhatsApp segue mostrando a antiga |
+| `functions/`     | API em Pages Functions (`/api/pedidos`, `/api/agenda`, `/api/cupom`, `/api/painel/*`) |
+| `migrations/`    | SQL do banco D1                                                 |
+| `tests/`         | Suíte de navegador e testes de API                              |
+| `CLAUDE.md`      | Contexto do projeto para o Claude Code, com decisões e armadilhas |
 
-## Ver o site agora
+## Rodar localmente
 
-Abra o `index.html` com dois cliques, ou sirva a pasta se quiser testar do
-celular na mesma rede:
-
-```bash
-python3 -m http.server 8791
-# http://127.0.0.1:8791/index.html
-```
-
-## O site no ar
-
-<https://esfihasayones.github.io/> desde 16/09/2026.
-
-O repositório é `esfihasayones/esfihasayones.github.io`, de uma conta criada
-só para o negócio. Como o nome do repositório é `<usuário>.github.io`, o
-Pages publica sozinho o que estiver na raiz da `main`, sem configurar nada:
+Precisa de Node. Copie `.dev.vars.exemplo` para `.dev.vars` e, na raiz:
 
 ```bash
-git push origin main      # um ou dois minutos depois já está no ar
+npx --yes wrangler@4.152.0 pages dev --port 8788 --local   # site, funções e banco local
 ```
 
-**Não use o `gh` neste repositório.** O `gh` desta máquina está logado na
-conta do trabalho (`breno-sayao-ecdt`) e não enxerga esta. O push vai por SSH
-no alias `github-esfiharia`, com chave própria (`~/.ssh/id_github_esfiharia`),
-no mesmo padrão do alias `github-econodata` que já existia. Em outra máquina,
-gere uma chave nova, cadastre em github.com/settings/keys logado como
-`esfihasayones` e repita o bloco no `~/.ssh/config`.
+Abra <http://127.0.0.1:8788/>. O banco local sai das `migrations/`
+(`npx --yes wrangler@4.152.0 d1 migrations apply esfihas-pedidos --local`).
+
+## Publicar
+
+O deploy é o script `ops/publicar.sh` (`--so-testar` roda só os testes). Backup: `ops/backup.sh`. Passos manuais nos painéis: `ops/PASSOS-NO-PAINEL.md`. Redirecionamento do endereço antigo: `ops/redirecionamento/`. A branch `main` ainda publica o site
+antigo no GitHub Pages: não dê push nela antes da troca de endereço. O push
+vai por SSH, no alias `github-esfiharia` do `~/.ssh/config`, e não pelo `gh`.
 
 ## Mudar preços, sabores e WhatsApp
 
-Tudo está num único bloco no fim do `index.html`, logo depois de
-`CONFIGURAÇÃO: é só aqui que você mexe`:
+Tudo está em `public/regras.js` (os cupons, em `functions/_lib/cupons.js`):
 
 ```js
 var WHATSAPP = "5548992210812";   // DDI 55 + DDD + número, só dígitos
@@ -56,7 +50,8 @@ var ANTECEDENCIA_H = 24;          // antecedência mínima do pedido, em horas
 
 var SABORES = [ ... ];            // nome, descrição e cores da ilustração
 var FAIXAS  = [ ... ];            // combos: quantidade mínima e preço por unidade
-var CUPONS  = { PRIMEIRACOMPRA: 0.10 };  // código do cupom e desconto (0.10 = 10%)
+// functions/_lib/cupons.js:
+// export const CUPONS = { PRIMEIRACOMPRA: 0.10 };  // código e desconto (0.10 = 10%)
 ```
 
 ### Combos (o desconto entra sozinho)
@@ -78,6 +73,12 @@ desconto entra sobre o total, já com o combo, e o cupom vai escrito na
 mensagem do WhatsApp. Pra criar ou tirar um cupom, mexa em `CUPONS`. O site
 não sabe se é a primeira compra de alguém: isso se confere na conversa.
 
+### Feriados
+
+A lista `FERIADOS` em `public/regras.js` vai até o fim de 2028. Depois disso
+nenhum feriado barra a retirada: estenda a lista a cada ano (nacionais e o
+aniversário de Florianópolis, 23/03; sem Carnaval nem Corpus Christi).
+
 ### Pontos de retirada
 
 **Não existe delivery porta a porta.** Em cada dia levamos as encomendas a um
@@ -90,12 +91,12 @@ ponto do bairro e o cliente passa lá pra pegar. Por isso não há taxa de entre
 | Itacorubi  | Seg a sex | 8h – 16h30   |
 | Abraão     | Seg a sex | 9h – 12h     |
 
-Os pontos vivem em **dois lugares** do `index.html`, que precisam andar juntos:
+Os pontos vivem em **dois lugares**, que precisam andar juntos:
 
-1. a seção "Entrega e horários" (o que o visitante lê);
-2. o array `PONTOS` no JavaScript (o que alimenta o seletor do pedido);
+1. a seção "Entrega e horários" do `public/index.html` (o que o visitante lê);
+2. o array `PONTOS` em `public/regras.js` (o que alimenta o seletor do pedido);
 
-e o `openingHoursSpecification` do JSON-LD, se as janelas mudarem.
+e o `openingHoursSpecification` do JSON-LD no `index.html`, se as janelas mudarem.
 
 ```js
 var PONTOS = [
@@ -121,7 +122,7 @@ Acrescente um item em `SABORES`. O card, a ilustração e o carrinho se montam s
   icone:"#ic-calabresa" }
 ```
 
-O `icone` aponta para um `<symbol>` do topo do `index.html`. Cada sabor tem
+O `icone` aponta para um `<symbol>` do topo do `public/index.html`. Cada sabor tem
 o seu (`#ic-calabresa`, `#ic-carne`, `#ic-queijo`, `#ic-marguerita`). Para um sabor novo, ou
 reaproveite o desenho mais parecido ou duplique um `<symbol>` e troque as
 cores do recheio.
@@ -131,18 +132,22 @@ ganhar o selo "Vegetariana".
 
 ## Testes
 
-Abra `tests/index.html` no navegador e a suíte roda sozinha. Não precisa
-instalar nada: ela carrega o site num iframe limpo, um teste por vez, e
-mostra o que passou e o que quebrou.
+Com o `wrangler pages dev` rodando na 8788:
 
 ```bash
-python3 -m http.server 8791
-# depois: http://127.0.0.1:8791/tests/index.html
+node tests/servidor.mjs                                  # porta 8792: serve /tests e repassa o resto
+node --test --test-concurrency=1 tests/api/*.test.mjs    # testes de API
+node tests/rodar-playwright.cjs chromium "http://127.0.0.1:8792/tests/index.html"
 ```
 
-São 137 testes cobrindo preço por combo, carrinho, formulário de retirada,
-mensagem do WhatsApp, persistência, acessibilidade e layout no celular.
-Os casos ficam em `tests/suite.js`, em português e sem dependência nenhuma.
+Também dá pra abrir <http://127.0.0.1:8792/tests/index.html> num navegador:
+a suíte carrega o site num iframe limpo, um teste por vez. Use
+`--test-concurrency=1`, porque os testes de API zeram o banco local.
+
+São 173 testes de navegador (preço por combo, carrinho, formulário de
+retirada, mensagem do WhatsApp, persistência, acessibilidade, layout no
+celular, cabeçalhos e fontes próprias) e 55 de API. Os casos ficam em
+`tests/suite.js` e `tests/api/`, em português e sem dependência nenhuma.
 
 Vale rodar depois de mexer em preço, sabor ou ponto de retirada: os testes
 conferem, por exemplo, se o valor anunciado em cada combo bate com o que o
@@ -150,43 +155,40 @@ carrinho realmente cobra.
 
 ## Como o pedido chega até você
 
-Não existe backend. O cliente monta o pedido no site, o JavaScript escreve a
-mensagem e abre o WhatsApp já preenchido. Você recebe como conversa normal.
-O carrinho fica salvo no navegador dele (`localStorage`), então ele pode voltar
-depois sem perder o que escolheu.
+O cliente monta o pedido no site, o JavaScript grava uma cópia no banco e
+abre o WhatsApp já preenchido. Você recebe como conversa normal e vê o dia
+no painel. Se a gravação falhar, o pedido segue pelo WhatsApp. O carrinho
+fica salvo no navegador dele (`localStorage`), então ele pode voltar depois.
+
+Seu nome e o pedido ficam guardados só pra preparar a encomenda, e o site
+avisa isso embaixo do botão de enviar.
 
 ## Próximos passos
 
-Em ordem. Os dois primeiros travam a publicação.
+Em ordem.
 
-### 1. Publicar o site
+### 1. Publicar o site novo
 
-Feito em 16/09/2026. Está em <https://esfihasayones.github.io/>, na conta
-`esfihasayones`. Como publicar de novo está em **O site no ar**, mais acima.
+Está em preparo no Cloudflare Pages, em <https://esfihas.sayones.com.br/>.
+O `canonical`, o `og:url`, o `og:image` e o JSON-LD do `public/index.html` já
+apontam pra esse endereço.
 
 ### 2. Depoimentos
 
 A seção saiu do ar em 21/10/2026: os três eram inventados. Quando houver
 elogios de verdade, com autorização de quem escreveu, ela pode voltar.
 
-### 3. Ajustar o canonical
+### 3. Instagram
 
-Feito: o site está em <https://esfihasayones.github.io/> e o `canonical`, o
-`og:url`, o `og:image` e o JSON-LD já apontam pra lá. Se um dia trocar por
-domínio próprio, essas quatro linhas do `index.html` mudam juntas.
+O perfil `@esfihasayones` existe desde 19/10/2026. O `logo.svg` serve de foto.
 
-### 4. Criar o perfil no Instagram
-
-O rodapé aponta para `@esfihasayones`, que ainda não existe. Crie ou corrija
-a URL. O `logo.svg` serve de foto de perfil.
-
-### 5. Cadastrar no Google Meu Negócio
+### 4. Cadastrar no Google Meu Negócio
 
 Para quem busca "esfiha florianópolis", o Google Business Profile pesa muito
 mais que o site. O site tem o JSON-LD de negócio local pronto para ajudar,
 mas sozinho ele não ranqueia.
 
-### 6. Definir o endereço exato de cada ponto
+### 5. Definir o endereço exato de cada ponto
 
 Hoje o site diz que o ponto é combinado no WhatsApp. Quando os três pontos
 estiverem definidos, vale escrever o endereço direto na página: menos

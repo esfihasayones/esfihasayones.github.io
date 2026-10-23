@@ -63,13 +63,33 @@ main{padding:18px 22px 60px;max-width:1000px}
 
 <script src="suite.js"></script>
 <script src="varredura.js"></script>
+<script src="painel.js"></script>
 <script>
 (function(){
   "use strict";
-  var ALVO = "../index.html";
+  var ALVO = "/";
   var palco = document.getElementById("palco");
   var saida = document.getElementById("saida");
   document.getElementById("alvo").textContent = ALVO;
+
+  /* Rede de mentira por padrão. A suíte inteira grava ~950 pedidos; se eles
+     fossem pro banco local, os dias ficariam lotados e a agenda real
+     atrapalharia os testes que não têm nada a ver com ela. O servidor de
+     testes chama isto antes de o site rodar. Quem precisa de outra resposta
+     troca `win.fetch` depois de carregar; `window.__redeReal = true` desliga. */
+  window.__agendaPadrao = { pausado: false, indisponiveis: {} };
+  window.__preparar = function(win){
+    if (window.__redeReal) return;
+    var real = win.fetch.bind(win);
+    win.fetch = function(url, opcoes){
+      var u = String(url);
+      if (u.indexOf("/api/pedidos") !== -1)
+        return Promise.resolve(new win.Response("{}", { status: 201 }));
+      if (u.indexOf("/api/agenda") !== -1)
+        return Promise.resolve(new win.Response(JSON.stringify(window.__agendaPadrao), { status: 200 }));
+      return real(url, opcoes);
+    };
+  };
 
   /* Navega o iframe e resolve quando o documento pedido estiver pronto. */
   function irPara(url, pronto){

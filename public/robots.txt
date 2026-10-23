@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /painel
+Disallow: /api
+
+Sitemap: https://esfihas.sayones.com.br/sitemap.xml
