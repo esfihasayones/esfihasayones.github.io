@@ -83,44 +83,56 @@ function aviso(texto, opcoes) {
 function avisoFora() { clearTimeout(tAviso); $("#aviso").hidden = true; }
 
 // ---------- estado ----------
-// `dia` é a coluna do meio (hoje, ou o ?dia= do endereço); `dia2` é a da
-// direita, que começa no dia seguinte e troca quando se clica em "Mais pra frente".
-const estado = { dia: null, dia2: null, dados: null, dados2: null, agenda: null, seq: 0, aba: "pedidos" };
+// `dia` é o dia base (hoje, ou o ?dia= do endereço). Se ele já está todo pago e
+// entregue, vira uma faixa fina em cima e a fila anda: a primeira coluna passa a
+// ser o próximo dia com pedido. `escolha` é o dia que o dono abriu em "Outros dias".
+const estado = { dia: null, escolha: null, dados: null, dados2: null, dados3: null, recolher: false, agenda: null, seq: 0, aba: "pedidos" };
 const hoje = () => isoBrasilia(Date.now());
+const lerDia = (d) => api("GET", "/api/painel/pedidos?dia=" + encodeURIComponent(d));
+const falta = (d) => confirmadosDe(d).filter((p) => !(p.pago && p.entregue)).length;
 
-async function buscar(dia, dia2) {
-  const [j, j2] = await Promise.all([
-    api("GET", "/api/painel/pedidos?dia=" + encodeURIComponent(dia)),
-    api("GET", "/api/painel/pedidos?dia=" + encodeURIComponent(dia2)),
-  ]);
-  return { j, j2 };
+async function montarVista(base, escolha) {
+  const j = await lerDia(base);
+  const comPedido = j.proximos.filter((x) => x.pedidos).map((x) => x.dia);
+  const recolher = falta(j) === 0 && comPedido.length > 0;
+  let d2, d3 = null;
+  if (!recolher) d2 = escolha || comPedido[0] || somaDias(base, 1);
+  else {
+    d2 = comPedido[0];
+    d3 = escolha && escolha !== d2 ? escolha : (comPedido[1] || null);
+  }
+  const [j2, j3] = await Promise.all([lerDia(d2), d3 ? lerDia(d3) : null]);
+  return { j, j2, j3, recolher };
 }
 
-async function carregarDia(dia, dia2) {
+async function carregarDia(dia, escolha) {
   const meu = ++estado.seq;
-  const segundo = dia2 && dia2 > dia ? dia2 : somaDias(dia, 1);
   try {
-    const { j, j2 } = await buscar(dia, segundo);
+    const v = await montarVista(dia, escolha);
     if (meu !== estado.seq) return false;
-    estado.dados = j;
-    estado.dados2 = j2;
-    estado.dia = j.dia;
-    estado.dia2 = j2.dia;
-    try { history.replaceState(null, "", "?dia=" + j.dia); } catch (e) { /* sem histórico */ }
+    aplicar(v, escolha);
+    try { history.replaceState(null, "", "?dia=" + v.j.dia); } catch (e) { /* sem histórico */ }
     renderDia();
-    document.body.dataset.pronto = j.dia;
+    document.body.dataset.pronto = v.j.dia;
     $("#situacao").textContent = "";
     return true;
   } catch (e) {
     if (meu !== estado.seq) return false;
-    aviso(e.message, { acao: { rotulo: "Tentar de novo", fazer: () => carregarDia(dia, dia2) } });
+    aviso(e.message, { acao: { rotulo: "Tentar de novo", fazer: () => carregarDia(dia, escolha) } });
     return false;
   }
 }
+function aplicar(v, escolha) {
+  estado.dados = v.j;
+  estado.dados2 = v.j2;
+  estado.dados3 = v.j3;
+  estado.recolher = v.recolher;
+  estado.dia = v.j.dia;
+  estado.escolha = escolha || null;
+}
 const irPara = (dia) => carregarDia(dia);
-const verDia = (dia2) => carregarDia(estado.dia, dia2);
+const verDia = (d) => carregarDia(estado.dia, d);
 
-// ---------- desenho ----------
 const itensTexto = (itens) => itens.map((i) => i.qtd + " " + (NOME_SABOR[i.sabor] || i.sabor)).join(", ");
 const confirmadosDe = (d) => d.pontos.flatMap((p) => p.pedidos).filter((p) => p.status === "confirmado");
 
@@ -131,23 +143,31 @@ function tituloDia(dia) {
 }
 
 function renderDia() {
-  renderColuna(estado.dados, "#nomeDia", "#resumoDia", "#sabores", "#pontos", true);
-  renderColuna(estado.dados2, "#nomeDia2", "#resumoDia2", "#sabores2", "#pontos2", false);
+  const base = $("#colDia");
+  base.classList.toggle("recolhido", estado.recolher);
+  if (!estado.recolher) base.open = true;
+  else if (!base.dataset.mexeu) base.open = false;
+  renderColuna(estado.dados, "", true);
+  renderColuna(estado.dados2, "2");
+  $("#colTerceiro").hidden = !estado.dados3;
+  if (estado.dados3) renderColuna(estado.dados3, "3");
   renderPendencias(estado.dados.pendencias);
   renderSemData(estado.dados.semData || []);
   renderProximos(estado.dados.proximos);
 }
 
-function renderColuna(d, sNome, sResumo, sSabores, sPontos, principal) {
+function renderColuna(d, n, principal) {
   const confirmados = confirmadosDe(d);
   const esfihas = confirmados.reduce((s, p) => s + p.qtd, 0);
   const dinheiro = confirmados.reduce((s, p) => s + p.total_centavos, 0);
-  $(sNome).textContent = tituloDia(d.dia);
-  $(sResumo).replaceChildren(
-    h("b", { id: principal ? "totalEsfihas" : null, texto: String(esfihas) }), " esfihas" + (dinheiro ? " · " + brl(dinheiro) : ""));
-  $(sSabores).replaceChildren(...SABORES.map((s) =>
+  const feito = principal && estado.recolher;
+  $("#nomeDia" + n).textContent = tituloDia(d.dia);
+  $("#resumoDia" + n).replaceChildren(
+    h("b", { id: principal ? "totalEsfihas" : null, texto: String(esfihas) }),
+    " esfihas" + (dinheiro ? " · " + brl(dinheiro) : "") + (feito && esfihas ? " · tudo entregue" : ""));
+  $("#sabores" + n).replaceChildren(...SABORES.map((s) =>
     h("li", { "data-sabor": s.id }, h("span", { className: "n", texto: String(d.porSabor[s.id] || 0) }), h("span", { className: "rotulo", texto: s.nome }))));
-  renderPontos(d, sPontos);
+  renderPontos(d, "#pontos" + n);
 }
 
 function menuMais(botoes) {
@@ -160,7 +180,7 @@ function renderPendencias(lista) {
   $("#nPendencias").textContent = String(lista.length);
   $("#semPendencias").hidden = lista.length > 0;
   $("#pendencias").replaceChildren(...lista.map((p) => {
-    const motivo = p.status === "aguardando" ? "Chegou pelo site" : (MOTIVOS[p.motivo] || "Fora da regra");
+    const motivo = p.status === "aguardando" ? "Pelo site" : (MOTIVOS[p.motivo] || "Fora da regra");
     return cartao(p, {
       pendencia: true,
       topo: h("div", { className: "motivo", texto: motivo }),
@@ -262,19 +282,16 @@ function cartao(p, o) {
     o.depois || null);
 }
 
-// Só os dias que têm pedido, e sempre o dia seguinte pra poder voltar a ele.
+// Outros dias com pedido nos próximos 7, fora os que já estão nas colunas.
 function renderProximos(lista) {
-  const seguinte = somaDias(estado.dia, 1);
-  const dias = lista.filter((x) => x.pedidos || x.dia === seguinte);
+  const naTela = [estado.dados2 && estado.dados2.dia, estado.dados3 && estado.dados3.dia];
+  const dias = lista.filter((x) => x.pedidos && !naTela.includes(x.dia));
+  $("#blocoProximos").hidden = dias.length === 0;
   $("#proximos").replaceChildren(...dias.map((x) =>
-    h("li", {}, h("button", {
-      type: "button", className: "proximo", "data-dia": x.dia, "aria-pressed": x.dia === estado.dia2 ? "true" : "false",
-      onclick: () => verDia(x.dia),
-    },
+    h("li", {}, h("button", { type: "button", className: "proximo", "data-dia": x.dia, "aria-pressed": "false", onclick: () => verDia(x.dia) },
       h("b", { texto: tituloDia(x.dia) }),
-      h("span", { texto: x.pedidos ? plural(x.qtd, "esfiha", "esfihas") + ", " + plural(x.pedidos, "pedido", "pedidos") : "sem pedidos" }),
+      h("span", { texto: plural(x.qtd, "esfiha", "esfihas") }),
       x.nomes ? h("small", { className: "nomes", texto: x.nomes }) : null))));
-  if (!lista.some((x) => x.pedidos && x.dia !== seguinte)) $("#proximos").append(h("li", { className: "nada", texto: "Nenhum outro dia com pedido na semana." }));
 }
 
 // ---------- histórico ----------
@@ -361,10 +378,9 @@ async function mudar(p, campos, botao) {
 async function recarregarQuieto() {
   const meu = ++estado.seq;
   try {
-    const { j, j2 } = await buscar(estado.dia, estado.dia2);
+    const v = await montarVista(estado.dia, estado.escolha);
     if (meu !== estado.seq || ocupados.size) return;
-    estado.dados = j;
-    estado.dados2 = j2;
+    aplicar(v, estado.escolha);
     renderDia();
   } catch (e) {
     if (meu === estado.seq) aviso("Salvei, mas não consegui atualizar a tela. Recarregue a página.");
@@ -515,7 +531,7 @@ async function salvar(ev) {
     aviso("Pedido Nº " + salvo.id + " salvo: " + brl(salvo.total_centavos) + ".", { bom: true });
     if (salvo.retirada && salvo.retirada > estado.dia) await verDia(salvo.retirada);
     else if (salvo.retirada && salvo.retirada < estado.dia) await irPara(salvo.retirada);
-    else await carregarDia(estado.dia, estado.dia2);
+    else await carregarDia(estado.dia, estado.escolha);
   } catch (e) {
     erroForm(e.message);
   } finally {
@@ -567,6 +583,7 @@ async function carregarAgenda() {
 // ---------- ligações ----------
 function ligar() {
   $("#abaPedidos").addEventListener("click", () => abrirAba("pedidos"));
+  $("#colDia").addEventListener("toggle", (e) => { if (estado.recolher) e.currentTarget.dataset.mexeu = "1"; });
   $("#abaHistorico").addEventListener("click", () => abrirAba("historico"));
   $("#novo").addEventListener("click", () => abrirForm(null));
   $("#fFechar").addEventListener("click", () => form.close());
