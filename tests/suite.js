@@ -557,6 +557,20 @@
     igual(c.el("#fData").value, "2026-11-03", "a sugestão caiu no feriado");
   });
 
+  teste("Retirada", "sem produção na terça e na quarta: pedido de terça pra quinta não dá", function (c) {
+    c.definir("calabresa", 4);
+    // terça 27/10 10h pra quinta 29/10 na Trindade: tem 56 horas, mas terça e quarta não produzem
+    var dica = retirada(c, "2026-10-27T10:00:00", 0, "2026-10-29");
+    contem(dica, "não monta esfiha na terça nem na quarta");
+    contem(dica, "terça, 03/11/2026", "a próxima pula o feriado de 02/11 e cai depois da produção de quinta");
+    c.el("#fNome").value = "Breno";
+    igual(c.enviar(), null, "pedido sem dia de produção não podia sair");
+    // segunda 10h pra quarta: dá pra produzir na própria segunda
+    contem(retirada(c, "2026-10-26T10:00:00", 0, "2026-10-28"), "✓");
+    // segunda 19h pra quarta: depois das 18h a segunda não conta mais
+    contem(retirada(c, "2026-10-26T19:00:00", 0, "2026-10-28"), "não monta esfiha");
+  });
+
   teste("Retirada", "o Abraão abre de segunda a sexta das 9h ao meio-dia", function (c) {
     c.definir("calabresa", 4);
     var dica = retirada(c, "2026-10-21T10:00:00", 2, "2026-10-23");
