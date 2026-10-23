@@ -192,6 +192,8 @@
     await esperar(function () { return pago().getAttribute("aria-pressed") === "true"; }, "Pago ligar");
     P.clicar(entregue());
     await esperar(function () { return entregue().getAttribute("aria-pressed") === "true"; }, "Entregue ligar");
+    A.ok(P.cartao(ped.id).closest("details.feitos"), "pago e entregue sai da fila");
+    A.contem(P.texto("#pontos"), "Tudo entregue aqui.");
     await P.recarregar(d);
     A.igual(pago().getAttribute("aria-pressed"), "true", "Pago persistiu");
     A.igual(entregue().getAttribute("aria-pressed"), "true", "Entregue persistiu");
