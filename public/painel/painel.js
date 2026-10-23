@@ -267,7 +267,8 @@ function renderProximos(lista) {
   $("#proximos").replaceChildren(...lista.map((x) =>
     h("li", {}, h("button", { type: "button", className: "proximo" + (x.qtd ? "" : " vazio-dia"), "data-dia": x.dia, onclick: () => irPara(x.dia) },
       h("b", { texto: dataLonga(x.dia) }),
-      h("span", { texto: x.pedidos ? plural(x.qtd, "esfiha", "esfihas") + ", " + plural(x.pedidos, "pedido", "pedidos") : "sem pedidos" })))));
+      h("span", { texto: x.pedidos ? plural(x.qtd, "esfiha", "esfihas") + ", " + plural(x.pedidos, "pedido", "pedidos") : "sem pedidos" }),
+      x.nomes ? h("small", { className: "nomes", texto: x.nomes }) : null))));
 }
 
 // ---------- ações sobre um pedido ----------
