@@ -110,6 +110,8 @@ section.bloco>h2{margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .proximo{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px;padding:10px 14px;border-radius:var(--raio-sm);border:1px solid var(--linha);background:var(--branco);cursor:pointer;text-align:left}
 .proximo b{font-weight:700}
 .proximo span{color:var(--suave);font-size:15px;text-align:right}
+.proximo{flex-wrap:wrap}
+.proximo .nomes{flex-basis:100%;color:var(--tinta);font-size:14px;font-weight:600;overflow-wrap:anywhere}
 .proximo.vazio-dia{opacity:.6}
 
 /* agenda */
@@ -172,6 +174,11 @@ dialog#form::backdrop{background:rgba(18,18,18,.55)}
     <div id="pontos"><p class="vazio">Carregando…</p></div>
   </section>
 
+  <section class="bloco">
+    <h2>Próximos dias</h2>
+    <ul class="proximos" id="proximos"></ul>
+  </section>
+
   <section class="bloco" id="blocoPendencias" hidden>
     <h2>Pendências <span class="contagem" id="nPendencias">0</span></h2>
     <div id="pendencias"></div>
@@ -189,10 +196,6 @@ dialog#form::backdrop{background:rgba(18,18,18,.55)}
     <p class="dica">Estimativa: R$ 2,05 de ingredientes e luz por esfiha, uma marmita de R$ 2,10 a cada 8 esfihas do pedido e a taxa do Tap (0,89% no débito, 3,09% no crédito) nos pedidos pagos no cartão. Sua hora não entra.</p>
   </section>
 
-  <section class="bloco">
-    <h2>Próximos dias</h2>
-    <ul class="proximos" id="proximos"></ul>
-  </section>
 
   <section class="bloco">
     <details class="agenda" id="agenda">

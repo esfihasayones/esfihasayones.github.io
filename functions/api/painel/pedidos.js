@@ -29,7 +29,7 @@ export async function onRequestGet({ request, env }) {
     // sumiriam do painel depois de Confirmar.
     env.DB.prepare("SELECT * FROM pedidos WHERE status = 'confirmado' AND retirada IS NULL AND entregue = 0 ORDER BY id"),
     env.DB.prepare(
-      "SELECT retirada, SUM(qtd) AS q, COUNT(*) AS n FROM pedidos WHERE status = 'confirmado' AND retirada BETWEEN ? AND ? GROUP BY retirada")
+      "SELECT retirada, SUM(qtd) AS q, COUNT(*) AS n, GROUP_CONCAT(nome, ', ') AS nomes FROM pedidos WHERE status = 'confirmado' AND retirada BETWEEN ? AND ? GROUP BY retirada")
       .bind(de, ate),
     env.DB.prepare("SELECT qtd, total_centavos, pago, pagamento FROM pedidos WHERE status = 'confirmado' AND retirada BETWEEN ? AND ?")
       .bind(mes + "-01", mes + "-31"),
@@ -53,7 +53,7 @@ export async function onRequestGet({ request, env }) {
   for (let i = 1; i <= 7; i++) {
     const d = somaDias(dia, i);
     const m = mapa.get(d);
-    proximos.push({ dia: d, qtd: m ? m.q : 0, pedidos: m ? m.n : 0 });
+    proximos.push({ dia: d, qtd: m ? m.q : 0, pedidos: m ? m.n : 0, nomes: m ? m.nomes : null });
   }
 
   const confirmadosDia = doDia.results.filter((r) => r.status === "confirmado");
