@@ -27,7 +27,7 @@ SOBRA="$(find public \( -path '*/tests' -o -path '*/tests/*' -o -name '.dev.vars
 if grep -rnE 'DEV_SEM_LOGIN' functions public | grep -vE 'env\.DEV_SEM_LOGIN|^[^:]*:[0-9]+:\s*//'; then
   falhar "DEV_SEM_LOGIN aparece fora de env.DEV_SEM_LOGIN (linhas acima)."
 fi
-if grep -rnE 'DEV_SEM_LOGIN\s*[:=]\s*["'"'"']?1' functions public; then
+if grep -rnE 'DEV_SEM_LOGIN\s*[:=]\s*["'"'"']?1' functions public | grep -vE '^[^:]*:[0-9]+:\s*//'; then
   falhar "DEV_SEM_LOGIN fixado em 1 no código."
 fi
 echo "Nada indevido em public/ e DEV_SEM_LOGIN só vem do ambiente."
