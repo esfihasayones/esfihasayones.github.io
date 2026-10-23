@@ -42,7 +42,7 @@ export const NOMES_DIA = ["domingo", "segunda", "terça", "quarta", "quinta", "s
 export const SABORES = [
   // `curta` é a versão que aparece no card compacto do celular.
   { id:"calabresa", nome:"Calabresa",
-    desc:"Calabresa moída com molho de tomate, cebola e muçarela.",
+    desc:"Molho de tomate, calabresa moída, cebola e muçarela.",
     curta:"Molho, cebola e muçarela",
     icone:"#ic-calabresa" },
   { id:"carne", nome:"Carne",
@@ -54,8 +54,8 @@ export const SABORES = [
     curta:"Muçarela com orégano",
     icone:"#ic-queijo", veg:true },
   { id:"marguerita", nome:"Marguerita",
-    desc:"Muçarela, tomate e manjericão.",
-    curta:"Tomate e manjericão",
+    desc:"Molho de tomate, muçarela, tomate e manjericão.",
+    curta:"Molho, tomate e manjericão",
     icone:"#ic-marguerita", veg:true }
 ];
 
