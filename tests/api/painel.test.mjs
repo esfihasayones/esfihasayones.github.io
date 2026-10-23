@@ -66,7 +66,7 @@ test("lista do dia soma por sabor só os confirmados", async () => {
   assert.equal(j.porSabor.carne, 0);
   const p = achar(j, a);
   assert.deepEqual(Object.keys(p).sort(), ["cupom", "desconto_centavos", "entregue", "id", "itens", "janela", "motivo", "nome", "obs",
-    "origem", "pago", "ponto", "qtd", "retirada", "status", "total_centavos", "valor_manual"].sort());
+    "origem", "pago", "pagamento", "ponto", "qtd", "retirada", "status", "total_centavos", "valor_manual"].sort());
   assert.equal(p.pago, false);
   assert.deepEqual(p.itens, [{ sabor: "calabresa", qtd: 5 }]);
   assert.ok(b);
@@ -204,7 +204,8 @@ test("PATCH recusa campo inválido, ignora campo desconhecido e dá 404", async 
   const id = await site(4);
   for (const c of [{ status: "feito" }, { nome: "x".repeat(61) }, { nome: "" }, { pago: "sim" }, { entregue: 1 },
     { itens: [] }, { itens: [{ sabor: "pizza", qtd: 1 }] }, { retirada: "2030-02-31" }, { ponto: "p".repeat(61) },
-    { janela: "j".repeat(41) }, { obs: "o".repeat(501) }, { total_centavos: -1 }, { total_centavos: 1.5 }, { cupom: "c".repeat(31) }]) {
+    { janela: "j".repeat(41) }, { obs: "o".repeat(501) }, { total_centavos: -1 }, { total_centavos: 1.5 }, { cupom: "c".repeat(31) },
+    { pagamento: "boleto" }, { pagamento: 1 }]) {
     assert.equal((await patch(id, c)).status, 400, JSON.stringify(c).slice(0, 40));
   }
   const ok = await patch(id, { pago: true, entregue: true, id: 999, criado_em: "x", origem: "manual", qtd: 1 });
@@ -279,4 +280,40 @@ test("PATCH sem mexer em itens ou cupom mantém o total gravado", async () => {
   // mexer nos itens refaz a conta
   const q = await (await patch(id, { itens: [{ sabor: "carne", qtd: 4 }] })).json();
   assert.equal(q.total_centavos, 2200);
+});
+
+test("contas do dia e do mês: bruto, ingredientes, marmita por pedido, taxa e líquido", async () => {
+  zerar();
+  const d = DIA();
+  // 12 esfihas (combo 12, R$ 62,40) e 4 esfihas (combo 4, R$ 22,00), confirmados
+  const a = await site(12);
+  const b = await site(4);
+  await site(3);   // aguardando: não entra nas contas
+  for (const id of [a, b]) assert.equal((await patch(id, { status: "confirmado" })).status, 200);
+  assert.equal((await patch(a, { pago: true, pagamento: "credito" })).status, 200);
+  assert.equal((await patch(b, { pago: true })).status, 200);   // pago sem dizer como
+  let j = await dia(d);
+  const c = j.financas.dia;
+  assert.equal(c.pedidos, 2);
+  assert.equal(c.esfihas, 16);
+  assert.equal(c.bruto, 6240 + 2200);
+  assert.equal(c.ingredientes, 16 * 205);
+  assert.equal(c.marmitas, 2 + 1);   // 12 esfihas pedem duas marmitas de 8
+  assert.equal(c.embalagem, 3 * 210);
+  assert.equal(c.taxa, Math.round(6240 * 309 / 10000));
+  assert.equal(c.pagos_sem_forma, 1);
+  assert.equal(c.liquido, c.bruto - c.ingredientes - c.embalagem - c.taxa);
+  assert.equal(j.financas.mes.mes, d.slice(0, 7));
+  assert.equal(j.financas.mes.bruto, c.bruto);
+  const pb = achar(j, b);
+  assert.equal(pb.pagamento, null);
+  assert.equal(achar(j, a).pagamento, "credito");
+  // trocar pra débito muda a taxa; desmarcar pago tira a taxa
+  assert.equal((await patch(a, { pagamento: "debito" })).status, 200);
+  j = await dia(d);
+  assert.equal(j.financas.dia.taxa, Math.round(6240 * 89 / 10000));
+  assert.equal((await patch(a, { pago: false, pagamento: null })).status, 200);
+  j = await dia(d);
+  assert.equal(j.financas.dia.taxa, 0);
+  assert.equal(j.financas.dia.pago, 2200);
 });

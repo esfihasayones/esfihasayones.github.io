@@ -131,6 +131,7 @@ function renderDia() {
   renderSemData(d.semData || []);
   renderPontos(d);
   renderProximos(d.proximos);
+  renderContas(d.financas);
 }
 
 function renderPendencias(lista) {
@@ -162,6 +163,7 @@ function renderSemData(lista) {
       h("button", { type: "button", className: "btn suave", "data-acao": "editar", texto: "Editar", onclick: () => abrirForm(p) }),
       h("button", { type: "button", className: "btn perigo", "data-acao": "cancelar", texto: "Cancelar", onclick: (e) => cancelar(p, e.currentTarget) }),
     ],
+    depois: formaPagamento(p),
   })));
 }
 
@@ -193,6 +195,7 @@ function renderPontos(d) {
             alternador(p, "entregue", "Entregue"),
             h("button", { type: "button", className: "btn suave", "data-acao": "editar", texto: "Editar", onclick: () => abrirForm(p) }),
           ],
+          depois: formaPagamento(p),
         });
       }));
   }));
@@ -202,8 +205,38 @@ function alternador(p, campo, rotulo) {
   return h("button", {
     type: "button", className: "btn" + (p[campo] ? " marcado" : ""), "data-acao": campo,
     "aria-pressed": p[campo] ? "true" : "false", texto: rotulo,
-    onclick: (e) => mudar(p, { [campo]: !p[campo] }, e.currentTarget),
+    onclick: (e) => mudar(p, campo === "pago" && p.pago ? { pago: false, pagamento: null } : { [campo]: !p[campo] }, e.currentTarget),
   });
+}
+
+// Depois de marcar Pago: como pagou, pra descontar a taxa do cartão nas contas.
+const FORMAS = [["pix", "Pix"], ["debito", "Débito"], ["credito", "Crédito"]];
+function formaPagamento(p) {
+  if (!p.pago || p.status !== "confirmado") return null;
+  return h("div", { className: "forma" + (p.pagamento ? "" : " pergunta"), role: "group", "aria-label": "Como pagou" },
+    p.pagamento ? null : h("span", { texto: "Como pagou?" }),
+    FORMAS.map(([v, rotulo]) => h("button", {
+      type: "button", className: "btn mini" + (p.pagamento === v ? " marcado" : ""), "data-acao": "pagamento-" + v,
+      "aria-pressed": p.pagamento === v ? "true" : "false", texto: rotulo,
+      onclick: (e) => mudar(p, { pagamento: v }, e.currentTarget),
+    })));
+}
+
+// ---------- contas ----------
+const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+function renderContas(f) {
+  if (!f) return;
+  const col = (titulo, c) => h("div", { className: "conta" },
+    h("h3", { texto: titulo }),
+    h("dl", {},
+      h("dt", { texto: "Bruto" }), h("dd", { texto: brl(c.bruto) }),
+      h("dt", { texto: "Ingredientes e luz" }), h("dd", { texto: "− " + brl(c.ingredientes) }),
+      h("dt", { texto: plural(c.marmitas, "marmita", "marmitas") }), h("dd", { texto: "− " + brl(c.embalagem) }),
+      h("dt", { texto: "Taxa do cartão" }), h("dd", { texto: "− " + brl(c.taxa) }),
+      h("dt", { className: "liq", texto: "Líquido" }), h("dd", { className: "liq", "data-campo": "liquido", texto: brl(c.liquido) })),
+    c.pagos_sem_forma ? h("p", { className: "dica", texto: plural(c.pagos_sem_forma, "pedido pago", "pedidos pagos") + " sem a forma de pagamento marcada: a taxa pode estar faltando." }) : null);
+  const [ano, m] = f.mes.mes.split("-");
+  $("#contas").replaceChildren(col("Este dia", f.dia), col(MESES[Number(m) - 1][0].toUpperCase() + MESES[Number(m) - 1].slice(1) + " de " + ano, f.mes));
 }
 
 function cartao(p, o) {
@@ -226,7 +259,8 @@ function cartao(p, o) {
     onde ? h("div", { className: "detalhe", texto: onde }) : null,
     p.origem === "manual" ? h("div", { className: "detalhe", texto: "Lançado por você" }) : null,
     p.obs ? h("div", { className: "obs", texto: p.obs }) : null,
-    h("div", { className: "botoes" }, o.botoes));
+    h("div", { className: "botoes" }, o.botoes),
+    o.depois || null);
 }
 
 function renderProximos(lista) {

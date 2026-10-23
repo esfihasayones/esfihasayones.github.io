@@ -64,6 +64,17 @@ input,select,textarea{font-size:16px}
 
 /* seções */
 section.bloco{margin-top:22px}
+.contas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:10px}
+.conta{background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio);padding:14px}
+.conta h3{font-size:15px;margin-bottom:8px}
+.conta dl{margin:0;display:grid;grid-template-columns:1fr auto;gap:4px 12px}
+.conta dt{color:var(--suave)}
+.conta dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.conta .liq{color:var(--tinta);font-weight:700;border-top:1px solid var(--linha);padding-top:6px;margin-top:2px}
+.forma{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.forma.pergunta{background:var(--alerta-fundo);border-radius:var(--raio-sm);padding:8px 10px}
+.forma.pergunta span{color:var(--alerta);font-weight:600;margin-right:4px}
+.btn.mini{min-height:40px;padding:0 12px;font-size:14px}
 section.bloco>h2{margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .contagem{background:var(--tinta);color:var(--fundo);border-radius:99px;padding:2px 9px;font-family:var(--corpo);font-size:13px;font-weight:600;letter-spacing:0}
 .vazio{color:var(--suave);margin:0;padding:14px;border:1px dashed var(--linha);border-radius:var(--raio)}
@@ -109,7 +120,7 @@ details.agenda>summary{cursor:pointer;padding:14px;font-family:var(--display);fo
 .campo label,.campo .rot{font-weight:600;font-size:15px}
 .campo input,.campo select,.campo textarea{width:100%;min-width:0;min-height:48px;padding:10px 12px;border:1px solid #bdb9b0;border-radius:var(--raio-sm);background:#fff}
 .campo textarea{min-height:84px;resize:vertical}
-.campo .dica{color:var(--suave);font-size:14px;margin:0}
+.campo .dica,.bloco .dica,.conta .dica{color:var(--suave);font-size:14px;margin:8px 0 0}
 .dupla{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
 .lista-bloqueios{margin:0;padding:0;list-style:none;display:grid;gap:8px}
 .lista-bloqueios li{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--areia);border-radius:var(--raio-sm);padding:8px 8px 8px 12px}
@@ -169,6 +180,12 @@ dialog#form::backdrop{background:rgba(18,18,18,.55)}
   <section class="bloco">
     <h2>Pedidos do dia</h2>
     <div id="pontos"><p class="vazio">Carregando…</p></div>
+  </section>
+
+  <section class="bloco" id="blocoContas">
+    <h2>Contas</h2>
+    <div class="contas" id="contas"></div>
+    <p class="dica">Estimativa: R$ 2,05 de ingredientes e luz por esfiha, uma marmita de R$ 2,10 a cada 8 esfihas do pedido e a taxa do Tap (0,89% no débito, 3,09% no crédito) nos pedidos pagos no cartão. Sua hora não entra.</p>
   </section>
 
   <section class="bloco">
