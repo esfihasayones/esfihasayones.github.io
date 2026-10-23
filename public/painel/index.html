@@ -161,7 +161,7 @@ dialog#form::backdrop{background:rgba(18,18,18,.55)}
 .barra small{color:#bdbab3;margin-left:auto}
 .barra #novo{min-height:42px;background:var(--fundo);color:var(--tinta);border-color:var(--fundo)}
 .tela{max-width:1320px;margin:0 auto;padding:16px 16px 40px}
-.colunas{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,1.25fr);gap:14px;align-items:start}
+.colunas{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:start}
 .coluna{background:var(--areia);border-radius:var(--raio);padding:12px;min-width:0}
 .coluna>h2,.faixa>h2{font-size:14px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 10px;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px}
 .coluna>h2 small{font-family:var(--corpo);text-transform:none;letter-spacing:0;font-weight:600;font-size:14px;color:var(--suave)}
@@ -180,6 +180,9 @@ dialog#form::backdrop{background:rgba(18,18,18,.55)}
 .faixa .proximo span{font-size:13px;text-align:left}
 .faixa .nada{color:var(--suave)}
 details.mais-acoes{position:relative}
+details.feitos{margin-top:8px}
+details.feitos>summary{cursor:pointer;color:var(--suave);font-weight:600;padding:6px 2px}
+details.feitos .cartao{opacity:.75}
 details.mais-acoes>summary{list-style:none;min-height:48px;display:flex;align-items:center;justify-content:center;border:2px solid var(--linha);border-radius:var(--raio-sm);font-weight:700;cursor:pointer;background:var(--branco)}
 details.mais-acoes>summary::-webkit-details-marker{display:none}
 details.mais-acoes[open]>summary{border-color:var(--tinta)}
@@ -220,18 +223,6 @@ details.mais-acoes .menu-acoes{display:grid;gap:6px;margin-top:6px}
 
 <main class="tela" id="telaPedidos">
   <div class="colunas">
-    <section class="coluna" id="colNovos">
-      <h2>Novos <span class="contagem" id="nPendencias">0</span></h2>
-      <div id="blocoPendencias">
-        <div id="pendencias"></div>
-        <p class="vazio" id="semPendencias">Nenhum pedido novo pra confirmar.</p>
-      </div>
-      <div id="blocoSemData" hidden>
-        <h3>Sem data <span class="contagem" id="nSemData">0</span></h3>
-        <div id="semData"></div>
-      </div>
-    </section>
-
     <section class="coluna" id="colDia">
       <h2><span id="nomeDia" aria-live="polite">Carregando…</span><small id="resumoDia"></small></h2>
       <ul class="sabores" id="sabores" aria-label="Quanto montar de cada sabor"></ul>
@@ -242,6 +233,17 @@ details.mais-acoes .menu-acoes{display:grid;gap:6px;margin-top:6px}
       <h2><span id="nomeDia2">Carregando…</span><small id="resumoDia2"></small></h2>
       <ul class="sabores" id="sabores2" aria-label="Quanto montar de cada sabor nesse dia"></ul>
       <div id="pontos2"><p class="vazio">Carregando…</p></div>
+    </section>
+    <section class="coluna" id="colNovos">
+      <h2>Novos <span class="contagem" id="nPendencias">0</span></h2>
+      <div id="blocoPendencias">
+        <div id="pendencias"></div>
+        <p class="vazio" id="semPendencias">Nenhum pedido novo pra confirmar.</p>
+      </div>
+      <div id="blocoSemData" hidden>
+        <h3>Sem data <span class="contagem" id="nSemData">0</span></h3>
+        <div id="semData"></div>
+      </div>
     </section>
   </div>
 

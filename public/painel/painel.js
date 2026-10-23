@@ -195,9 +195,9 @@ function renderPontos(d, seletor) {
   $(seletor).replaceChildren(...grupos.map((g) => {
     const ativos = g.pedidos.filter((p) => p.status === "confirmado");
     const total = ativos.reduce((s, p) => s + p.qtd, 0);
-    return h("div", { className: "ponto-grupo", "data-ponto": g.ponto },
-      h("h3", {}, g.ponto, h("span", { texto: plural(total, "esfiha", "esfihas") + ", " + plural(ativos.length, "pedido", "pedidos") })),
-      g.pedidos.map((p) => {
+    // Pago e entregue já saiu da fila: vai pra uma lista fechada no fim do ponto.
+    const feito = (p) => p.status === "confirmado" && p.pago && p.entregue;
+    const desenhar = (p) => {
         if (p.status === "cancelado") {
           return cartao(p, {
             botoes: [
@@ -210,7 +210,13 @@ function renderPontos(d, seletor) {
           botoes: [alternador(p, "pago", "Pago"), alternador(p, "entregue", "Entregue"), menuMais([botaoEditar(p), botaoCancelar(p)])],
           depois: formaPagamento(p),
         });
-      }));
+    };
+    const fila = g.pedidos.filter((p) => !feito(p)), feitos = g.pedidos.filter(feito);
+    return h("div", { className: "ponto-grupo", "data-ponto": g.ponto },
+      h("h3", {}, g.ponto, h("span", { texto: plural(total, "esfiha", "esfihas") + ", " + plural(ativos.length, "pedido", "pedidos") })),
+      fila.map(desenhar),
+      fila.length ? null : h("p", { className: "vazio", texto: "Tudo entregue aqui." }),
+      feitos.length ? h("details", { className: "feitos" }, h("summary", { texto: plural(feitos.length, "pago e entregue", "pagos e entregues") }), feitos.map(desenhar)) : null);
   }));
 }
 
