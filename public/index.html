@@ -12,21 +12,21 @@
 <meta property="og:locale" content="pt_BR">
 <meta name="geo.region" content="BR-SC">
 <meta name="geo.placename" content="Florianópolis">
-<link rel="canonical" href="https://esfihasayones.github.io/">
-<meta property="og:url" content="https://esfihasayones.github.io/">
+<link rel="canonical" href="https://esfihas.sayones.com.br/">
+<meta property="og:url" content="https://esfihas.sayones.com.br/">
 <!-- o WhatsApp só lê a imagem se a URL for absoluta -->
 <!-- nome versionado: o WhatsApp guarda a prévia pela URL da imagem -->
-<meta property="og:image" content="https://esfihasayones.github.io/og-v2.png">
+<meta property="og:image" content="https://esfihas.sayones.com.br/og-v2.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Esfihas Sayones, esfiha caseira congelada em Florianópolis">
 <meta name="twitter:card" content="summary_large_image">
 <meta property="og:type" content="website">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<link rel="preload" as="font" type="font/woff2" href="/fontes/unbounded.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fontes/space-grotesk.woff2" crossorigin>
 <style>
+@font-face{font-family:"Unbounded";font-style:normal;font-weight:500 700;font-display:swap;src:url(/fontes/unbounded.woff2) format("woff2")}
+@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:400 700;font-display:swap;src:url(/fontes/space-grotesk.woff2) format("woff2")}
 /* O atributo hidden tem que vencer qualquer display:flex/block das regras abaixo. */
 [hidden]{display:none!important}
 /* ---------- tokens ---------- */
@@ -548,8 +548,8 @@ body.tem-barra{padding-bottom:96px}
   "servesCuisine": ["Esfiha", "Árabe", "Salgados"],
   "priceRange": "R$",
   "telephone": "+5548992210812",
-  "url": "https://esfihasayones.github.io/",
-  "image": "https://esfihasayones.github.io/logo.svg",
+  "url": "https://esfihas.sayones.com.br/",
+  "image": "https://esfihas.sayones.com.br/logo.svg",
   "address": { "@type": "PostalAddress", "addressLocality": "Florianópolis", "addressRegion": "SC", "addressCountry": "BR" },
   "areaServed": [
     { "@type": "Place", "name": "Trindade, Florianópolis" },
@@ -1038,6 +1038,7 @@ body.tem-barra{padding-bottom:96px}
       <span id="txtEnviar">Enviar pedido no WhatsApp</span>
     </button>
     <p class="zap-nota">Abre o WhatsApp com a mensagem já pronta. Nada é cobrado pelo site.</p>
+    <p class="zap-nota">Seu nome e o pedido ficam guardados com a gente só pra preparar a encomenda.</p>
   </div>
 </aside>
 

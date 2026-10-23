@@ -1604,6 +1604,50 @@
     });
   });
 
+  teste("Produção", "o site não carrega nada de fora do próprio domínio", function (c) {
+    var origem = c.win.location.origin;
+    var fora = c.win.performance.getEntriesByType("resource")
+      .map(function (e) { return e.name; })
+      .filter(function (u) { return u.indexOf(origem) !== 0 && u.indexOf("cloudflareinsights.com") === -1 && u.indexOf("data:") !== 0; });
+    igual(fora.join(", "), "", "recursos de fora: " + fora.join(", "));
+    var html = c.doc.documentElement.outerHTML;
+    naoContem(html, "fonts.googleapis.com");
+    naoContem(html, "fonts.gstatic.com");
+    var scripts = Array.prototype.filter.call(c.doc.querySelectorAll("script"), function (s) {
+      return !s.src && s.type !== "application/ld+json" && s.textContent.indexOf("__preparar") === -1;
+    });
+    igual(scripts.length, 0, "script inline sobrando");
+  });
+
+  teste("Produção", "as fontes próprias carregam", function (c) {
+    return c.win.document.fonts.ready.then(function () {
+      var faces = Array.from(c.win.document.fonts).map(function (f) { return f.family.replace(/"/g, "") + ":" + f.status; });
+      ok(faces.some(function (f) { return /^Unbounded:loaded/.test(f); }), "Unbounded não carregou: " + faces.join(","));
+      ok(faces.some(function (f) { return /^Space Grotesk:loaded/.test(f); }), "Space Grotesk não carregou: " + faces.join(","));
+    });
+  });
+
+  teste("Produção", "canonical e og apontam pro domínio novo", function (c) {
+    var base = "https://esfihas.sayones.com.br/";
+    igual(c.el('link[rel="canonical"]').href, base);
+    igual(c.el('meta[property="og:url"]').content, base);
+    igual(c.el('meta[property="og:image"]').content, base + "og-v2.png");
+    var ld = c.el('script[type="application/ld+json"]').textContent;
+    contem(ld, '"url": "' + base + '"');
+    naoContem(ld, "github.io");
+  });
+
+  teste("Produção", "a frase de privacidade aparece perto do botão", function (c) {
+    c.abrirGaveta();
+    var frase = "Seu nome e o pedido ficam guardados com a gente só pra preparar a encomenda.";
+    var pe = c.el("#btnEnviar").closest(".gaveta-pe");
+    contem(pe.textContent, frase);
+    var nota = Array.prototype.filter.call(pe.querySelectorAll("p"), function (p) { return p.textContent.indexOf(frase) !== -1; })[0];
+    var rb = c.el("#btnEnviar").getBoundingClientRect(), rn = nota.getBoundingClientRect();
+    ok(Math.abs(rn.top - rb.bottom) < 80, "frase longe do botão");
+    ok(rn.height > 0, "frase invisível");
+  });
+
   teste("Regras", "regras.js carrega sem DOM", function () {
     return import("/regras.js").then(function (r) {
       igual(r.precoCentavos(12).total, 6240);

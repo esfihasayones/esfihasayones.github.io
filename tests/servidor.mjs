@@ -4,6 +4,7 @@ import http from "node:http";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { createHash } from "node:crypto";
 
 const PORTA = Number(process.env.PORTA || 8792);
 const DESTINO = new URL(process.env.DESTINO || "http://127.0.0.1:8788");
@@ -38,7 +39,18 @@ async function servirArquivo(url, res) {
 
 // Antes de o site rodar, avisa a página de testes (se houver uma) pra ela
 // poder trocar o `fetch` do iframe. Os módulos do site só executam depois.
-const GANCHO = "<script>try{parent.__preparar&&parent.__preparar(window)}catch(e){}</script>";
+// A CSP de produção (public/_headers) não deixa script inline, então o proxy
+// reescreve a CSP só nas respostas que ele mesmo altera, liberando este script
+// pelo hash. O site de verdade continua sem nenhum script inline.
+const CODIGO_GANCHO = "try{parent.__preparar&&parent.__preparar(window)}catch(e){}";
+const GANCHO = "<script>" + CODIGO_GANCHO + "</script>";
+const HASH_GANCHO = "'sha256-" + createHash("sha256").update(CODIGO_GANCHO).digest("base64") + "'";
+// A suíte também mostra o site num iframe, o que o frame-ancestors de produção proíbe.
+function liberarGancho(csp) {
+  return csp
+    .replace(/script-src /, "script-src " + HASH_GANCHO + " ")
+    .replace("frame-ancestors 'none'", "frame-ancestors 'self'");
+}
 
 function repassar(req, res) {
   const ehPagina = req.method === "GET" && new URL(req.url, "http://local").pathname === "/";
@@ -58,12 +70,15 @@ function repassar(req, res) {
           const html = Buffer.concat(partes).toString("utf8").replace(/<head[^>]*>/i, (m) => m + GANCHO);
           const cab = { ...resp.headers, "cache-control": "no-store" };
           delete cab["content-length"]; delete cab["etag"];
+          if (cab["content-security-policy"]) cab["content-security-policy"] = liberarGancho(cab["content-security-policy"]);
           res.writeHead(resp.statusCode, cab);
           res.end(html);
         });
         return;
       }
-      res.writeHead(resp.statusCode, resp.headers);
+      const cab = { ...resp.headers };
+      if (cab["content-security-policy"]) cab["content-security-policy"] = liberarGancho(cab["content-security-policy"]);
+      res.writeHead(resp.statusCode, cab);
       resp.pipe(res);
     }
   );
