@@ -19,11 +19,30 @@ const enviar = (c) => pedir("/api/pedidos", {
 });
 const agenda = async () => (await pedir("/api/agenda")).json();
 
+const confirmar = async (id) => assert.equal((await pedir("/api/painel/pedidos/" + id, {
+  method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ status: "confirmado" }),
+})).status, 200);
+
+test("pedido aguardando não ocupa vaga: só o confirmado conta", async () => {
+  zerar();
+  const d = DIA();
+  const a = await (await enviar(corpo(40, d))).json();
+  const b = await (await enviar(corpo(40, d))).json();
+  assert.equal((await (await enviar(corpo(40, d))).json()).status, "aguardando");   // 120 aguardando e ainda cabe
+  assert.equal((await agenda()).indisponiveis[d], undefined);
+  await confirmar(a.id);
+  await confirmar(b.id);
+  assert.equal((await agenda()).indisponiveis[d], "lotado");   // 80 confirmados
+  assert.equal((await (await enviar(corpo(1, d))).json()).status, "fora_da_regra");
+});
+
 test("dia passa de 80 e o próximo pedido vira lotado", async () => {
   zerar();
   const d = DIA();
-  assert.equal((await (await enviar(corpo(40, d))).json()).status, "aguardando");
-  assert.equal((await (await enviar(corpo(40, d))).json()).status, "aguardando");   // 80 exatos cabem
+  const a = await (await enviar(corpo(40, d))).json();
+  const b = await (await enviar(corpo(40, d))).json();
+  await confirmar(a.id);
+  await confirmar(b.id);   // 80 exatos cabem
   const j = await (await enviar(corpo(1, d))).json();
   assert.equal(j.status, "fora_da_regra");
   const m = JSON.parse(wrangler(`SELECT motivo FROM pedidos WHERE id = ${j.id}`, true));
@@ -46,7 +65,7 @@ test("agenda mostra o dia lotado sem expor pedidos", async () => {
 test("dia com folga continua aberto na agenda", async () => {
   zerar();
   const d = DIA();
-  await enviar(corpo(40, d));
+  await confirmar((await (await enviar(corpo(40, d))).json()).id);
   assert.equal((await agenda()).indisponiveis[d], undefined);
 });
 

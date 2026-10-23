@@ -27,7 +27,7 @@ faça commit e push logo, sem deixar nada solto.
 - Depoimentos inventados: seção removida. Volta só com elogio de verdade e
   autorização de quem escreveu.
 - Feriados: sem retirada. Lista `FERIADOS` em `public/regras.js` (nacionais
-  e aniversário de Florianópolis, até o fim de 2027); Carnaval e Corpus
+  e aniversário de Florianópolis, até o fim de 2028); Carnaval e Corpus
   Christi ficaram de fora por serem ponto facultativo. Estender a lista
   pros anos seguintes.
 - Forno: a esfiha é montada e assada depois da encomenda, e aí congelada.

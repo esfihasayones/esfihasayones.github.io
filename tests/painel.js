@@ -215,6 +215,73 @@
     A.igual(P.sabor("carne"), "2", "o resto da tela fica como estava");
   }));
 
+  teste("confirmado sem data aparece na seção Sem data", comPainel(async function () {
+    var d = await diaLivre(util);
+    var nome = "SemData " + sufixo();
+    var site = await api("POST", "/api/pedidos", { id_envio: uuid(), nome: nome, itens: [{ sabor: "carne", qtd: 2 }], ponto: 3 });
+    A.igual(site.status, 201);
+    A.igual((await api("PATCH", "/api/painel/pedidos/" + site.json.id, { status: "confirmado" })).status, 200);
+    try {
+      var P = await abrir(d);
+      A.ok(!P.el("#blocoSemData").hidden, "seção Sem data visível");
+      A.contem(P.texto("#semData"), nome);
+      A.ok(!P.el("#pendencias .cartao[data-id=\"" + site.json.id + "\"]"), "não sobra como pendência");
+      A.ok(P.cartao(site.json.id).querySelector('[data-acao="pago"]'), "tem o botão Pago");
+    } finally {
+      await api("PATCH", "/api/painel/pedidos/" + site.json.id, { status: "cancelado" });
+    }
+  }));
+
+  teste("painel.js não carrega a lista de cupons", async function () {
+    var r = await fetch("/painel/painel.js");
+    var t = await r.text();
+    A.ok(t.length > 1000, "baixou o script");
+    A.ok(t.indexOf("PRIMEIRACOMPRA") === -1, "lista de cupons só no servidor");
+  });
+
+  teste("sessão expirada avisa pra recarregar em vez de falar de conexão", comPainel(async function () {
+    var d = await diaLivre(util);
+    var ped = await manual(d, [{ sabor: "carne", qtd: 2 }]);
+    var P = await abrir(d);
+    var W = P.win();
+    var respostas = [
+      function () { return new W.Response("<html>login</html>", { status: 200, headers: { "content-type": "text/html" } }); },
+      function () { return new W.Response('{"erro":"proibido"}', { status: 403, headers: { "content-type": "application/json" } }); },
+      function () { return new W.Response('{}', { status: 401, headers: { "content-type": "application/json" } }); },
+      function () { return { type: "opaqueredirect", ok: false, status: 0, headers: new W.Headers() }; }
+    ];
+    for (var i = 0; i < respostas.length; i++) {
+      P.el("#aviso").hidden = true;
+      W.fetch = (function (f) { return function () { return Promise.resolve(f()); }; })(respostas[i]);
+      P.clicar(P.cartao(ped.id).querySelector('[data-acao="pago"]'));
+      await esperar(function () { return !P.el("#aviso").hidden; }, "aviso " + i);
+      A.contem(P.texto("#aviso"), "Sua sessão expirou. Recarregue a página.", "caso " + i);
+      A.ok(P.texto("#aviso").indexOf("Sem conexão") === -1, "não diz sem conexão");
+      await dormir(60);
+    }
+  }));
+
+  teste("cada abertura do formulário novo usa um id_envio novo", comPainel(async function () {
+    var d = await diaLivre(util);
+    var P = await abrir(d);
+    var ids = [];
+    P.win().fetch = function (url, o) {
+      if (o && o.method === "POST") ids.push(JSON.parse(o.body).id_envio);
+      return Promise.reject(new TypeError("sem rede"));
+    };
+    for (var i = 0; i < 2; i++) {
+      P.clicar("#novo");
+      await esperar(function () { return P.el("#form").open; }, "formulário abrir");
+      P.digitar("#fNome", "Id " + sufixo());
+      P.digitar('#fQtds [data-sabor="queijo"]', "1");
+      P.clicar("#fSalvar");
+      await esperar(function () { return ids.length === i + 1 && !P.el("#fErro").hidden; }, "tentativa " + i);
+      P.clicar("#fFechar");
+      await esperar(function () { return !P.el("#form").open; }, "formulário fechar");
+    }
+    A.ok(ids[0] && ids[1] && ids[0] !== ids[1], "ids diferentes: " + ids.join(" / "));
+  }));
+
   teste("novo pedido manual aparece no dia", comPainel(async function () {
     var d = await diaLivre(util);
     var P = await abrir(d);
@@ -227,7 +294,7 @@
     P.digitar('#fQtds [data-sabor="carne"]', "2");
     A.igual(P.el("#fValor").value, "22,00", "valor calculado do combo 4");
     P.digitar("#fCupom", "primeiracompra");
-    A.igual(P.el("#fValor").value, "19,80", "cupom entra no cálculo");
+    await esperar(function () { return P.el("#fValor").value === "19,80"; }, "cupom entra no cálculo (vem de /api/cupom)");
     P.digitar("#fCupom", "");
     P.digitar("#fJanela", "19h");
     P.digitar("#fObs", "sem cebola");

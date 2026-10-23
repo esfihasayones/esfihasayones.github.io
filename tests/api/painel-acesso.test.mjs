@@ -18,9 +18,9 @@ async function token(priv, claims, kid = "k1") {
 }
 const claimsOk = (extra) => ({ aud: ["aud123"], email: "BrenoJulianoM@gmail.com", exp: AGORA / 1000 + 600, ...extra });
 
-async function chamar(tk, env = ENV, mw) {
+async function chamar(tk, env = ENV, mw, url = "http://x/api/painel/agenda") {
   const m = mw || criarMiddleware({ agora: () => AGORA, buscar: async () => Response.json(await certs(chaveBoa.publicKey, "k1")) });
-  const request = new Request("http://x/api/painel/agenda", { headers: tk ? { "Cf-Access-Jwt-Assertion": tk } : {} });
+  const request = new Request(url, { headers: tk ? { "Cf-Access-Jwt-Assertion": tk } : {} });
   let passou = false;
   const r = await m({ request, env, next: async () => { passou = true; return new Response("ok"); } });
   return { r, passou };
@@ -97,17 +97,29 @@ test("chaves ficam em cache por alguns minutos", async () => {
 });
 
 test("DEV_SEM_LOGIN igual a 1 passa sem token", async () => {
-  assert.equal((await chamar(null, { DEV_SEM_LOGIN: "1" })).passou, true);
+  assert.equal((await chamar(null, { DEV_SEM_LOGIN: "1" }, undefined, "http://localhost:8788/api/painel/agenda")).passou, true);
   await nega(await chamar(null, { ...ENV, DEV_SEM_LOGIN: "0" }));
   await nega(await chamar(null, { ...ENV, DEV_SEM_LOGIN: "true" }));
 });
 
 test("erro dentro da rota vira 500 sem detalhe e com os cabeçalhos", async () => {
   const m = criarMiddleware();
-  const r = await m({ request: new Request("http://x/"), env: { DEV_SEM_LOGIN: "1" }, next: async () => { throw new Error("Maria Sigilosa 123"); } });
+  const r = await m({ request: new Request("http://127.0.0.1:8788/"), env: { DEV_SEM_LOGIN: "1" }, next: async () => { throw new Error("Maria Sigilosa 123"); } });
   assert.equal(r.status, 500);
   const txt = await r.text();
   assert.equal(txt.includes("Sigilosa"), false);
   assert.equal(r.headers.get("cache-control"), "no-store");
   assert.equal(r.headers.get("x-robots-tag"), "noindex");
+});
+
+test("DEV_SEM_LOGIN só vale em localhost e 127.0.0.1", async () => {
+  const dev = { ...ENV, DEV_SEM_LOGIN: "1" };
+  for (const url of ["http://localhost:8788/api/painel/agenda", "http://127.0.0.1:8788/api/painel/agenda"]) {
+    const c = await chamar(null, dev, undefined, url);
+    assert.equal(c.passou, true, url);
+  }
+  for (const url of ["https://esfihas-sayones.pages.dev/api/painel/agenda", "https://esfihas.sayones.com.br/api/painel/agenda",
+    "https://localhost.exemplo.com/api/painel/agenda"]) {
+    await nega(await chamar(null, dev, undefined, url));
+  }
 });

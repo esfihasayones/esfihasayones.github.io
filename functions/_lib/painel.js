@@ -90,16 +90,25 @@ export function montar(base, campos) {
   const itens = campos.itens || JSON.parse(base.itens);
   l.itens = JSON.stringify(itens);
   const manual = "total_centavos" in campos ? true : ("valor_manual" in campos ? campos.valor_manual : !!base.valor_manual);
-  const p = precificar(itens, "cupom" in campos ? campos.cupom : base.cupom);
-  l.qtd = p.qtd;
-  l.unit_centavos = p.unit_centavos;
-  l.cupom = p.cupom;
   l.valor_manual = manual ? 1 : 0;
-  if (manual) {
-    if ("total_centavos" in campos) { l.total_centavos = campos.total_centavos; l.desconto_centavos = 0; }
-  } else {
-    l.total_centavos = p.total_centavos;
-    l.desconto_centavos = p.desconto_centavos;
+  // Só refaz a conta quando o pedido é novo ou a edição mexe no que entra nela
+  // (itens, cupom, voltar pro valor calculado). Marcar pago, mudar status ou
+  // corrigir o nome mantém o total que já estava gravado.
+  const refazer = !base.id || "itens" in campos || "cupom" in campos || campos.valor_manual === false;
+  if (refazer) {
+    const p = precificar(itens, "cupom" in campos ? campos.cupom : base.cupom);
+    l.qtd = p.qtd;
+    l.unit_centavos = p.unit_centavos;
+    l.cupom = p.cupom;
+    if (manual) {
+      if ("total_centavos" in campos) { l.total_centavos = campos.total_centavos; l.desconto_centavos = 0; }
+    } else {
+      l.total_centavos = p.total_centavos;
+      l.desconto_centavos = p.desconto_centavos;
+    }
+  } else if ("total_centavos" in campos) {
+    l.total_centavos = campos.total_centavos;
+    l.desconto_centavos = 0;
   }
   if (typeof l.pago === "boolean") l.pago = l.pago ? 1 : 0;
   if (typeof l.entregue === "boolean") l.entregue = l.entregue ? 1 : 0;

@@ -73,6 +73,12 @@ desconto entra sobre o total, já com o combo, e o cupom vai escrito na
 mensagem do WhatsApp. Pra criar ou tirar um cupom, mexa em `CUPONS`. O site
 não sabe se é a primeira compra de alguém: isso se confere na conversa.
 
+### Feriados
+
+A lista `FERIADOS` em `public/regras.js` vai até o fim de 2028. Depois disso
+nenhum feriado barra a retirada: estenda a lista a cada ano (nacionais e o
+aniversário de Florianópolis, 23/03; sem Carnaval nem Corpus Christi).
+
 ### Pontos de retirada
 
 **Não existe delivery porta a porta.** Em cada dia levamos as encomendas a um

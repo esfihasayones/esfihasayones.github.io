@@ -57,9 +57,11 @@ SSL/TLS, Overview: modo "Full (strict)". Edge Certificates: ligue "Always Use HT
 Como conferir: `curl -sI http://esfihas.sayones.com.br/` devolve 301 para `https://`.
 
 ## 7. Limite de pedidos por IP e Web Analytics
-- Security, WAF, Rate limiting rules: uma regra para o caminho
-  `/api/pedidos` e outra para `/api/cupom` (ou uma só com "or"). Sugestão: 10
-  requisições por minuto por IP, ação Block por 1 minuto.
+- Security, WAF, Rate limiting rules: no plano Free cabe uma regra só, com
+  janela de 10 segundos. Crie uma para o caminho `/api/pedidos` ou `/api/cupom`
+  (condições ligadas por "or"), contando por IP, e bloqueie acima de umas 10
+  requisições nessa janela. Duração do bloqueio e demais campos: conferir no
+  painel, o plano Free limita as opções.
 - Analytics, Web Analytics, Add a site `esfihas.sayones.com.br`: copie o token
   e passe ao Claude para entrar no `index.html`.
 Como conferir: o painel de Web Analytics mostra visita depois de abrir o site.

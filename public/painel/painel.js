@@ -3,7 +3,6 @@
 // valor é o servidor: depois de salvar, a tela mostra o que ele devolveu.
 import { SABORES, PONTOS, NOMES_DIA, isoBrasilia, diaDaData, precoCentavos } from "../regras.js";
 
-const CUPOM_PCT = { PRIMEIRACOMPRA: 0.10 };   // só pra prévia do valor; o servidor decide
 const MOTIVOS = {
   cedo: "Pediu com menos antecedência que o mínimo",
   feriado: "Dia de feriado",
@@ -54,9 +53,14 @@ async function api(metodo, caminho, corpo) {
       method: metodo,
       headers: corpo ? { "content-type": "application/json" } : {},
       body: corpo ? JSON.stringify(corpo) : undefined,
+      redirect: "manual",   // sessão vencida do Access vira redirecionamento pro login
     });
   } catch (e) {
     throw new Error("Sem conexão com o servidor. Nada foi alterado.");
+  }
+  const tipo = (r.headers && r.headers.get && r.headers.get("content-type")) || "";
+  if (r.type === "opaqueredirect" || r.status === 401 || r.status === 403 || tipo.includes("text/html")) {
+    throw new Error("Sua sessão expirou. Recarregue a página.");
   }
   let j = null;
   try { j = await r.json(); } catch (e) { /* resposta sem JSON */ }
@@ -124,6 +128,7 @@ function renderDia() {
     h("li", { "data-sabor": s.id }, h("span", { className: "rotulo", texto: s.nome }), h("span", { className: "n", texto: String(d.porSabor[s.id] || 0) }))));
 
   renderPendencias(d.pendencias);
+  renderSemData(d.semData || []);
   renderPontos(d);
   renderProximos(d.proximos);
 }
@@ -143,6 +148,21 @@ function renderPendencias(lista) {
       ],
     });
   }));
+}
+
+// Confirmados que ainda não têm dia de retirada (ponto combinado na conversa).
+function renderSemData(lista) {
+  $("#blocoSemData").hidden = lista.length === 0;
+  $("#nSemData").textContent = String(lista.length);
+  $("#semData").replaceChildren(...lista.map((p) => cartao(p, {
+    pendencia: true,
+    botoes: [
+      alternador(p, "pago", "Pago"),
+      alternador(p, "entregue", "Entregue"),
+      h("button", { type: "button", className: "btn suave", "data-acao": "editar", texto: "Editar", onclick: () => abrirForm(p) }),
+      h("button", { type: "button", className: "btn perigo", "data-acao": "cancelar", texto: "Cancelar", onclick: (e) => cancelar(p, e.currentTarget) }),
+    ],
+  })));
 }
 
 function renderPontos(d) {
@@ -266,10 +286,30 @@ function montarFormulario() {
   $("#fPonto").replaceChildren(
     ...PONTOS_FIXOS.map((p) => h("option", { value: p.nome, texto: p.nome })),
     h("option", { value: OUTRO, texto: "Outro" }));
-  for (const e of form.querySelectorAll("#fQtds input, #fCupom")) e.addEventListener("input", recalcular);
+  for (const e of form.querySelectorAll("#fQtds input")) e.addEventListener("input", recalcular);
+  $("#fCupom").addEventListener("input", consultarCupom);
   $("#fValor").addEventListener("input", () => { valorEditado = true; dicaValor(); });
   $("#fPonto").addEventListener("change", () => { $("#campoPontoOutro").hidden = $("#fPonto").value !== OUTRO; });
   $("#fUsarCalculo").addEventListener("click", () => { valorEditado = false; recalcular(); });
+}
+
+// Cupons: a lista fica no servidor. Aqui só se guarda o que ele respondeu pra
+// mostrar a prévia; na hora de salvar quem decide é o servidor de novo.
+const cupons = new Map();   // código em maiúsculas -> fração, ou 0 se não existe
+let tCupom = null;
+function consultarCupom() {
+  clearTimeout(tCupom);
+  const cod = $("#fCupom").value.trim().toUpperCase();
+  if (!cod || cupons.has(cod)) return recalcular();
+  tCupom = setTimeout(async () => {
+    try {
+      const r = await fetch("/api/cupom?codigo=" + encodeURIComponent(cod), { redirect: "manual" });
+      if (r.status === 404) cupons.set(cod, 0);
+      else if (r.ok) cupons.set(cod, (await r.json()).pct || 0);
+      else return;
+    } catch (e) { return; }
+    if ($("#fCupom").value.trim().toUpperCase() === cod) recalcular();
+  }, 250);
 }
 
 const qtdsForm = () => SABORES.map((s) => ({ sabor: s.id, qtd: parseInt($("#fq-" + s.id).value, 10) || 0 })).filter((i) => i.qtd > 0);
@@ -278,7 +318,7 @@ function calculo() {
   const qtd = qtdsForm().reduce((s, i) => s + i.qtd, 0);
   if (!qtd) return 0;
   const bruto = precoCentavos(qtd).total;
-  const pct = CUPOM_PCT[$("#fCupom").value.trim().toUpperCase()] || 0;
+  const pct = cupons.get($("#fCupom").value.trim().toUpperCase()) || 0;
   return bruto - Math.round(bruto * pct);
 }
 function recalcular() {
@@ -295,6 +335,7 @@ function dicaValor() {
 
 function abrirForm(p) {
   editando = p || null;
+  idEnvio = null;   // cada abertura do formulário é um pedido novo
   $("#formTitulo").textContent = p ? "Editar pedido Nº " + p.id : "Novo pedido";
   $("#fSalvar").textContent = p ? "Salvar mudanças" : "Salvar pedido";
   $("#fErro").hidden = true;
@@ -314,6 +355,7 @@ function abrirForm(p) {
   $("#fCupom").value = p && p.cupom ? p.cupom : "";
   $("#fObs").value = p && p.obs ? p.obs : "";
   valorEditado = !!(p && p.valor_manual);
+  if (p && p.cupom) consultarCupom();
   if (p) $("#fValor").value = virgula(p.total_centavos);
   recalcular();
   if (p && !valorEditado) $("#fValor").value = virgula(p.total_centavos);

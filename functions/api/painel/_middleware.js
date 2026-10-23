@@ -48,7 +48,10 @@ async function tokenValido(token, env, chaves, agora) {
 export function criarMiddleware({ buscar = (u) => fetch(u), agora = () => Date.now() } = {}) {
   const chaves = carregadorDeChaves(buscar);
   return async function onRequest({ request, env, next }) {
-    let liberado = env.DEV_SEM_LOGIN === "1";
+    // O atalho de desenvolvimento só vale em máquina local, mesmo que a
+    // variável vaze pra um deploy.
+    const host = new URL(request.url).hostname;
+    let liberado = env.DEV_SEM_LOGIN === "1" && (host === "localhost" || host === "127.0.0.1");
     const token = request.headers.get("Cf-Access-Jwt-Assertion");
     if (!liberado && token && String(env.DONO_EMAIL || "").trim() && env.ACCESS_EQUIPE && env.ACCESS_AUD) {
       try { liberado = await tokenValido(token, env, chaves, agora()); } catch (e) { liberado = false; }

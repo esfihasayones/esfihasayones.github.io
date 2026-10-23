@@ -2,7 +2,7 @@ import test, { before, after } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { pedir, comoDono } from "./ajuda.mjs";
-import { zerar } from "./zerar.mjs";
+import { zerar, wrangler } from "./zerar.mjs";
 import { PONTOS, proximaData, isoBrasilia, diaDaData } from "../../public/regras.js";
 
 before(() => zerar());
@@ -241,4 +241,42 @@ test("limite e bloqueio salvos aparecem na agenda pública", async () => {
   r = await pedir("/api/painel/agenda", json({ bloqueios: [] }, "PUT"));
   assert.deepEqual((await r.json()).bloqueios, []);
   assert.equal((await (await pedir("/api/painel/agenda", comoDono())).json()).limite, 10);
+});
+
+test("confirmado sem data aparece em semData e sai ao marcar entregue", async () => {
+  zerar();
+  const id = await site(3, { ponto: 3, retirada: null });
+  let j = await dia(DIA());
+  assert.ok(j.pendencias.some((p) => p.id === id));
+  assert.deepEqual(j.semData, []);
+  assert.equal((await patch(id, { status: "confirmado" })).status, 200);
+  j = await dia(DIA());
+  assert.ok(!j.pendencias.some((p) => p.id === id));
+  assert.deepEqual(j.semData.map((p) => p.id), [id]);
+  assert.equal(j.semData[0].ponto, "Combinar outro ponto");
+  const outro = await site(2, { ponto: 3, retirada: null });
+  await patch(outro, { status: "confirmado" });
+  assert.deepEqual((await dia(DIA())).semData.map((p) => p.id), [id, outro]);
+  await patch(id, { entregue: true });
+  assert.deepEqual((await dia(DIA())).semData.map((p) => p.id), [outro]);
+  await patch(outro, { status: "cancelado" });
+  assert.deepEqual((await dia(DIA())).semData, []);
+});
+
+test("PATCH sem mexer em itens ou cupom mantém o total gravado", async () => {
+  zerar();
+  const d = DIA();
+  wrangler("INSERT INTO pedidos (id_envio, criado_em, origem, status, nome, itens, qtd, unit_centavos, total_centavos, " +
+    "cupom, desconto_centavos, valor_manual, ponto, retirada) VALUES ('fixo-1', '2026-10-01T10:00:00.000Z', 'site', 'aguardando', " +
+    `'Preço antigo', '[{"sabor":"carne","qtd":4}]', 4, 550, 1234, NULL, 0, 0, 'Itacorubi', '${d}')`);
+  const id = JSON.parse(wrangler("SELECT id FROM pedidos WHERE id_envio = 'fixo-1'", true))[0].results[0].id;
+  for (const c of [{ pago: true }, { status: "confirmado" }, { entregue: true }, { nome: "Outro nome" },
+    { ponto: "Abraão" }, { retirada: d }, { janela: "9h" }, { obs: "oi" }]) {
+    const p = await (await patch(id, c)).json();
+    assert.equal(p.total_centavos, 1234, JSON.stringify(c));
+    assert.equal(p.qtd, 4);
+  }
+  // mexer nos itens refaz a conta
+  const q = await (await patch(id, { itens: [{ sabor: "carne", qtd: 4 }] })).json();
+  assert.equal(q.total_centavos, 2200);
 });

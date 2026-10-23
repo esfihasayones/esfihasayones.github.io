@@ -34,6 +34,11 @@ export async function onRequestGet({ request, env }) {
     "SELECT * FROM pedidos WHERE status IN ('aguardando','fora_da_regra') AND (retirada IS NULL OR retirada >= ?) " +
     "ORDER BY retirada IS NULL, retirada, id").bind(hoje).all();
 
+  // Confirmados sem data de retirada (ex.: "Combinar outro ponto"): sem isto
+  // sumiriam do painel depois de Confirmar.
+  const sd = await env.DB.prepare(
+    "SELECT * FROM pedidos WHERE status = 'confirmado' AND retirada IS NULL AND entregue = 0 ORDER BY id").all();
+
   const de = somaDias(dia, 1), ate = somaDias(dia, 7);
   const px = await env.DB.prepare(
     "SELECT retirada, SUM(qtd) AS q, COUNT(*) AS n FROM pedidos WHERE status = 'confirmado' AND retirada BETWEEN ? AND ? GROUP BY retirada")
@@ -46,7 +51,7 @@ export async function onRequestGet({ request, env }) {
     proximos.push({ dia: d, qtd: m ? m.q : 0, pedidos: m ? m.n : 0 });
   }
 
-  return resposta({ dia, porSabor, pontos, pendencias: pend.results.map(serializar), proximos });
+  return resposta({ dia, porSabor, pontos, pendencias: pend.results.map(serializar), semData: sd.results.map(serializar), proximos });
 }
 
 // Pedido manual: entra confirmado e sem checar regra de data, ponto livre.

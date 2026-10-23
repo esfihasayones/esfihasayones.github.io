@@ -53,6 +53,7 @@ export function validar(c) {
   const vi = validarItens(c.itens);
   if (vi.erro) return { erro: vi.erro };
   const itens = vi.itens;
+  if (itens.reduce((s, i) => s + i.qtd, 0) > 200) return { erro: "pedido grande demais" };
   if (!Number.isInteger(c.ponto) || c.ponto < 0 || c.ponto >= PONTOS.length) return { erro: "ponto inválido" };
   const fixo = !!PONTOS[c.ponto].dias;
   let retirada = null;

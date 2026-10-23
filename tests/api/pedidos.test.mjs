@@ -87,6 +87,14 @@ test("nome com acento e emoji volta intacto", async () => {
   assert.equal(q[0].results[0].nome, "Joaquim 🥟 Ávila");
 });
 
+test("pedido do site com mais de 200 esfihas dá 400", async () => {
+  const grande = await enviar(corpo({ itens: [{ sabor: "carne", qtd: 150 }, { sabor: "queijo", qtd: 51 }] }));
+  assert.equal(grande.status, 400);
+  assert.equal((await grande.json()).erro, "pedido grande demais");
+  const limite = await enviar(corpo({ itens: [{ sabor: "carne", qtd: 150 }, { sabor: "queijo", qtd: 50 }] }));
+  assert.equal(limite.status, 201);
+});
+
 test("avaliar: lotado, bloqueado e pausado (função pura)", () => {
   const agora = Date.now();
   const retirada = proximaData(PONTOS[ITA], 12, agora);

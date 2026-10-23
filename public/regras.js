@@ -15,7 +15,13 @@ export const FERIADOS = {
   "2027-05-01":"Dia do Trabalho", "2027-09-07":"Independência",
   "2027-10-12":"Nossa Senhora Aparecida", "2027-11-02":"Finados",
   "2027-11-15":"Proclamação da República", "2027-11-20":"Consciência Negra",
-  "2027-12-25":"Natal"
+  "2027-12-25":"Natal",
+  "2028-01-01":"Ano-Novo", "2028-03-23":"aniversário de Florianópolis",
+  "2028-04-14":"Sexta-feira Santa", "2028-04-21":"Tiradentes",
+  "2028-05-01":"Dia do Trabalho", "2028-09-07":"Independência",
+  "2028-10-12":"Nossa Senhora Aparecida", "2028-11-02":"Finados",
+  "2028-11-15":"Proclamação da República", "2028-11-20":"Consciência Negra",
+  "2028-12-25":"Natal"
 };
 
 // Pontos de retirada. Não há entrega porta a porta: em cada dia levamos as
