@@ -38,6 +38,9 @@
     { nome: "Abraão", dias: {
         1: janela(9, 0, "das 9h às 12h"), 2: janela(9, 0, "das 9h às 12h"), 3: janela(9, 0, "das 9h às 12h"),
         4: janela(9, 0, "das 9h às 12h"), 5: janela(9, 0, "das 9h às 12h") } },
+    { nome: "Centro", dias: {
+        1: janela(19, 0, "das 19h às 21h"), 2: janela(19, 0, "das 19h às 21h"),
+        3: janela(19, 0, "das 19h às 21h"), 4: janela(19, 0, "das 19h às 21h") } },
     { nome: "Combinar outro ponto", dias: null }
   ];
   var FERIADOS = ["2026-11-02", "2026-11-15", "2026-11-20", "2026-12-25", "2027-01-01",

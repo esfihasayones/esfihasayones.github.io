@@ -85,7 +85,7 @@ test("confirmar tira das pendências e entra na soma", async () => {
 
 test("pendências trazem pedido sem data e ordenam por retirada", async () => {
   zerar();
-  const sem = await site(2, { ponto: 3, retirada: null });
+  const sem = await site(2, { ponto: 4, retirada: null });
   const com = await site(2);
   const j = await dia(DIA());
   const ids = j.pendencias.map((p) => p.id);
@@ -245,7 +245,7 @@ test("limite e bloqueio salvos aparecem na agenda pública", async () => {
 
 test("confirmado sem data aparece em semData e sai ao marcar entregue", async () => {
   zerar();
-  const id = await site(3, { ponto: 3, retirada: null });
+  const id = await site(3, { ponto: 4, retirada: null });
   let j = await dia(DIA());
   assert.ok(j.pendencias.some((p) => p.id === id));
   assert.deepEqual(j.semData, []);
@@ -254,7 +254,7 @@ test("confirmado sem data aparece em semData e sai ao marcar entregue", async ()
   assert.ok(!j.pendencias.some((p) => p.id === id));
   assert.deepEqual(j.semData.map((p) => p.id), [id]);
   assert.equal(j.semData[0].ponto, "Combinar outro ponto");
-  const outro = await site(2, { ponto: 3, retirada: null });
+  const outro = await site(2, { ponto: 4, retirada: null });
   await patch(outro, { status: "confirmado" });
   assert.deepEqual((await dia(DIA())).semData.map((p) => p.id), [id, outro]);
   await patch(id, { entregue: true });

@@ -218,7 +218,7 @@
   teste("confirmado sem data aparece na seção Sem data", comPainel(async function () {
     var d = await diaLivre(util);
     var nome = "SemData " + sufixo();
-    var site = await api("POST", "/api/pedidos", { id_envio: uuid(), nome: nome, itens: [{ sabor: "carne", qtd: 2 }], ponto: 3 });
+    var site = await api("POST", "/api/pedidos", { id_envio: uuid(), nome: nome, itens: [{ sabor: "carne", qtd: 2 }], ponto: 4 });
     A.igual(site.status, 201);
     A.igual((await api("PATCH", "/api/painel/pedidos/" + site.json.id, { status: "confirmado" })).status, 200);
     try {
