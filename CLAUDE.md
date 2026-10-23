@@ -44,7 +44,7 @@ faça commit e push logo, sem deixar nada solto.
 ### Pendente, por decisão dele
 
 - Cadastrar o Google Meu Negócio.
-- Gerar o arquivo final da camiseta pra gráfica (ver a memória do projeto).
+- Camiseta: arquivo final pronto em 23/10/2026 em `~/Documents/brenisio/esfihas-camisa/` (QR pro domínio novo, texto em curva, 300 dpi). Falta ele testar o QR com a câmera do celular.
 
 ### Em andamento: mudança pro Cloudflare (22/10/2026)
 
