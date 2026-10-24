@@ -34,7 +34,6 @@ html{-webkit-text-size-adjust:100%}
 body{
   margin:0;font-family:var(--corpo);font-size:16px;line-height:1.45;
   color:var(--texto);background:var(--fundo);-webkit-font-smoothing:antialiased;
-  padding-bottom:calc(96px + env(safe-area-inset-bottom));
 }
 h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.15;margin:0;color:var(--tinta);letter-spacing:-.01em}
 h2{font-size:15px}
@@ -42,25 +41,6 @@ h3{font-size:14px}
 button,input,select,textarea{font:inherit;color:inherit}
 input,select,textarea{font-size:16px}
 .pagina{max-width:720px;margin:0 auto;padding:0 16px}
-
-/* topo */
-.topo{background:var(--tinta);color:var(--fundo);padding:14px 0 18px}
-.topo .pagina{display:grid;gap:12px}
-.marca{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.marca h1{color:var(--fundo);font-size:15px}
-.marca small{color:#B9B6AE;font-size:13px}
-.navdia{display:grid;grid-template-columns:48px minmax(0,1fr) 48px auto;gap:8px;align-items:stretch}
-.navdia button,.navdia input{min-height:48px;border-radius:var(--raio-sm);border:1px solid #3a3a37;background:#1d1d1b;color:var(--fundo)}
-.navdia button{cursor:pointer;font-size:22px;line-height:1;padding:0}
-.navdia #hoje{font-size:15px;font-weight:600;padding:0 16px}
-.navdia input{min-width:0;width:100%;padding:0 12px;font-weight:600;color-scheme:dark}
-.nome-dia{margin:0;font-family:var(--display);font-size:20px;font-weight:600;line-height:1.2}
-.resumo-dia{display:flex;flex-wrap:wrap;gap:4px 14px;color:#D4D1C9;font-size:15px}
-.resumo-dia b{color:var(--fundo)}
-.sabores{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(130px,100%),1fr));gap:8px;margin:0;padding:0;list-style:none}
-.sabores li{background:#1d1d1b;border:1px solid #3a3a37;border-radius:var(--raio-sm);padding:10px 12px;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.sabores .n{font-family:var(--display);font-size:26px;font-weight:700;line-height:1}
-.sabores .rotulo{font-size:15px;color:#D4D1C9}
 
 /* seções */
 section.bloco{margin-top:22px}
@@ -128,12 +108,8 @@ details.agenda>summary{cursor:pointer;padding:10px 14px;font-weight:600;font-siz
 .lista-bloqueios li{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--areia);border-radius:var(--raio-sm);padding:8px 8px 8px 12px}
 .lista-bloqueios .btn{min-height:40px}
 
-/* botão fixo */
-.barra-fixa{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--fundo) 70%,rgba(247,246,242,0));z-index:5;pointer-events:none}
-.barra-fixa .btn{pointer-events:auto;display:block;width:100%;max-width:720px;margin:0 auto;min-height:56px;font-size:18px;box-shadow:0 6px 18px -8px rgba(18,18,18,.5)}
-
 /* aviso */
-#aviso{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));max-width:688px;margin:0 auto;z-index:20;background:var(--erro);color:#fff;padding:12px 14px;border-radius:var(--raio-sm);font-weight:600;display:flex;gap:10px;justify-content:space-between;align-items:center;box-shadow:0 8px 24px -8px rgba(0,0,0,.5)}
+#aviso{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));max-width:688px;margin:0 auto;z-index:20;background:var(--erro);color:#fff;padding:12px 14px;border-radius:var(--raio-sm);font-weight:600;display:flex;gap:10px;justify-content:space-between;align-items:center;box-shadow:0 8px 24px -8px rgba(0,0,0,.5)}
 #aviso.bom{background:var(--verde)}
 #aviso button{background:transparent;border:1px solid rgba(255,255,255,.7);color:#fff;border-radius:8px;min-height:36px;padding:0 12px;cursor:pointer;font-weight:600}
 
@@ -209,7 +185,7 @@ details.mais-acoes .menu-acoes .btn{min-height:34px;font-size:13px;border-width:
 .btn.mini{min-height:30px;padding:0 10px;font-size:13px;border-width:1.5px}
 details.feitos{margin-top:4px}
 details.feitos>summary{cursor:pointer;color:var(--suave);font-size:13px;padding:4px 2px}
-details.feitos .cartao{opacity:.7}
+details.feitos .cartao{border-style:dashed}
 /* outros dias: lista curta, só quando há */
 .outros{margin-top:18px}
 .outros .proximos{list-style:none;margin:0;padding:0;display:grid;gap:6px}
@@ -235,6 +211,7 @@ details.feitos .cartao{opacity:.7}
 .ajuste .lista-bloqueios .btn{min-height:28px;font-size:12px}
 .ajuste .lista-bloqueios li.nenhum{background:none;padding:0;color:var(--suave)}
 @media (max-width:1000px){ #agenda .agenda-corpo{grid-template-columns:minmax(0,1fr)} }
+@media (max-width:700px){ .tabela th:nth-child(n+4):nth-child(-n+6),.tabela td:nth-child(n+4):nth-child(-n+6){display:none} }
 /* histórico */
 .quadros{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px}
 .quadro{background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio);padding:14px 16px}
@@ -248,11 +225,18 @@ details.feitos .cartao{opacity:.7}
 .tabela th{font-size:12px;font-weight:600;color:var(--suave);background:var(--areia)}
 .tabela td.liq{font-weight:700;color:var(--tinta)}
 .tabela tr.total td{font-weight:700;background:var(--areia)}
-.tabela tr.clicavel{cursor:pointer}
-.tabela tr.clicavel:hover td,.tabela tr[aria-current="true"] td{background:var(--verde-fundo)}
+.tabela tr:has(.mes[aria-current="true"]) td{background:var(--verde-fundo)}
 section.bloco>h2{font-size:15px}
+.quadro .det.alerta{color:var(--alerta);margin-top:4px}
+.tabela .mes{background:none;border:0;padding:0;font:inherit;font-weight:600;color:var(--tinta);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.tabela .mes[aria-current="true"]{text-decoration:none}
+#voltarHoje{margin-left:auto;opacity:1}
+#voltarHoje + #novo{margin-left:0}
 @media (max-width:1000px){
   .colunas,.colunas:has(#colDia.recolhido),.colunas:has(#colDia.recolhido[open]){grid-template-columns:minmax(0,1fr)}
+  #colNovos{order:-1}
+  .cartao .botoes>.btn,details.mais-acoes>summary,.btn.mini,.ajuste .btn,.ajuste input,.ajuste .lista-bloqueios .btn{min-height:44px}
+  details.mais-acoes>summary{width:44px}
   .barra small{display:none}
   .barra h1{display:none}
 }
@@ -267,6 +251,7 @@ section.bloco>h2{font-size:15px}
       <button type="button" class="aba" id="abaHistorico" aria-pressed="false">Histórico</button>
     </nav>
     <small id="situacao"></small>
+    <button type="button" class="aba" id="voltarHoje" hidden>Voltar pra hoje</button>
     <button type="button" class="btn cheio" id="novo">+ Novo pedido</button>
   </div>
 </header>
@@ -348,7 +333,7 @@ section.bloco>h2{font-size:15px}
     <h2>Meses</h2>
     <div class="tabela-rola"><table class="tabela" id="tabelaMeses"></table></div>
   </section>
-  <p class="dica">Conta os pedidos confirmados com retirada até hoje. Custo estimado: R$ 2,05 de ingredientes e luz por esfiha, uma marmita de R$ 2,10 a cada 8 esfihas do pedido e a taxa do Tap (0,89% no débito, 3,09% no crédito) nos pedidos pagos no cartão. Sua hora não entra.</p>
+  <p class="dica" id="dicaCustos">Conta os pedidos confirmados com retirada até hoje.</p>
 </main>
 
 <div id="aviso" role="alert" hidden></div>

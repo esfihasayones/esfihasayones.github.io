@@ -3,6 +3,12 @@ import { cupomDe } from "./cupons.js";
 
 export const texto = (v, max, min) => typeof v === "string" && v.trim().length >= (min || 0) && v.length <= max;
 
+// Tira caractere de controle e marca de direção de texto (invertem ou quebram
+// o nome na tela do painel). Quebra de linha só fica onde faz sentido (obs).
+const SUJEIRA = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\u202A-\u202E\u2066-\u2069]/g;
+const SUJEIRA_LINHA = /[\u0000-\u001F\u007F\u202A-\u202E\u2066-\u2069]/g;
+export const limpar = (v, multilinha) => typeof v === "string" ? v.replace(multilinha ? SUJEIRA : SUJEIRA_LINHA, "") : v;
+
 // "AAAA-MM-DD" que existe no calendário.
 export function dataIsoValida(v) {
   return typeof v === "string" && /^\d{4}-\d\d-\d\d$/.test(v)
@@ -17,9 +23,10 @@ export function validarItens(lista) {
     if (!i || typeof i !== "object") return { erro: "item inválido" };
     if (!SABORES.some((s) => s.id === i.sabor)) return { erro: "sabor inexistente" };
     if (!Number.isInteger(i.qtd) || i.qtd < 1 || i.qtd > 200) return { erro: "quantidade inválida" };
-    if (i.obs != null && !texto(i.obs, 140)) return { erro: "observação do item inválida" };
+    const obs = limpar(i.obs);
+    if (obs != null && !texto(obs, 140)) return { erro: "observação do item inválida" };
     const item = { sabor: i.sabor, qtd: i.qtd };
-    if (i.obs) item.obs = i.obs;
+    if (obs) item.obs = obs;
     itens.push(item);
   }
   return { itens };
@@ -46,8 +53,9 @@ export function precificar(itens, cupomTexto) {
 
 // Confere o formato do corpo e devolve {erro} ou {corpo} já limpo.
 // Qualquer campo fora da lista (inclusive valor) é descartado aqui.
-export function validar(c) {
-  if (!c || typeof c !== "object" || Array.isArray(c)) return { erro: "corpo inválido" };
+export function validar(bruto) {
+  if (!bruto || typeof bruto !== "object" || Array.isArray(bruto)) return { erro: "corpo inválido" };
+  const c = { ...bruto, id_envio: limpar(bruto.id_envio), nome: limpar(bruto.nome), cupom: limpar(bruto.cupom), obs: limpar(bruto.obs, true) };
   if (!texto(c.id_envio, 64, 1)) return { erro: "id_envio inválido" };
   if (!texto(c.nome, 60, 1)) return { erro: "nome inválido" };
   const vi = validarItens(c.itens);

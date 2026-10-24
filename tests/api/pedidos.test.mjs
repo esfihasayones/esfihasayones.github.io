@@ -1,7 +1,7 @@
 import test, { before } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { pedir } from "./ajuda.mjs";
+import { pedir, comoDono } from "./ajuda.mjs";
 import { zerar, contar, wrangler } from "./zerar.mjs";
 import { PONTOS, situacaoData, proximaData, isoBrasilia } from "../../public/regras.js";
 import { avaliar } from "../../functions/_lib/pedido.js";
@@ -110,4 +110,14 @@ test("avaliar: lotado, bloqueado e pausado (função pura)", () => {
 test("cupomDe normaliza", () => {
   assert.deepEqual(cupomDe("  primeiracompra "), { codigo: "PRIMEIRACOMPRA", pct: 0.1 });
   assert.equal(cupomDe("toString"), null);
+});
+
+test("retirada a mais de 90 dias vira fora_da_regra com motivo longe", async () => {
+  const longe = new Date(Date.now() + 120 * 86400000).toISOString().slice(0, 10);
+  const r = await pedir("/api/pedidos", { method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ id_envio: randomUUID(), nome: "Longe", itens: [{ sabor: "carne", qtd: 4 }], ponto: 1, retirada: longe }) });
+  assert.equal(r.status, 201);
+  assert.equal((await r.json()).status, "fora_da_regra");
+  const j = await (await pedir("/api/painel/pedidos?dia=" + longe, comoDono())).json();
+  assert.equal(j.pontos[0].pedidos[0].motivo, "longe");
 });

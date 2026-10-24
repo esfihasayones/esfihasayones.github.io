@@ -1,6 +1,7 @@
-import { isoBrasilia } from "../../../public/regras.js";
+import { isoBrasilia, MAX_DIAS_RETIRADA } from "../../../public/regras.js";
 import { dataIsoValida, texto } from "../../_lib/pedido.js";
 import { contas } from "../../_lib/custos.js";
+import { lerAgenda } from "../../_lib/agenda.js";
 import { validarCampos, montar, serializar, vazioSabores, erro, resposta, lerJson } from "../../_lib/painel.js";
 
 const DIA_MS = 86400000;
@@ -16,20 +17,22 @@ export async function onRequestGet({ request, env }) {
   const dia = pedido == null ? hoje : pedido;
   if (!dataIsoValida(dia)) return erro("dia inválido");
 
-  const de = somaDias(dia, 1), ate = somaDias(dia, 7);
+  const de = somaDias(dia, 1), ate = somaDias(dia, MAX_DIAS_RETIRADA + 1);
   // As quatro consultas vão num lote só: o banco fica na América do Norte e
   // cada ida e volta saindo do Brasil custa mais de 100 ms.
   const mes = dia.slice(0, 7);
   const [doDia, pend, sd, px, doMes] = await env.DB.batch([
     env.DB.prepare("SELECT * FROM pedidos WHERE retirada = ? ORDER BY id").bind(dia),
+    // Toda pendência, mesmo com data passada: sumir em silêncio deixava o
+    // cliente sem resposta. O cartão mostra a data e o dono recusa.
     env.DB.prepare(
-      "SELECT * FROM pedidos WHERE status IN ('aguardando','fora_da_regra') AND (retirada IS NULL OR retirada >= ?) " +
-      "ORDER BY retirada IS NULL, retirada, id").bind(hoje),
+      "SELECT * FROM pedidos WHERE status IN ('aguardando','fora_da_regra') " +
+      "ORDER BY retirada IS NULL, retirada, id"),
     // Confirmados sem data de retirada (ex.: "Combinar outro ponto"): sem isto
     // sumiriam do painel depois de Confirmar.
     env.DB.prepare("SELECT * FROM pedidos WHERE status = 'confirmado' AND retirada IS NULL AND entregue = 0 ORDER BY id"),
     env.DB.prepare(
-      "SELECT retirada, SUM(qtd) AS q, COUNT(*) AS n, GROUP_CONCAT(nome, ', ') AS nomes, SUM(CASE WHEN pago = 1 AND entregue = 1 THEN 0 ELSE 1 END) AS falta FROM pedidos WHERE status = 'confirmado' AND retirada BETWEEN ? AND ? GROUP BY retirada")
+      "SELECT retirada, SUM(qtd) AS q, COUNT(*) AS n, GROUP_CONCAT(nome, ', ') AS nomes, SUM(CASE WHEN pago = 1 AND entregue = 1 THEN 0 ELSE 1 END) AS falta FROM pedidos WHERE status = 'confirmado' AND retirada BETWEEN ? AND ? GROUP BY retirada ORDER BY retirada")
       .bind(de, ate),
     env.DB.prepare("SELECT qtd, total_centavos, pago, pagamento FROM pedidos WHERE status = 'confirmado' AND retirada BETWEEN ? AND ?")
       .bind(mes + "-01", mes + "-31"),
@@ -48,13 +51,9 @@ export async function onRequestGet({ request, env }) {
     pedidos: [...lista.filter((p) => p.status !== "cancelado"), ...lista.filter((p) => p.status === "cancelado")],
   }));
 
-  const mapa = new Map(px.results.map((r) => [r.retirada, r]));
-  const proximos = [];
-  for (let i = 1; i <= 7; i++) {
-    const d = somaDias(dia, i);
-    const m = mapa.get(d);
-    proximos.push({ dia: d, qtd: m ? m.q : 0, pedidos: m ? m.n : 0, falta: m ? m.falta : 0, nomes: m ? m.nomes : null });
-  }
+  // Só os dias futuros que têm pedido confirmado, em ordem, sem teto de uma
+  // semana: pedido aceito pra daqui a dez dias não pode sumir da tela.
+  const proximos = px.results.map((r) => ({ dia: r.retirada, qtd: r.q, pedidos: r.n, falta: r.falta, nomes: r.nomes }));
 
   const confirmadosDia = doDia.results.filter((r) => r.status === "confirmado");
   const financas = { dia: contas(confirmadosDia), mes: { mes, ...contas(doMes.results) } };
@@ -83,6 +82,14 @@ export async function onRequestPost({ request, env }) {
     itens: "[]", cupom: null, desconto_centavos: 0, valor_manual: 0, retirada: null, janela: null, obs: null, pago: 0, pagamento: null, entregue: 0,
   };
   const l = montar(base, f);
+  if (l.retirada && c.forcar !== true) {
+    const a = await lerAgenda(env.DB, l.retirada, l.retirada);
+    const ocupado = a.ocupado.get(l.retirada) || 0;
+    if (ocupado + l.qtd > a.limite) {
+      return resposta({ erro: `Esse dia já tem ${ocupado} esfihas e o limite é ${a.limite}; com este pedido vai a ${ocupado + l.qtd}.`,
+        lotado: true, ocupado, limite: a.limite }, 409);
+    }
+  }
   const r = await env.DB.prepare(`INSERT INTO pedidos (${COLUNAS.join(",")}) VALUES (${COLUNAS.map(() => "?").join(",")})`)
     .bind(...COLUNAS.map((k) => l[k])).run();
   const novo = await env.DB.prepare("SELECT * FROM pedidos WHERE id = ?").bind(r.meta.last_row_id).first();

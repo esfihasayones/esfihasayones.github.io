@@ -72,6 +72,8 @@
     if (!j) return "dia";
     var p = isoTxt.split("-");
     var inicio = new Date(+p[0], +p[1] - 1, +p[2], j.h, j.m).getTime();
+    var teto = new Date(agoraMs); teto.setDate(teto.getDate() + 90);
+    if (isoTxt > iso(teto)) return "longe";
     if (inicio < agoraMs + antecedenciaH(q) * 3600e3) return "cedo";
     // produção: não tem terça nem quarta; pedido a partir das 18h só entra no dia seguinte
     var d = new Date(agoraMs);

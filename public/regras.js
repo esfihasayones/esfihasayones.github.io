@@ -8,6 +8,7 @@ export const ANTECEDENCIA_GRANDE_H = 72;           // ...a antecedência sobe pr
 // as 18h ainda entra na produção do mesmo dia; depois disso, só no seguinte.
 export const DIAS_SEM_PRODUCAO = [2, 3];           // 0 = domingo ... 6 = sábado
 export const HORA_LIMITE_PRODUCAO = 18;
+export const MAX_DIAS_RETIRADA = 90;               // encomenda só até 90 dias antes
 
 // Dias sem retirada, em qualquer ponto. Feriados nacionais e o aniversário
 // de Florianópolis; Carnaval e Corpus Christi são ponto facultativo e ficam
@@ -133,11 +134,13 @@ export function temProducao(dataIso, agoraMs){
 
 // "ok", "feriado", "dia" (o ponto não abre nesse dia), "lotado" ou "bloqueado"
 // (os dois vêm da agenda do servidor, em `bloqueados`: Map dia -> motivo),
-// "cedo" (falta antecedência) ou "producao" (não sobra dia de produção antes).
+// "cedo" (falta antecedência), "producao" (não sobra dia de produção antes)
+// ou "longe" (mais de MAX_DIAS_RETIRADA dias à frente).
 export function situacaoData(ponto, dataIso, qtd, agoraMs, bloqueados){
   if (FERIADOS[dataIso]) return "feriado";
   if (ponto.dias.indexOf(diaDaData(dataIso)) === -1) return "dia";
   if (bloqueados && bloqueados.has(dataIso)) return bloqueados.get(dataIso);
+  if (dataIso > isoBrasilia(agoraMs + MAX_DIAS_RETIRADA * 86400000)) return "longe";
   const limite = agoraMs + horasAntecedencia(qtd) * 3600 * 1000;
   if (inicioRetirada(ponto, dataIso).getTime() < limite) return "cedo";
   return temProducao(dataIso, agoraMs) ? "ok" : "producao";

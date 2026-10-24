@@ -1,4 +1,4 @@
-import {
+import { MAX_DIAS_RETIRADA,
   WHATSAPP, ANTECEDENCIA_H, PEDIDO_GRANDE, ANTECEDENCIA_GRANDE_H, FERIADOS, PONTOS, NOMES_DIA, SABORES, FAIXAS,
   faixaDe, isoBrasilia, diaDaData, janelaDe, proximaData,
   horasAntecedencia as horasAntecedenciaDe, situacaoData as situacaoDataDe
@@ -290,6 +290,8 @@ function textoData(pt, valor){
   if (sit === "cedo")
     return "Pra essa data não dá tempo: precisamos de " + antecedenciaTxt() +
            ". A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
+  if (sit === "longe")
+    return "A gente aceita encomenda até " + MAX_DIAS_RETIRADA + " dias antes. Escolha uma data mais perto.";
   if (sit === "producao")
     return "Pra essa data não dá tempo: a gente não monta esfiha na terça nem na quarta, e pedido depois das 18h entra no dia seguinte. " +
            "A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
@@ -301,6 +303,7 @@ function textoData(pt, valor){
 function atualizarDica(){
   var el = $("#dicaData"), pt = pontoAtual();
   fData.min = iso(limite());
+  fData.max = iso(new Date(Date.now() + MAX_DIAS_RETIRADA * 86400000));
   // no "combinar outro ponto" a data não vai na mensagem, então o campo some
   $("#campoData").hidden = pt.dias === null;
   if (pt.dias === null){

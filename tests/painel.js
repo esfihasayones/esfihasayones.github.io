@@ -391,8 +391,63 @@
     A.ok(c && P.el("#pontos2").contains(c), "o próximo dia com pedido vira a primeira coluna");
     A.igual(P.texto('#sabores2 [data-sabor="carne"] .n').trim(), "7");
     A.igual(P.doc().body.dataset.pronto, d, "o dia base continua o mesmo");
-    P.el("#colDia").open = true;
-    A.ok(P.el("#colDia").open, "dá pra abrir o dia recolhido");
+    P.clicar("#colDia > summary");
+    await esperar(function () { return P.el("#colDia").open; }, "abrir o dia recolhido pelo clique");
+    A.ok(P.el("#colDia").getBoundingClientRect().width > 300, "aberto, vira coluna de verdade");
+  }));
+
+  teste("Pago pergunta a forma, grava e desmarcar limpa", comPainel(async function () {
+    var d = await diaLivre(util);
+    var ped = await manual(d, [{ sabor: "carne", qtd: 4 }]);
+    var P = await abrir(d, 1280);
+    var cartao = function () { return P.cartao(ped.id); };
+    P.clicar(cartao().querySelector('[data-acao="pago"]'));
+    await esperar(function () { return cartao().querySelector('[data-acao="pagamento-pix"]'); }, "pergunta Como pagou?");
+    A.contem(cartao().textContent, "Como pagou?");
+    P.clicar(cartao().querySelector('[data-acao="pagamento-debito"]'));
+    await esperar(function () { return /Pago · Débito/.test(cartao().textContent); }, "forma no botão");
+    A.ok(!cartao().querySelector('[data-acao="pagamento-pix"]'), "pergunta some depois de responder");
+    var s = (await api("GET", "/api/painel/pedidos?dia=" + d)).json.pontos[0].pedidos[0];
+    A.igual(s.pagamento, "debito", "servidor gravou a forma");
+    P.clicar(cartao().querySelector('[data-acao="pago"]'));
+    await esperar(function () { return cartao().querySelector('[data-acao="pago"]').getAttribute("aria-pressed") === "false"; }, "desmarcar");
+    s = (await api("GET", "/api/painel/pedidos?dia=" + d)).json.pontos[0].pedidos[0];
+    A.ok(!s.pago && s.pagamento === null, "desmarcar limpa a forma");
+  }));
+
+  teste("histórico sem venda não escreve null e a dica traz os custos do servidor", comPainel(async function () {
+    var d = await diaLivre(util);
+    var P = await abrir(d, 1280);
+    P.clicar("#abaHistorico");
+    await esperar(function () { return P.doc().body.dataset.historico === "pronto"; }, "histórico carregar");
+    A.ok(!/\bnull\b/.test(P.texto("#telaHistorico")), "texto 'null' na tela");
+    A.contem(P.texto("#dicaCustos"), "por esfiha");
+    A.contem(P.texto("#dicaCustos"), "%");
+  }));
+
+  teste("aceitar tira o pedido de Novos na hora", comPainel(async function () {
+    var d = await diaLivre(util);
+    var site = await api("POST", "/api/pedidos", { id_envio: uuid(), nome: "Aceita " + sufixo(), itens: [{ sabor: "queijo", qtd: 4 }], ponto: ITACORUBI, retirada: d });
+    var P = await abrir(d, 1280);
+    P.clicar(P.cartao(site.json.id).querySelector('[data-acao="confirmar"]'));
+    await esperar(function () { return !P.el("#pendencias").contains(P.cartao(site.json.id)) && P.el("#pontos").contains(P.cartao(site.json.id)); }, "sair de Novos e entrar no dia");
+    A.ok(!P.cartao(site.json.id).querySelector('[data-acao="confirmar"]'), "sem botão Aceitar no cartão confirmado");
+  }));
+
+  teste("editar só o nome mantém o total gravado", comPainel(async function () {
+    var d = await diaLivre(util);
+    var ped = await manual(d, [{ sabor: "carne", qtd: 4 }], { valor_manual: true, total_centavos: 1990 });
+    var P = await abrir(d, 1280);
+    var menu = P.cartao(ped.id).querySelector("details.mais-acoes");
+    menu.open = true;
+    P.clicar(menu.querySelector('[data-acao="editar"]'));
+    await esperar(function () { return P.el("#form").open; }, "formulário abrir");
+    P.digitar("#fNome", "Nome corrigido");
+    P.clicar("#fSalvar");
+    await esperar(function () { return !P.el("#form").open; }, "salvar");
+    var s = (await api("GET", "/api/painel/pedidos?dia=" + d)).json.pontos[0].pedidos[0];
+    A.igual(s.nome, "Nome corrigido");
+    A.igual(s.total_centavos, 1990, "total combinado ficou");
   }));
 
   teste("abre em hoje, sem calendário", comPainel(async function () {

@@ -87,6 +87,8 @@ dizer "Rodando a suíte de navegador (Chromium${FILTRO:+, $FILTRO})"
 RESULTADO="$(node tests/rodar-playwright.cjs chromium "http://127.0.0.1:8792/tests/index.html$FILTRO")"
 echo "$RESULTADO" | head -c 1500; echo
 echo "$RESULTADO" | grep -qE '"pronto": true' || falhar "a suíte de navegador não terminou."
+TOTAL="$(echo "$RESULTADO" | grep -oE '"total": [0-9]+' | grep -oE '[0-9]+' | head -1)"
+[ -n "$TOTAL" ] && [ "$TOTAL" -ge 10 ] || falhar "a suíte de navegador rodou só ${TOTAL:-0} testes; o filtro ($FILTRO) está errado?"
 FALHOU="$(echo "$RESULTADO" | grep -oE '"falhou": [0-9]+' | grep -oE '[0-9]+' | head -1)"
 [ -n "$FALHOU" ] || falhar "não consegui ler o resultado da suíte de navegador."
 [ "$FALHOU" -eq 0 ] || falhar "a suíte de navegador teve $FALHOU falha(s)."

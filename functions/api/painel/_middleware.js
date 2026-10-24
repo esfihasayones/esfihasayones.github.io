@@ -8,8 +8,11 @@ const json = (s) => JSON.parse(new TextDecoder().decode(b64url(s)));
 // `buscar` é injetável pra os testes não saírem pra rede.
 function carregadorDeChaves(buscar) {
   let cache = null;
-  return async function chaves(env, agora) {
-    if (cache && cache.equipe === env.ACCESS_EQUIPE && agora - cache.em < VALIDADE_CHAVES_MS) return cache.mapa;
+  return async function chaves(env, agora, forcar) {
+    const vale = cache && cache.equipe === env.ACCESS_EQUIPE && agora - cache.em < VALIDADE_CHAVES_MS;
+    // `forcar` é pra kid desconhecido (rotação de chave do Access), mas não
+    // mais que uma busca a cada 10 s, senão vira jeito de martelar o endpoint.
+    if (vale && (!forcar || agora - cache.em < 10000)) return cache.mapa;
     const r = await buscar(`https://${env.ACCESS_EQUIPE}.cloudflareaccess.com/cdn-cgi/access/certs`);
     if (!r.ok) throw new Error("certs indisponíveis");
     const { keys } = await r.json();
@@ -30,7 +33,8 @@ async function tokenValido(token, env, chaves, agora) {
   if (partes.length !== 3) return false;
   const cab = json(partes[0]);
   if (cab.alg !== "RS256") return false;
-  const chave = (await chaves(env, agora)).get(cab.kid);
+  let chave = (await chaves(env, agora)).get(cab.kid);
+  if (!chave) chave = (await chaves(env, agora, true)).get(cab.kid);
   if (!chave) return false;
   const ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", chave, b64url(partes[2]), new TextEncoder().encode(partes[0] + "." + partes[1]));
   if (!ok) return false;
@@ -50,7 +54,21 @@ export function criarMiddleware({ buscar = (u) => fetch(u), agora = () => Date.n
   return async function onRequest({ request, env, next }) {
     // O atalho de desenvolvimento só vale em máquina local, mesmo que a
     // variável vaze pra um deploy.
-    const host = new URL(request.url).hostname;
+    const url = new URL(request.url);
+    const host = url.hostname;
+    // Escrita só da própria origem: página de outro site, no navegador do dono
+    // logado, não cria nem muda pedido. Cliente sem navegador (teste, curl) não
+    // manda estes cabeçalhos e segue pra conferência do JWT.
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      const sfs = request.headers.get("Sec-Fetch-Site");
+      const origem = request.headers.get("Origin");
+      if ((sfs && sfs !== "same-origin" && sfs !== "none") || (origem && origem !== url.origin)) {
+        return Response.json({ erro: "origem recusada" }, { status: 403, headers: cabecalhos });
+      }
+      if (!(request.headers.get("Content-Type") || "").toLowerCase().startsWith("application/json")) {
+        return Response.json({ erro: "esperava JSON" }, { status: 415, headers: cabecalhos });
+      }
+    }
     let liberado = env.DEV_SEM_LOGIN === "1" && (host === "localhost" || host === "127.0.0.1");
     const token = request.headers.get("Cf-Access-Jwt-Assertion");
     if (!liberado && token && String(env.DONO_EMAIL || "").trim() && env.ACCESS_EQUIPE && env.ACCESS_AUD) {

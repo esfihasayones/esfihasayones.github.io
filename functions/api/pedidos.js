@@ -18,7 +18,8 @@ export async function onRequestPost({ request, env }) {
     .bind(corpo.id_envio).first();
   if (existente) return Response.json(publico(existente), { status: 200 });
 
-  const agenda = await lerAgenda(env.DB, corpo.retirada, corpo.retirada);
+  // Sem data (ponto a combinar) não há ocupação a conferir: faixa vazia, só a config.
+  const agenda = await lerAgenda(env.DB, corpo.retirada || "0000-00-00", corpo.retirada || "0000-00-00");
 
   const { linha } = avaliar(corpo, Date.now(), agenda);
   await env.DB.prepare(
