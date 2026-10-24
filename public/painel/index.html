@@ -231,10 +231,13 @@ section.bloco>h2{font-size:15px}
 .tabela .mes{background:none;border:0;padding:0;font:inherit;font-weight:600;color:var(--tinta);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .tabela .mes[aria-current="true"]{text-decoration:none}
 #voltarHoje{margin-left:auto;opacity:1}
-#voltarHoje + #novo{margin-left:0}
+#voltarHoje:not([hidden]) + #novo{margin-left:0}
 @media (max-width:1000px){
   .colunas,.colunas:has(#colDia.recolhido),.colunas:has(#colDia.recolhido[open]){grid-template-columns:minmax(0,1fr)}
   #colNovos{order:-1}
+  .barra-dentro{padding:0 12px;gap:10px}
+  .barra #novo{padding:0 12px;font-size:13px}
+  .aba{padding:0 10px}
   .cartao .botoes>.btn,details.mais-acoes>summary,.btn.mini,.ajuste .btn,.ajuste input,.ajuste .lista-bloqueios .btn{min-height:44px}
   details.mais-acoes>summary{width:44px}
   .barra small{display:none}
