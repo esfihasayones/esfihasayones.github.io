@@ -1,6 +1,6 @@
 import { SABORES } from "../../public/regras.js";
 import { cupomDe } from "./cupons.js";
-import { validarItens, precificar, dataIsoValida, texto } from "./pedido.js";
+import { validarItens, precificar, dataIsoValida, texto, limpar } from "./pedido.js";
 
 export const STATUS = ["aguardando", "confirmado", "cancelado", "fora_da_regra"];
 
@@ -27,8 +27,11 @@ export const vazioSabores = () => Object.fromEntries(SABORES.map((s) => [s.id, 0
 // Campos que o painel aceita, com a mesma limitação do POST público.
 // Devolve {erro} ou {campos}, só com o que veio no corpo.
 // O que não está na lista é ignorado.
-export function validarCampos(c) {
-  if (!c || typeof c !== "object" || Array.isArray(c)) return { erro: "corpo inválido" };
+export function validarCampos(bruto) {
+  if (!bruto || typeof bruto !== "object" || Array.isArray(bruto)) return { erro: "corpo inválido" };
+  const c = { ...bruto };
+  for (const k of ["nome", "ponto", "janela", "cupom"]) if (k in c) c[k] = limpar(c[k]);
+  if ("obs" in c) c.obs = limpar(c.obs, true);
   const f = {};
   if ("status" in c) {
     if (!STATUS.includes(c.status)) return { erro: "status inválido" };
@@ -81,9 +84,17 @@ export function validarCampos(c) {
   if ("valor_manual" in c) {
     if (typeof c.valor_manual !== "boolean") return { erro: "valor_manual inválido" };
     if (c.valor_manual && !("total_centavos" in c)) return { erro: "valor_manual exige total_centavos" };
+    if (!c.valor_manual && "total_centavos" in c) return { erro: "total_centavos só com valor_manual" };
     f.valor_manual = c.valor_manual;
   }
   return { campos: f };
+}
+
+// Colunas em que a linha montada difere da gravada (booleano e 0/1 contam
+// como iguais). O UPDATE só toca nessas.
+export function mudancas(atual, l, colunas) {
+  const igual = (a, b) => a === b || (a == null && b == null) || Number(a) === Number(b) && typeof a !== "string" && typeof b !== "string";
+  return colunas.filter((k) => !igual(atual[k], l[k]));
 }
 
 // Aplica `campos` sobre a linha `base` (ou uma linha vazia) e refaz o preço

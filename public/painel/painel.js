@@ -6,6 +6,7 @@ import { SABORES, PONTOS, NOMES_DIA, isoBrasilia, diaDaData, precoCentavos } fro
 const MOTIVOS = {
   cedo: "Pediu com menos antecedência que o mínimo",
   producao: "Não sobra dia de produção antes da retirada",
+  longe: "Pediu com mais de 90 dias de antecedência",
   feriado: "Dia de feriado",
   dia: "O ponto não abre nesse dia",
   lotado: "Dia já estava cheio",
@@ -65,7 +66,11 @@ async function api(metodo, caminho, corpo) {
   }
   let j = null;
   try { j = await r.json(); } catch (e) { /* resposta sem JSON */ }
-  if (!r.ok) throw new Error((j && j.erro) || "O servidor recusou (erro " + r.status + "). Nada foi alterado.");
+  if (!r.ok) {
+    const e = new Error((j && j.erro) || "O servidor recusou (erro " + r.status + "). Nada foi alterado.");
+    e.dados = j || {};
+    throw e;
+  }
   return j;
 }
 
@@ -112,7 +117,9 @@ async function carregarDia(dia, escolha) {
     const v = await montarVista(dia, escolha);
     if (meu !== estado.seq) return false;
     aplicar(v, escolha);
-    try { history.replaceState(null, "", "?dia=" + v.j.dia); } catch (e) { /* sem histórico */ }
+    // ?dia só quando não é hoje: a aba que vira a meia-noite e o atalho na
+    // tela do celular voltam pra hoje ao recarregar.
+    try { history.replaceState(null, "", v.j.dia === hoje() ? location.pathname : "?dia=" + v.j.dia); } catch (e) { /* sem histórico */ }
     renderDia();
     document.body.dataset.pronto = v.j.dia;
     $("#situacao").textContent = "";
@@ -144,6 +151,7 @@ function tituloDia(dia) {
 }
 
 function renderDia() {
+  $("#voltarHoje").hidden = estado.dia === hoje();
   const base = $("#colDia");
   base.classList.toggle("recolhido", estado.recolher);
   if (!estado.recolher) base.open = true;
@@ -177,7 +185,8 @@ function menuMais(botoes) {
 const botaoEditar = (p) => h("button", { type: "button", className: "btn suave", "data-acao": "editar", texto: "Editar", onclick: () => abrirForm(p) });
 const botaoCancelar = (p, rotulo) => h("button", { type: "button", className: "btn perigo", "data-acao": "cancelar", texto: rotulo || "Cancelar pedido", onclick: (e) => cancelar(p, e.currentTarget) });
 
-function renderPendencias(lista) {
+function renderPendencias(todas) {
+  const lista = todas.filter((p) => p.status === "aguardando" || p.status === "fora_da_regra");
   $("#nPendencias").textContent = String(lista.length);
   $("#semPendencias").hidden = lista.length > 0;
   $("#pendencias").replaceChildren(...lista.map((p) => {
@@ -289,7 +298,7 @@ function renderProximos(lista) {
   const dias = lista.filter((x) => x.pedidos && !naTela.includes(x.dia));
   $("#blocoProximos").hidden = dias.length === 0;
   $("#proximos").replaceChildren(...dias.map((x) =>
-    h("li", {}, h("button", { type: "button", className: "proximo", "data-dia": x.dia, "aria-pressed": "false", onclick: () => verDia(x.dia) },
+    h("li", {}, h("button", { type: "button", className: "proximo", "data-dia": x.dia, onclick: () => verDia(x.dia) },
       h("b", { texto: tituloDia(x.dia) }),
       h("span", { texto: plural(x.qtd, "esfiha", "esfihas") }),
       x.nomes ? h("small", { className: "nomes", texto: x.nomes }) : null))));
@@ -313,7 +322,7 @@ async function carregarHistorico() {
 
 function linhaContas(rotulo, c, extra) {
   return h("tr", extra || {},
-    h("td", { texto: rotulo }), h("td", { texto: String(c.esfihas) }), h("td", { texto: brl(c.bruto) }),
+    h("td", {}, rotulo), h("td", { texto: String(c.esfihas) }), h("td", { texto: brl(c.bruto) }),
     h("td", { texto: "− " + brl(c.ingredientes) }), h("td", { texto: "− " + brl(c.embalagem) }),
     h("td", { texto: c.taxa ? "− " + brl(c.taxa) : brl(0) }), h("td", { className: "liq", texto: brl(c.liquido) }));
 }
@@ -325,7 +334,8 @@ function renderHistorico() {
   const quadro = (rot, c) => h("div", { className: "quadro" },
     h("div", { className: "rot", texto: rot }),
     h("div", { className: "grande", texto: brl(c.liquido) + " líquido" }),
-    h("div", { className: "det", texto: brl(c.bruto) + " bruto · " + plural(c.esfihas, "esfiha", "esfihas") + " · " + plural(c.pedidos, "pedido", "pedidos") }));
+    h("div", { className: "det", texto: brl(c.bruto) + " bruto · " + plural(c.esfihas, "esfiha", "esfihas") + " · " + plural(c.pedidos, "pedido", "pedidos") }),
+    c.pagos_sem_forma ? h("div", { className: "det alerta", texto: plural(c.pagos_sem_forma, "pedido pago", "pedidos pagos") + " sem a forma marcada: a taxa pode estar faltando" }) : null);
   $("#quadros").replaceChildren(
     quadro("Desde o começo", H.total),
     quadro(nomeMes(mesAberto), doMes),
@@ -338,11 +348,17 @@ function renderHistorico() {
   $("#tituloMes").textContent = nomeMes(mesAberto) + ", dia a dia";
   $("#tabelaDias").replaceChildren(cabecalho("Dia"),
     ...(dias.length ? dias.map((d) => linhaContas(dataLonga(d.dia), d)) : [h("tr", {}, h("td", { colSpan: 7, texto: "Nenhuma venda neste mês ainda." }))]),
-    dias.length ? linhaContas("Total do mês", doMes, { className: "total" }) : null);
+    ...(dias.length ? [linhaContas("Total do mês", doMes, { className: "total" })] : []));
 
-  $("#blocoMeses").hidden = H.meses.length < 2;
+  $("#blocoMeses").hidden = !H.meses.some((m) => m.mes !== mesAberto);
+  if (H.custos) {
+    const c = H.custos, pct = (bp) => (bp / 100).toFixed(2).replace(".", ",") + "%";
+    $("#dicaCustos").textContent = "Conta os pedidos confirmados com retirada até hoje. Custo estimado: " + brl(c.esfiha_centavos) +
+      " de ingredientes e luz por esfiha, uma marmita de " + brl(c.marmita_centavos) + " a cada " + c.esfihas_por_marmita +
+      " esfihas do pedido e a taxa do Tap (" + pct(c.taxa_bp.debito) + " no débito, " + pct(c.taxa_bp.credito) + " no crédito) nos pedidos pagos no cartão. Sua hora não entra.";
+  }
   $("#tabelaMeses").replaceChildren(cabecalho("Mês"), ...H.meses.map((m) =>
-    linhaContas(nomeMes(m.mes), m, { className: "clicavel", "aria-current": m.mes === mesAberto ? "true" : "false", onclick: () => { mesAberto = m.mes; renderHistorico(); } })),
+    linhaContas(h("button", { type: "button", className: "mes", "aria-current": m.mes === mesAberto ? "true" : "false", texto: nomeMes(m.mes), onclick: () => { mesAberto = m.mes; renderHistorico(); } }), m)),
     linhaContas("Desde o começo", H.total, { className: "total" }));
 }
 
@@ -361,7 +377,7 @@ async function mudar(p, campos, botao) {
   if (ocupados.has(p.id)) return;
   ocupados.add(p.id);
   if (botao) botao.disabled = true;
-  let ok = false;
+  let ok = false, lotado = null;
   try {
     const novo = await api("PATCH", "/api/painel/pedidos/" + p.id, campos);
     Object.assign(p, novo);
@@ -369,9 +385,14 @@ async function mudar(p, campos, botao) {
     ok = true;
   } catch (e) {
     if (botao) botao.disabled = false;
-    aviso(e.message);
+    if (e.dados && e.dados.lotado) lotado = e.message;
+    else aviso(e.message);
   } finally {
     ocupados.delete(p.id);
+  }
+  if (lotado) {
+    if (confirm(lotado + "\n\nConfirmar mesmo assim?")) return mudar(p, { ...campos, forcar: true }, botao);
+    return;
   }
   if (ok) await recarregarQuieto();   // colunas, totais e próximos dias
 }
@@ -396,6 +417,8 @@ function cancelar(p, botao) {
 const form = $("#form");
 let editando = null;      // pedido em edição, ou null pro novo
 let valorEditado = false;
+let pediuCalculo = false; // clicou em "Usar o cálculo" numa edição com valor combinado
+const chaveItens = (itens) => JSON.stringify([...itens].sort((a, b) => a.sabor < b.sabor ? -1 : 1).map((i) => [i.sabor, i.qtd]));
 
 function montarFormulario() {
   $("#fQtds").replaceChildren(...SABORES.map((s) =>
@@ -409,7 +432,7 @@ function montarFormulario() {
   $("#fCupom").addEventListener("input", consultarCupom);
   $("#fValor").addEventListener("input", () => { valorEditado = true; dicaValor(); });
   $("#fPonto").addEventListener("change", () => { $("#campoPontoOutro").hidden = $("#fPonto").value !== OUTRO; });
-  $("#fUsarCalculo").addEventListener("click", () => { valorEditado = false; recalcular(); });
+  $("#fUsarCalculo").addEventListener("click", () => { valorEditado = false; pediuCalculo = true; recalcular(); });
 }
 
 // Cupons: a lista fica no servidor. Aqui só se guarda o que ele respondeu pra
@@ -474,6 +497,7 @@ function abrirForm(p) {
   $("#fCupom").value = p && p.cupom ? p.cupom : "";
   $("#fObs").value = p && p.obs ? p.obs : "";
   valorEditado = !!(p && p.valor_manual);
+  pediuCalculo = false;
   if (p && p.cupom) consultarCupom();
   if (p) $("#fValor").value = virgula(p.total_centavos);
   recalcular();
@@ -502,20 +526,30 @@ async function salvar(ev) {
   if (!itens.length) return erroForm("Ponha a quantidade de pelo menos um sabor.");
   if (!ponto) return erroForm("Falta dizer o ponto.");
   if (!validoIso(dia)) return erroForm("Falta o dia.");
+  const cupom = $("#fCupom").value.trim() || null;
   const corpo = {
-    nome, itens, ponto, retirada: dia,
+    nome, ponto, retirada: dia,
     janela: $("#fJanela").value.trim() || null,
-    cupom: $("#fCupom").value.trim() || null,
     obs: $("#fObs").value.trim() || null,
   };
+  // Numa edição, itens e cupom só vão se mudaram: mandar de novo refaria o
+  // total ao preço de hoje (e barraria um cupom que já saiu do ar).
+  const mesmosItens = editando && chaveItens(itens) === chaveItens(editando.itens);
+  const mesmoCupom = editando && (cupom || "").toUpperCase() === (editando.cupom || "").toUpperCase();
+  if (!editando || !mesmosItens) corpo.itens = itens;
+  if (!editando || !mesmoCupom) corpo.cupom = cupom;
   if (valorEditado) {
-    const txt = $("#fValor").value.trim().replace(",", ".");
+    const txt = $("#fValor").value.trim().replace(/\./g, "").replace(",", ".");
     if (!/^\d+(\.\d{1,2})?$/.test(txt)) return erroForm("O valor precisa ser um número, como 56,16.");
     corpo.valor_manual = true;
     corpo.total_centavos = Math.round(parseFloat(txt) * 100);
-  } else if (editando) {
+  } else if (editando && editando.valor_manual && pediuCalculo) {
     corpo.valor_manual = false;
   }
+  return salvarCorpo(corpo);
+}
+
+async function salvarCorpo(corpo) {
   salvando = true;
   $("#fSalvar").disabled = true;
   try {
@@ -534,6 +568,12 @@ async function salvar(ev) {
     else if (salvo.retirada && salvo.retirada < estado.dia) await irPara(salvo.retirada);
     else await carregarDia(estado.dia, estado.escolha);
   } catch (e) {
+    if (e.dados && e.dados.lotado && !corpo.forcar && confirm(e.message + "\n\nSalvar mesmo assim?")) {
+      salvando = false;
+      $("#fSalvar").disabled = false;
+      corpo.forcar = true;
+      return salvarCorpo(corpo);
+    }
     erroForm(e.message);
   } finally {
     salvando = false;
@@ -584,6 +624,10 @@ async function carregarAgenda() {
 // ---------- ligações ----------
 function ligar() {
   $("#abaPedidos").addEventListener("click", () => abrirAba("pedidos"));
+  $("#voltarHoje").addEventListener("click", () => irPara(hoje()));
+  document.addEventListener("click", (e) => {
+    for (const d of document.querySelectorAll("details.mais-acoes[open]")) if (!d.contains(e.target)) d.open = false;
+  });
   $("#colDia").addEventListener("toggle", (e) => { if (estado.recolher) e.currentTarget.dataset.mexeu = "1"; });
   $("#abaHistorico").addEventListener("click", () => abrirAba("historico"));
   $("#novo").addEventListener("click", () => abrirForm(null));

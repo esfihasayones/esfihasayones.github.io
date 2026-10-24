@@ -1,5 +1,5 @@
 import { isoBrasilia } from "../../../public/regras.js";
-import { contas } from "../../_lib/custos.js";
+import { contas, CUSTOS } from "../../_lib/custos.js";
 import { resposta } from "../../_lib/painel.js";
 
 // Quanto entrou e quanto sobrou: pedidos confirmados com retirada até hoje,
@@ -20,6 +20,7 @@ export async function onRequestGet({ env }) {
   }
   return resposta({
     hoje,
+    custos: CUSTOS,
     total: contas(results),
     meses: [...porMes].map(([mes, lista]) => ({ mes, ...contas(lista) })),
     dias: [...porDia].map(([dia, lista]) => ({ dia, ...contas(lista) })),

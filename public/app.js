@@ -1,4 +1,4 @@
-import {
+import { MAX_DIAS_RETIRADA, longeDemais,
   WHATSAPP, ANTECEDENCIA_H, PEDIDO_GRANDE, ANTECEDENCIA_GRANDE_H, FERIADOS, PONTOS, NOMES_DIA, SABORES, FAIXAS,
   faixaDe, isoBrasilia, diaDaData, janelaDe, proximaData,
   horasAntecedencia as horasAntecedenciaDe, situacaoData as situacaoDataDe
@@ -189,7 +189,7 @@ FAIXAS.slice().reverse().forEach(function(f){
     '<div class="qtd">'+f.nome+'</div>' +
     '<div class="un"><sup>R$</sup>'+valor.toFixed(2).replace(".",",")+'</div>' +
     '<div class="un-lbl">' +
-      (combo ? f.min+' esfihas · '+brl(f.preco)+' cada' : 'por esfiha, até 3 unidades') +
+      (combo ? f.min+' esfihas · '+brl(f.preco)+' cada' : 'por esfiha, até '+(FAIXAS[FAIXAS.length-2].min-1)+' unidades') +
     '</div>' +
     (eco > 0 ? '<span class="eco">'+eco+'% de desconto</span>'
              : '<span class="eco">preço cheio</span>');
@@ -242,7 +242,10 @@ var agenda = { pausado:false, bloqueados:new Map() };
 var dataMexida = false;   // true quando a pessoa escolheu a data
 var AVISO_PAUSA = "Os pedidos estão pausados por enquanto. Fala com a gente no WhatsApp.";
 
-function situacaoData(pt, valor){ return situacaoDataDe(pt, valor, totalQtd(), Date.now(), agenda.bloqueados); }
+function situacaoData(pt, valor){
+  var s = situacaoDataDe(pt, valor, totalQtd(), Date.now(), agenda.bloqueados);
+  return s === "ok" && longeDemais(valor, Date.now()) ? "longe" : s;
+}
 
 // Primeira data em que o ponto abre, que respeita a antecedência e que não
 // está lotada nem bloqueada.
@@ -290,6 +293,8 @@ function textoData(pt, valor){
   if (sit === "cedo")
     return "Pra essa data não dá tempo: precisamos de " + antecedenciaTxt() +
            ". A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
+  if (sit === "longe")
+    return "A gente aceita encomenda até " + MAX_DIAS_RETIRADA + " dias antes. Escolha uma data mais perto.";
   if (sit === "producao")
     return "Pra essa data não dá tempo: a gente não monta esfiha na terça nem na quarta, e pedido depois das 18h entra no dia seguinte. " +
            "A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
@@ -301,6 +306,7 @@ function textoData(pt, valor){
 function atualizarDica(){
   var el = $("#dicaData"), pt = pontoAtual();
   fData.min = iso(limite());
+  fData.max = iso(new Date(Date.now() + MAX_DIAS_RETIRADA * 86400000));
   // no "combinar outro ponto" a data não vai na mensagem, então o campo some
   $("#campoData").hidden = pt.dias === null;
   if (pt.dias === null){
@@ -606,7 +612,8 @@ linhas.addEventListener("focusout", function(ev){
 /* ---------- gaveta ---------- */
 // Identifica este envio. O servidor ignora o segundo POST com o mesmo id,
 // então um reenvio por rede ruim não vira pedido duplicado. Nasce na abertura
-// da gaveta e é renovado depois de cada envio.
+// da gaveta e só é renovado quando a mensagem muda: clicar de novo no mesmo
+// pedido (o WhatsApp não abriu, por exemplo) não cria outro no painel.
 var idEnvio = null;
 function novoIdEnvio(){
   try { if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); } catch(e){}
@@ -752,12 +759,12 @@ btnEnviar.addEventListener("click", function(){
   // Clique duplo abria duas conversas com o mesmo pedido. Só a mesma
   // mensagem em menos de 2s é barrada; performance.now não volta com o relógio.
   if (msg === ultimoEnvio.msg && performance.now() - ultimoEnvio.em < 2000) return;
+  if (ultimoEnvio.msg && msg !== ultimoEnvio.msg) idEnvio = novoIdEnvio();   // pedido diferente, id novo
   ultimoEnvio = { msg:msg, em:performance.now() };
   // Grava o pedido sem esperar: o WhatsApp abre no mesmo clique e não
   // depende do servidor. Nunca vai total; quem calcula é o servidor.
   gravarPedido(pt);
   window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
-  idEnvio = novoIdEnvio();
 });
 function gravarPedido(pt){
   try {

@@ -1,4 +1,4 @@
-DONO_EMAIL=brenojulianom@gmail.com
+DONO_EMAIL=
 # Produção: o painel só aceita o JWT do Cloudflare Access (cabeçalho Cf-Access-Jwt-Assertion).
 # ACCESS_EQUIPE é o nome do time (o que vem antes de .cloudflareaccess.com).
 # ACCESS_AUD é o "Application Audience (AUD) Tag" da aplicação no Access.

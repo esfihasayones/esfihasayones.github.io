@@ -54,3 +54,13 @@ test("robots e sitemap apontam pro domínio novo", async () => {
   const mapa = await (await pedir("/sitemap.xml")).text();
   assert.match(mapa, /<loc>https:\/\/esfihas\.sayones\.com\.br\/<\/loc>/);
 });
+
+test("as respostas da API também levam nosniff, HSTS e no-store", async () => {
+  for (const c of ["/api/saude", "/api/agenda", "/api/cupom?codigo=PRIMEIRACOMPRA"]) {
+    const r = await pedir(c);
+    assert.equal(r.status, 200, c);
+    assert.equal(r.headers.get("x-content-type-options"), "nosniff", c);
+    assert.equal(r.headers.get("strict-transport-security"), "max-age=31536000", c);
+    assert.equal(r.headers.get("cache-control"), "no-store", c);
+  }
+});

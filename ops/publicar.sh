@@ -87,6 +87,8 @@ dizer "Rodando a suíte de navegador (Chromium${FILTRO:+, $FILTRO})"
 RESULTADO="$(node tests/rodar-playwright.cjs chromium "http://127.0.0.1:8792/tests/index.html$FILTRO")"
 echo "$RESULTADO" | head -c 1500; echo
 echo "$RESULTADO" | grep -qE '"pronto": true' || falhar "a suíte de navegador não terminou."
+TOTAL="$(echo "$RESULTADO" | grep -oE '"total": [0-9]+' | grep -oE '[0-9]+' | head -1)"
+[ -n "$TOTAL" ] && [ "$TOTAL" -ge 10 ] || falhar "a suíte de navegador rodou só ${TOTAL:-0} testes; o filtro ($FILTRO) está errado?"
 FALHOU="$(echo "$RESULTADO" | grep -oE '"falhou": [0-9]+' | grep -oE '[0-9]+' | head -1)"
 [ -n "$FALHOU" ] || falhar "não consegui ler o resultado da suíte de navegador."
 [ "$FALHOU" -eq 0 ] || falhar "a suíte de navegador teve $FALHOU falha(s)."
@@ -106,4 +108,11 @@ $WRANGLER d1 migrations apply esfihas-pedidos --remote
 dizer "Publicando no Cloudflare Pages (ramo ${RAMO:-main})"
 $WRANGLER pages deploy public --project-name esfihas-sayones --branch "${RAMO:-main}" --commit-dirty=false
 
-dizer "Publicado. Confira https://esfihas-sayones.pages.dev/api/saude"
+dizer "Conferindo o site publicado"
+sleep 3
+SAUDE="$(curl -s -m 15 https://esfihas.sayones.com.br/api/saude || true)"
+echo "saude: ${SAUDE:-sem resposta}"
+CACHE_JS="$(curl -sI -m 15 https://esfihas.sayones.com.br/app.js | tr -d '\r' | grep -i '^cache-control' || true)"
+echo "app.js: ${CACHE_JS:-sem cache-control}"
+case "$CACHE_JS" in *no-cache*) ;; *) echo "AVISO: o app.js não saiu com no-cache. No Cloudflare, sayones.com.br, Caching, Configuration, Browser Cache TTL tem que ser 'Respect Existing Headers' (passo 10 de ops/PASSOS-NO-PAINEL.md)." ;; esac
+dizer "Publicado. Confira https://esfihas.sayones.com.br"

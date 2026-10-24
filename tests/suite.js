@@ -986,14 +986,18 @@
     });
   });
 
-  teste("Gravação", "o id do envio muda depois de um envio", function (c) {
+  teste("Gravação", "reenviar o mesmo pedido repete o id; pedido diferente ganha id novo", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
     c.el("#fNome").value = "Breno";
     var a = JSON.parse(postsDe(enviarEspiando(c))[0].opcoes.body).id_envio;
     return c.dormir(2100).then(function () {
+      // o WhatsApp não abriu e o cliente clicou de novo: mesma mensagem, mesmo id, o servidor não duplica
       var b = JSON.parse(postsDe(enviarEspiando(c))[0].opcoes.body).id_envio;
-      ok(a !== b, "um segundo pedido não pode reaproveitar o id do primeiro");
+      igual(b, a, "reenvio do mesmo pedido tem que repetir o id");
+      c.definir("carne", 2);
+      var d = JSON.parse(postsDe(enviarEspiando(c))[0].opcoes.body).id_envio;
+      ok(d !== a, "pedido diferente não pode reaproveitar o id do anterior");
     });
   });
 

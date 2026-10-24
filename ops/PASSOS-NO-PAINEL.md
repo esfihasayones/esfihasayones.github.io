@@ -58,9 +58,11 @@ Como conferir: `curl -sI http://esfihas.sayones.com.br/` devolve 301 para `https
 
 ## 7. Limite de pedidos por IP e Web Analytics
 - Security, WAF, Rate limiting rules: no plano Free cabe uma regra só, com
-  janela de 10 segundos. Crie uma para o caminho `/api/pedidos` ou `/api/cupom`
-  (condições ligadas por "or"), contando por IP, e bloqueie acima de umas 10
-  requisições nessa janela. Duração do bloqueio e demais campos: conferir no
+  janela de 10 segundos. Crie uma para os caminhos `/api/pedidos`, `/api/cupom`,
+  `/api/agenda` e `/api/saude` (condições ligadas por "or"), contando por IP, e
+  bloqueie acima de umas 10 requisições nessa janela. (Feita em 23/10 só com
+  os dois primeiros; falta acrescentar `/api/agenda` e `/api/saude`, senão um
+  robô batendo neles gasta a cota de leitura do banco.) Duração do bloqueio e demais campos: conferir no
   painel, o plano Free limita as opções.
 - Analytics, Web Analytics, Add a site `esfihas.sayones.com.br`: copie o token
   e passe ao Claude para entrar no `index.html`.
@@ -75,3 +77,12 @@ Como conferir: `https://esfihasayones.github.io/qualquer` cai em `https://esfiha
 ## 9. Divulgação
 Troque o link do Instagram `@esfihasayones` e o QR da camiseta para
 `https://esfihas.sayones.com.br`. Os endereços antigos continuam redirecionando.
+
+## 10. Cache do navegador (achado da auditoria de 23/10)
+Caching, Configuration, Browser Cache TTL: escolha "Respect Existing Headers".
+Sem isso o Cloudflare manda `app.js` e `regras.js` com cache de 4 horas, por
+cima do `no-cache` do `_headers`, e quem já visitou fica até 4 horas com o
+site e o painel velhos depois de cada publicação (o `pages.dev` não tem o
+problema porque não passa pela zona).
+Como conferir: `curl -sI https://esfihas.sayones.com.br/app.js | grep -i cache-control`
+mostra `no-cache`. O `ops/publicar.sh` avisa no fim quando não mostra.

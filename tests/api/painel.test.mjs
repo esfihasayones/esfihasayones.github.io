@@ -171,17 +171,19 @@ test("cancelado sai da soma e continua na lista", async () => {
   assert.equal(grupo.length, 2);
 });
 
-test("próximos mostra os 7 dias seguintes só com confirmados", async () => {
+test("próximos lista só os dias com confirmado, sem teto de uma semana", async () => {
   zerar();
   const d = DIA();
   const a = await site(5);
   const b = await site(2);
   await patch(a, { status: "confirmado" });
+  const longe = isoBrasilia(Date.parse(d + "T12:00:00Z") + 12 * 86400000);
+  const m = await pedir("/api/painel/pedidos", json({ nome: "Longe", itens: [{ sabor: "carne", qtd: 4 }], ponto: "Centro", retirada: longe }));
+  assert.equal(m.status, 201);
   const antes = isoBrasilia(Date.parse(d + "T12:00:00Z") - 86400000);
   const j = await dia(antes);
-  assert.equal(j.proximos.length, 7);
-  assert.equal(j.proximos[0].dia, d);
-  assert.deepEqual([j.proximos[0].qtd, j.proximos[0].pedidos], [5, 1]);
+  assert.deepEqual(j.proximos.map((x) => x.dia), [d, longe]);
+  assert.deepEqual([j.proximos[0].qtd, j.proximos[0].pedidos, j.proximos[0].falta], [5, 1, 1]);
   assert.ok(b);
 });
 
@@ -259,7 +261,14 @@ test("confirmado sem data aparece em semData e sai ao marcar entregue", async ()
   await patch(outro, { status: "confirmado" });
   assert.deepEqual((await dia(DIA())).semData.map((p) => p.id), [id, outro]);
   await patch(id, { entregue: true });
-  assert.deepEqual((await dia(DIA())).semData.map((p) => p.id), [outro]);
+  j = await dia(DIA());
+  assert.deepEqual(j.semData.map((p) => p.id), [outro]);
+  // entregue em mãos: ganha a data de hoje e entra no dia e no histórico
+  const hoje = isoBrasilia(Date.now());
+  const noDia = achar(await dia(hoje), id);
+  assert.equal(noDia.retirada, hoje);
+  const h = await (await pedir("/api/painel/historico", comoDono())).json();
+  assert.ok(h.dias.some((x) => x.dia === hoje && x.pedidos >= 1), "entrou no histórico de hoje");
   await patch(outro, { status: "cancelado" });
   assert.deepEqual((await dia(DIA())).semData, []);
 });
@@ -338,4 +347,80 @@ test("histórico soma só confirmados com retirada até hoje, por dia, mês e to
   assert.equal(j.meses[1].embalagem, 2 * 210);
   assert.deepEqual(j.dias.map((d) => d.dia), ["2026-10-02", "2026-09-10"]);
   assert.equal(j.total.liquido, j.total.bruto - j.total.ingredientes - j.total.embalagem - j.total.taxa);
+});
+
+test("PATCH grava só o que mudou e não apaga o que outro clique acabou de gravar", async () => {
+  zerar();
+  const id = await site(4);
+  await patch(id, { status: "confirmado" });
+  // dois aparelhos leram o pedido com pago=0/entregue=0 e gravam quase juntos
+  const [a, b] = await Promise.all([patch(id, { pago: true, pagamento: "pix" }), patch(id, { entregue: true })]);
+  assert.equal(a.status, 200);
+  assert.equal(b.status, 200);
+  const p = achar(await dia(DIA()), id);
+  assert.equal(p.pago, true);
+  assert.equal(p.pagamento, "pix");
+  assert.equal(p.entregue, true);
+  // nome diferente mas total igual: o total não é reescrito
+  const antes = p.total_centavos;
+  assert.equal((await patch(id, { nome: "Outro nome" })).status, 200);
+  assert.equal(achar(await dia(DIA()), id).total_centavos, antes);
+});
+
+test("confirmar acima do limite do dia dá 409 e só passa com forcar", async () => {
+  zerar();
+  const d = DIA();
+  const agendaAntes = await (await pedir("/api/painel/agenda", comoDono())).json();
+  try {
+    assert.equal((await pedir("/api/painel/agenda", json({ limite: 10 }, "PUT"))).status, 200);
+    const a = await site(8);
+    assert.equal((await patch(a, { status: "confirmado" })).status, 200);
+    const b = await site(4);
+    const r = await patch(b, { status: "confirmado" });
+    assert.equal(r.status, 409);
+    const j = await r.json();
+    assert.equal(j.lotado, true);
+    assert.deepEqual([j.ocupado, j.limite], [8, 10]);
+    assert.notEqual(achar(await dia(d), b).status, "confirmado", "nada gravado");
+    assert.equal((await patch(b, { status: "confirmado", forcar: true })).status, 200);
+    assert.equal(achar(await dia(d), b).status, "confirmado");
+    // pedido manual no mesmo dia também avisa
+    const m = await pedir("/api/painel/pedidos", json({ nome: "M", itens: [{ sabor: "carne", qtd: 2 }], ponto: "Itacorubi", retirada: d }));
+    assert.equal(m.status, 409);
+    const mf = await pedir("/api/painel/pedidos", json({ nome: "M", itens: [{ sabor: "carne", qtd: 2 }], ponto: "Itacorubi", retirada: d, forcar: true }));
+    assert.equal(mf.status, 201);
+  } finally {
+    await pedir("/api/painel/agenda", json({ limite: agendaAntes.limite }, "PUT"));
+  }
+});
+
+test("escrita no painel recusa outra origem e corpo que não é JSON", async () => {
+  zerar();
+  const id = await site(2);
+  const corpo = JSON.stringify({ pago: true });
+  const r1 = await pedir("/api/painel/pedidos/" + id, comoDono({ method: "PATCH", body: corpo, headers: { "content-type": "application/json", "sec-fetch-site": "cross-site" } }));
+  assert.equal(r1.status, 403);
+  const r2 = await pedir("/api/painel/pedidos/" + id, comoDono({ method: "PATCH", body: corpo, headers: { "content-type": "application/json", origin: "https://outro.exemplo" } }));
+  assert.equal(r2.status, 403);
+  const r3 = await pedir("/api/painel/pedidos/" + id, comoDono({ method: "PATCH", body: corpo, headers: { "content-type": "text/plain" } }));
+  assert.equal(r3.status, 415);
+  assert.equal(achar(await dia(DIA()), id).pago, false, "nada foi gravado");
+  const ok = await pedir("/api/painel/pedidos/" + id, comoDono({ method: "PATCH", body: corpo, headers: { "content-type": "application/json", "sec-fetch-site": "same-origin" } }));
+  assert.equal(ok.status, 200);
+});
+
+test("caractere de controle e marca de direção saem do nome e da observação", async () => {
+  zerar();
+  const id = await site(2, { nome: "Ma\u202Eria\u0000 Silva", obs: "linha 1\nlinha 2\u2066" });
+  const p = achar(await dia(DIA()), id);
+  assert.equal(p.nome, "Maria Silva");
+  assert.equal(p.obs, "linha 1\nlinha 2");
+  assert.equal((await patch(id, { nome: "Jo\u0007ão" })).status, 200);
+  assert.equal(achar(await dia(DIA()), id).nome, "João");
+});
+
+test("valor_manual false junto com total_centavos é recusado", async () => {
+  zerar();
+  const id = await site(2);
+  assert.equal((await patch(id, { valor_manual: false, total_centavos: 100 })).status, 400);
 });

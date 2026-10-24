@@ -77,9 +77,11 @@
     var d = new Date(agoraMs);
     if (d.getHours() >= 18) d.setDate(d.getDate() + 1);
     for (; iso(d) < isoTxt; d.setDate(d.getDate() + 1)) {
-      if (d.getDay() !== 2 && d.getDay() !== 3) return "ok";
+      if (d.getDay() !== 2 && d.getDay() !== 3) break;
     }
-    return "producao";
+    if (iso(d) >= isoTxt) return "producao";
+    var teto = new Date(agoraMs); teto.setDate(teto.getDate() + 90);
+    return isoTxt > iso(teto) ? "longe" : "ok";
   }
   function primeiraData(pi, agoraMs, q) {
     var d = new Date(agoraMs);

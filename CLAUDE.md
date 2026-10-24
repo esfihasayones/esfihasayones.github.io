@@ -83,6 +83,51 @@ do dia, no Cloudflare (ver o spec). O pedido ainda abre o WhatsApp do mesmo
 jeito; a gravação no banco acontece antes e, se falhar, o pedido segue pelo
 WhatsApp. Pedidos combinados direto na conversa o dono lança à mão no painel.
 
+### Auditoria de 23/10/2026
+
+Três revisões independentes (backend e segurança, site público, painel e
+testes) mais a suíte completa. O que entrou, cada item com teste:
+
+- PATCH do painel grava só as colunas que mudaram (dois cliques quase juntos
+  em aparelhos diferentes não se desfazem). Confirmar ou lançar pedido num dia
+  acima do limite dá 409 `lotado`; o painel pergunta e repete com `forcar`.
+- Escrita em `/api/painel` exige mesma origem (`Sec-Fetch-Site`; `Origin` só
+  quando o navegador não mandou o outro) e `Content-Type: application/json`.
+- `functions/api/_middleware.js`: o `_headers` não vale pra resposta de
+  Function, então `/api/*` ganha nosniff, HSTS e `no-store` ali.
+- Caractere de controle e marca de direção saem de nome e observação
+  (`limpar` em `functions/_lib/pedido.js`).
+- `MAX_DIAS_RETIRADA = 90` (`longeDemais`): é a última regra, depois de
+  feriado, ponto, antecedência, produção e cupom, senão esconde o motivo real.
+- Pedido sem data entregue em mãos ganha `retirada = hoje` (entra no dia e no
+  histórico). Pendência com data passada continua visível. "Próximos dias"
+  lista todo dia futuro com pedido, não só uma semana.
+- Painel: editar só o nome não refaz o total nem barra por cupom que saiu do
+  ar (itens e cupom só vão no PATCH se mudaram); `?dia` só na URL quando não é
+  hoje, com botão "Voltar pra hoje"; histórico sem `null`, com "Meses" quando
+  há outro mês e a dica de custos vinda do servidor (`custos` no
+  `/api/painel/historico`); no celular Novos vem primeiro e os botões têm 44px.
+- Site: reenviar o mesmo pedido repete o `id_envio` (o servidor não duplica);
+  teto de 800 esfihas igual nos dois lados; "24h" com a ressalva de terça e
+  quarta; saiu o "menos de um minuto"; `apple-touch-icon.png`.
+- `ops/publicar.sh` recusa publicar se o filtro rodou menos de 10 testes e, no
+  fim, confere o `cache-control` do `app.js` publicado.
+
+**Pendente no painel do Cloudflare (dono):** Browser Cache TTL em "Respect
+Existing Headers" (a zona manda `app.js` e `regras.js` com 4 h de cache por
+cima do `no-cache`; passo 10 do `ops/PASSOS-NO-PAINEL.md`) e acrescentar
+`/api/agenda` e `/api/saude` na regra de rate limit.
+
+**Perguntas em aberto pro dono:** o topo diz "pré-assada" e o resto do site
+diz "montada e assada"; ele produz em feriado? (`temProducao` conta feriado
+como dia de produção); a de carne leva lactose mesmo? ("Todos os sabores
+contêm glúten e lactose").
+
+**Fora da lista, de propósito:** trocar a data sugerida ao mudar de ponto
+quando o cliente não mexeu nela (quebraria o oráculo da varredura); mover o
+sprite SVG pro fim do body; `financas` no GET do dia (o painel não lê, mas vai
+no mesmo lote).
+
 ### Pagamento (22/10/2026)
 
 Pix na chave dele e cartão na retirada pelo Tap do Mercado Pago (celular
