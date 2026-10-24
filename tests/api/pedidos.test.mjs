@@ -113,7 +113,9 @@ test("cupomDe normaliza", () => {
 });
 
 test("retirada a mais de 90 dias vira fora_da_regra com motivo longe", async () => {
-  const longe = new Date(Date.now() + 120 * 86400000).toISOString().slice(0, 10);
+  let dl = new Date(Date.now() + 120 * 86400000);
+  while ([0, 6].includes(dl.getUTCDay())) dl = new Date(dl.getTime() + 86400000);   // Itacorubi abre de segunda a sexta
+  const longe = dl.toISOString().slice(0, 10);
   const r = await pedir("/api/pedidos", { method: "POST", headers: { "content-type": "application/json" },
     body: JSON.stringify({ id_envio: randomUUID(), nome: "Longe", itens: [{ sabor: "carne", qtd: 4 }], ponto: 1, retirada: longe }) });
   assert.equal(r.status, 201);

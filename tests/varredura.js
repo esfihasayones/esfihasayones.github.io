@@ -67,8 +67,6 @@
   function diaSemana(isoTxt) { return new Date(isoTxt + "T12:00:00").getDay(); }
   // a retirada serve? "ok", "dia" ou "cedo"
   function situacao(pi, isoTxt, agoraMs, q) {
-    var teto = new Date(agoraMs); teto.setDate(teto.getDate() + 90);
-    if (isoTxt > iso(teto)) return "longe";
     if (FERIADOS.indexOf(isoTxt) !== -1) return "feriado";
     var j = PONTOS[pi].dias[diaSemana(isoTxt)];
     if (!j) return "dia";
@@ -79,9 +77,11 @@
     var d = new Date(agoraMs);
     if (d.getHours() >= 18) d.setDate(d.getDate() + 1);
     for (; iso(d) < isoTxt; d.setDate(d.getDate() + 1)) {
-      if (d.getDay() !== 2 && d.getDay() !== 3) return "ok";
+      if (d.getDay() !== 2 && d.getDay() !== 3) break;
     }
-    return "producao";
+    if (iso(d) >= isoTxt) return "producao";
+    var teto = new Date(agoraMs); teto.setDate(teto.getDate() + 90);
+    return isoTxt > iso(teto) ? "longe" : "ok";
   }
   function primeiraData(pi, agoraMs, q) {
     var d = new Date(agoraMs);

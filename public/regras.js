@@ -134,10 +134,15 @@ export function temProducao(dataIso, agoraMs){
 
 // "ok", "feriado", "dia" (o ponto não abre nesse dia), "lotado" ou "bloqueado"
 // (os dois vêm da agenda do servidor, em `bloqueados`: Map dia -> motivo),
-// "cedo" (falta antecedência), "producao" (não sobra dia de produção antes)
-// ou "longe" (mais de MAX_DIAS_RETIRADA dias à frente).
+// "cedo" (falta antecedência) ou "producao" (não sobra dia de produção antes).
+// "longe" é dado por longeDemais, por quem chama.
+// Mais de MAX_DIAS_RETIRADA dias à frente. Fica fora de situacaoData de
+// propósito: é a última regra, depois de ponto, feriado, antecedência e cupom.
+export function longeDemais(dataIso, agoraMs){
+  return dataIso > isoBrasilia(agoraMs + MAX_DIAS_RETIRADA * 86400000);
+}
+
 export function situacaoData(ponto, dataIso, qtd, agoraMs, bloqueados){
-  if (dataIso > isoBrasilia(agoraMs + MAX_DIAS_RETIRADA * 86400000)) return "longe";
   if (FERIADOS[dataIso]) return "feriado";
   if (ponto.dias.indexOf(diaDaData(dataIso)) === -1) return "dia";
   if (bloqueados && bloqueados.has(dataIso)) return bloqueados.get(dataIso);

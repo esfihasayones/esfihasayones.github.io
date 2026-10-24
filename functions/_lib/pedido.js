@@ -1,4 +1,4 @@
-import { PONTOS, SABORES, precoCentavos, situacaoData, diaDaData, janelaDe } from "../../public/regras.js";
+import { PONTOS, SABORES, precoCentavos, situacaoData, longeDemais, diaDaData, janelaDe } from "../../public/regras.js";
 import { cupomDe } from "./cupons.js";
 
 export const texto = (v, max, min) => typeof v === "string" && v.trim().length >= (min || 0) && v.length <= max;
@@ -99,6 +99,7 @@ export function avaliar(corpo, agoraMs, agenda) {
     if (sit !== "ok") motivo = sit;
     else if (fixo && (agenda.ocupado.get(corpo.retirada) || 0) + qtd > agenda.limite) motivo = "lotado";
     else if (corpo.cupom && !preco.cupomValido) motivo = "cupom";
+    else if (fixo && longeDemais(corpo.retirada, agoraMs)) motivo = "longe";
   }
 
   const status = motivo ? "fora_da_regra" : "aguardando";

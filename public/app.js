@@ -1,4 +1,4 @@
-import { MAX_DIAS_RETIRADA,
+import { MAX_DIAS_RETIRADA, longeDemais,
   WHATSAPP, ANTECEDENCIA_H, PEDIDO_GRANDE, ANTECEDENCIA_GRANDE_H, FERIADOS, PONTOS, NOMES_DIA, SABORES, FAIXAS,
   faixaDe, isoBrasilia, diaDaData, janelaDe, proximaData,
   horasAntecedencia as horasAntecedenciaDe, situacaoData as situacaoDataDe
@@ -242,7 +242,10 @@ var agenda = { pausado:false, bloqueados:new Map() };
 var dataMexida = false;   // true quando a pessoa escolheu a data
 var AVISO_PAUSA = "Os pedidos estão pausados por enquanto. Fala com a gente no WhatsApp.";
 
-function situacaoData(pt, valor){ return situacaoDataDe(pt, valor, totalQtd(), Date.now(), agenda.bloqueados); }
+function situacaoData(pt, valor){
+  var s = situacaoDataDe(pt, valor, totalQtd(), Date.now(), agenda.bloqueados);
+  return s === "ok" && longeDemais(valor, Date.now()) ? "longe" : s;
+}
 
 // Primeira data em que o ponto abre, que respeita a antecedência e que não
 // está lotada nem bloqueada.

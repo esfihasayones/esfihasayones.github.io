@@ -62,7 +62,8 @@ export function criarMiddleware({ buscar = (u) => fetch(u), agora = () => Date.n
     if (request.method !== "GET" && request.method !== "HEAD") {
       const sfs = request.headers.get("Sec-Fetch-Site");
       const origem = request.headers.get("Origin");
-      if ((sfs && sfs !== "same-origin" && sfs !== "none") || (origem && origem !== url.origin)) {
+      const outraOrigem = sfs ? (sfs !== "same-origin" && sfs !== "none") : (!!origem && origem !== url.origin);
+      if (outraOrigem) {
         return Response.json({ erro: "origem recusada" }, { status: 403, headers: cabecalhos });
       }
       if (!(request.headers.get("Content-Type") || "").toLowerCase().startsWith("application/json")) {
