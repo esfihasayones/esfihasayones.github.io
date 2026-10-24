@@ -27,7 +27,12 @@ function carregadorDeChaves(buscar) {
   };
 }
 
-// Confere o JWT do Access: assinatura RS256, aud, exp e e-mail do dono.
+// Quem entra no painel: os e-mails de DONO_EMAIL, separados por vírgula (o
+// dono e quem ele liberar, como quem entrega). Cada um também precisa estar
+// na política do Access, senão nem chega ao login.
+const emailsLiberados = (env) => String(env.DONO_EMAIL || "").toLowerCase().split(/[,;\s]+/).filter(Boolean);
+
+// Confere o JWT do Access: assinatura RS256, aud, exp e e-mail liberado.
 async function tokenValido(token, env, chaves, agora) {
   const partes = token.split(".");
   if (partes.length !== 3) return false;
@@ -42,10 +47,10 @@ async function tokenValido(token, env, chaves, agora) {
   const aud = Array.isArray(c.aud) ? c.aud : [c.aud];
   if (!aud.includes(env.ACCESS_AUD)) return false;
   if (typeof c.exp !== "number" || c.exp * 1000 <= agora) return false;
-  return typeof c.email === "string" && c.email.trim().toLowerCase() === String(env.DONO_EMAIL).trim().toLowerCase();
+  return typeof c.email === "string" && emailsLiberados(env).includes(c.email.trim().toLowerCase());
 }
 
-// Só o dono entra. Em produção o Cloudflare Access faz o login e manda um
+// Só quem está em DONO_EMAIL entra. Em produção o Cloudflare Access faz o login e manda um
 // JWT assinado, que é conferido aqui (um cabeçalho de e-mail sozinho seria
 // falsificável em hostname sem Access, como o *.pages.dev).
 // DEV_SEM_LOGIN=1 existe só pra desenvolvimento local.

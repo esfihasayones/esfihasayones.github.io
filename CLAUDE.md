@@ -59,9 +59,11 @@ com pedidos no banco D1 e painel do dia em `/painel` (design em
 `ops/publicar.sh` (o push no GitHub não publica mais nada).
 
 Feito em 23/10/2026: domínio no Pages (Custom domains); Access (equipe
-`wild-hill-d83e`, política "Dono" só com o e-mail dele, protegendo `/painel`
+`wild-hill-d83e`, política "Dono" com os e-mails liberados, protegendo `/painel`
 e `/api/painel` nos dois domínios e as prévias `*.esfihas-sayones.pages.dev`);
-`ACCESS_EQUIPE` e `ACCESS_AUD` gravados; SSL em Full (strict), Always Use
+`ACCESS_EQUIPE` e `ACCESS_AUD` gravados; `DONO_EMAIL` aceita lista separada
+por vírgula desde 24/10/2026, e cada e-mail precisa estar nos dois lugares
+(política do Access e segredo); SSL em Full (strict), Always Use
 HTTPS; regra de limite "Limite pedidos" (10 por 10 s por IP em `/api/pedidos`
 e `/api/cupom`, bloqueio de 10 s); Web Analytics automático na zona
 `sayones.com.br`. `sayones.com.br` e `www` ficam sem nada: o dono guardou o

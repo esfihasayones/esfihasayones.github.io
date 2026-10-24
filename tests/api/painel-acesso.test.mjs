@@ -61,6 +61,15 @@ test("aud errada dá 403", async () => nega(await chamar(await token(chaveBoa.pr
 
 test("outro e-mail dá 403", async () => nega(await chamar(await token(chaveBoa.privateKey, claimsOk({ email: "intruso@example.com" })))));
 
+test("DONO_EMAIL aceita mais de um e-mail, separados por vírgula", async () => {
+  const env = { ...ENV, DONO_EMAIL: " brenojulianom@gmail.com, Agatha@example.com ;" };
+  assert.equal((await chamar(await token(chaveBoa.privateKey, claimsOk()), env)).passou, true);
+  assert.equal((await chamar(await token(chaveBoa.privateKey, claimsOk({ email: "agatha@example.com" })), env)).passou, true);
+  await nega(await chamar(await token(chaveBoa.privateKey, claimsOk({ email: "intruso@example.com" })), env));
+  await nega(await chamar(await token(chaveBoa.privateKey, claimsOk({ email: "" })), env));
+  await nega(await chamar(await token(chaveBoa.privateKey, claimsOk({ email: " " })), env));
+});
+
 test("kid desconhecido, lixo e alg diferente dão 403", async () => {
   await nega(await chamar(await token(chaveBoa.privateKey, claimsOk(), "outro")));
   await nega(await chamar("lixo"));
@@ -75,7 +84,7 @@ test("o cabeçalho de e-mail sozinho não vale", async () => {
 
 test("falta de configuração nega, mesmo com token bom", async () => {
   const t = await token(chaveBoa.privateKey, claimsOk());
-  for (const env of [{ ...ENV, DONO_EMAIL: "" }, { ...ENV, ACCESS_EQUIPE: undefined }, { ...ENV, ACCESS_AUD: "" }, {}]) {
+  for (const env of [{ ...ENV, DONO_EMAIL: "" }, { ...ENV, DONO_EMAIL: " , ; " }, { ...ENV, ACCESS_EQUIPE: undefined }, { ...ENV, ACCESS_AUD: "" }, {}]) {
     await nega(await chamar(t, env));
   }
 });

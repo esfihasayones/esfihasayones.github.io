@@ -18,7 +18,9 @@ hostnames, cadastre cinco caminhos:
 - `esfihas-sayones.pages.dev` com path `api/painel`
 - `*.esfihas-sayones.pages.dev` (as versões de teste) sem path
 
-Política: Allow, Include, Emails, `brenojulianom@gmail.com`.
+Política: Allow, Include, Emails, `brenojulianom@gmail.com`. Pra liberar mais
+alguém (quem entrega, por exemplo), acrescente o e-mail aqui e também em
+`DONO_EMAIL` (passo 4); um sem o outro não entra.
 Como conferir: numa janela anônima, `/painel/` pede o login por e-mail.
 
 ## 3. Copiar o nome da equipe e o AUD
@@ -36,7 +38,9 @@ npx --yes wrangler@4.152.0 pages secret put ACCESS_EQUIPE --project-name esfihas
 npx --yes wrangler@4.152.0 pages secret put ACCESS_AUD --project-name esfihas-sayones
 ```
 
-`DONO_EMAIL` é `brenojulianom@gmail.com`. Nunca crie `DEV_SEM_LOGIN` no projeto.
+`DONO_EMAIL` é `brenojulianom@gmail.com`; mais de um e-mail vai separado por
+vírgula (`brenojulianom@gmail.com,outro@exemplo.com`). Nunca crie
+`DEV_SEM_LOGIN` no projeto.
 Depois publique de novo (`ops/publicar.sh`) para os segredos valerem.
 Como conferir: entrar em `/painel/` pelo login e ver a lista de pedidos; `curl -i https://esfihas.sayones.com.br/api/painel/pedidos` sem login não devolve 200.
 
