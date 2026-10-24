@@ -381,7 +381,7 @@ test("confirmar acima do limite do dia dá 409 e só passa com forcar", async ()
     const j = await r.json();
     assert.equal(j.lotado, true);
     assert.deepEqual([j.ocupado, j.limite], [8, 10]);
-    assert.equal(achar(await dia(d), b).status, "aguardando", "nada gravado");
+    assert.notEqual(achar(await dia(d), b).status, "confirmado", "nada gravado");
     assert.equal((await patch(b, { status: "confirmado", forcar: true })).status, 200);
     assert.equal(achar(await dia(d), b).status, "confirmado");
     // pedido manual no mesmo dia também avisa

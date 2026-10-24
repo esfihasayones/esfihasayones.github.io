@@ -137,10 +137,10 @@ export function temProducao(dataIso, agoraMs){
 // "cedo" (falta antecedência), "producao" (não sobra dia de produção antes)
 // ou "longe" (mais de MAX_DIAS_RETIRADA dias à frente).
 export function situacaoData(ponto, dataIso, qtd, agoraMs, bloqueados){
+  if (dataIso > isoBrasilia(agoraMs + MAX_DIAS_RETIRADA * 86400000)) return "longe";
   if (FERIADOS[dataIso]) return "feriado";
   if (ponto.dias.indexOf(diaDaData(dataIso)) === -1) return "dia";
   if (bloqueados && bloqueados.has(dataIso)) return bloqueados.get(dataIso);
-  if (dataIso > isoBrasilia(agoraMs + MAX_DIAS_RETIRADA * 86400000)) return "longe";
   const limite = agoraMs + horasAntecedencia(qtd) * 3600 * 1000;
   if (inicioRetirada(ponto, dataIso).getTime() < limite) return "cedo";
   return temProducao(dataIso, agoraMs) ? "ok" : "producao";

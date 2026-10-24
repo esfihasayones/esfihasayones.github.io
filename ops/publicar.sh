@@ -108,4 +108,11 @@ $WRANGLER d1 migrations apply esfihas-pedidos --remote
 dizer "Publicando no Cloudflare Pages (ramo ${RAMO:-main})"
 $WRANGLER pages deploy public --project-name esfihas-sayones --branch "${RAMO:-main}" --commit-dirty=false
 
-dizer "Publicado. Confira https://esfihas-sayones.pages.dev/api/saude"
+dizer "Conferindo o site publicado"
+sleep 3
+SAUDE="$(curl -s -m 15 https://esfihas.sayones.com.br/api/saude || true)"
+echo "saude: ${SAUDE:-sem resposta}"
+CACHE_JS="$(curl -sI -m 15 https://esfihas.sayones.com.br/app.js | tr -d '\r' | grep -i '^cache-control' || true)"
+echo "app.js: ${CACHE_JS:-sem cache-control}"
+case "$CACHE_JS" in *no-cache*) ;; *) echo "AVISO: o app.js não saiu com no-cache. No Cloudflare, sayones.com.br, Caching, Configuration, Browser Cache TTL tem que ser 'Respect Existing Headers' (passo 10 de ops/PASSOS-NO-PAINEL.md)." ;; esac
+dizer "Publicado. Confira https://esfihas.sayones.com.br"

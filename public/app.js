@@ -189,7 +189,7 @@ FAIXAS.slice().reverse().forEach(function(f){
     '<div class="qtd">'+f.nome+'</div>' +
     '<div class="un"><sup>R$</sup>'+valor.toFixed(2).replace(".",",")+'</div>' +
     '<div class="un-lbl">' +
-      (combo ? f.min+' esfihas · '+brl(f.preco)+' cada' : 'por esfiha, até 3 unidades') +
+      (combo ? f.min+' esfihas · '+brl(f.preco)+' cada' : 'por esfiha, até '+(FAIXAS[FAIXAS.length-2].min-1)+' unidades') +
     '</div>' +
     (eco > 0 ? '<span class="eco">'+eco+'% de desconto</span>'
              : '<span class="eco">preço cheio</span>');
@@ -609,7 +609,8 @@ linhas.addEventListener("focusout", function(ev){
 /* ---------- gaveta ---------- */
 // Identifica este envio. O servidor ignora o segundo POST com o mesmo id,
 // então um reenvio por rede ruim não vira pedido duplicado. Nasce na abertura
-// da gaveta e é renovado depois de cada envio.
+// da gaveta e só é renovado quando a mensagem muda: clicar de novo no mesmo
+// pedido (o WhatsApp não abriu, por exemplo) não cria outro no painel.
 var idEnvio = null;
 function novoIdEnvio(){
   try { if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); } catch(e){}
@@ -755,12 +756,12 @@ btnEnviar.addEventListener("click", function(){
   // Clique duplo abria duas conversas com o mesmo pedido. Só a mesma
   // mensagem em menos de 2s é barrada; performance.now não volta com o relógio.
   if (msg === ultimoEnvio.msg && performance.now() - ultimoEnvio.em < 2000) return;
+  if (ultimoEnvio.msg && msg !== ultimoEnvio.msg) idEnvio = novoIdEnvio();   // pedido diferente, id novo
   ultimoEnvio = { msg:msg, em:performance.now() };
   // Grava o pedido sem esperar: o WhatsApp abre no mesmo clique e não
   // depende do servidor. Nunca vai total; quem calcula é o servidor.
   gravarPedido(pt);
   window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
-  idEnvio = novoIdEnvio();
 });
 function gravarPedido(pt){
   try {

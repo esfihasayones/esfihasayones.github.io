@@ -67,13 +67,13 @@
   function diaSemana(isoTxt) { return new Date(isoTxt + "T12:00:00").getDay(); }
   // a retirada serve? "ok", "dia" ou "cedo"
   function situacao(pi, isoTxt, agoraMs, q) {
+    var teto = new Date(agoraMs); teto.setDate(teto.getDate() + 90);
+    if (isoTxt > iso(teto)) return "longe";
     if (FERIADOS.indexOf(isoTxt) !== -1) return "feriado";
     var j = PONTOS[pi].dias[diaSemana(isoTxt)];
     if (!j) return "dia";
     var p = isoTxt.split("-");
     var inicio = new Date(+p[0], +p[1] - 1, +p[2], j.h, j.m).getTime();
-    var teto = new Date(agoraMs); teto.setDate(teto.getDate() + 90);
-    if (isoTxt > iso(teto)) return "longe";
     if (inicio < agoraMs + antecedenciaH(q) * 3600e3) return "cedo";
     // produção: não tem terça nem quarta; pedido a partir das 18h só entra no dia seguinte
     var d = new Date(agoraMs);
