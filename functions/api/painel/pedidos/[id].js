@@ -21,7 +21,7 @@ export async function onRequestPatch({ request, env, params }) {
 
   // Confirmar num dia que já passou do limite: avisa, e só grava com `forcar`.
   if (l.status === "confirmado" && atual.status !== "confirmado" && l.retirada && c.forcar !== true) {
-    const a = await lerAgenda(env.DB, l.retirada, l.retirada);
+    const a = await lerAgenda(env.DB, l.retirada, l.retirada, atual.id);
     const ocupado = a.ocupado.get(l.retirada) || 0;
     if (ocupado + l.qtd > a.limite) {
       return resposta({ erro: `Esse dia já tem ${ocupado} esfihas e o limite é ${a.limite}; com este pedido vai a ${ocupado + l.qtd}.`,

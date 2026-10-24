@@ -130,6 +130,16 @@ quando o cliente não mexeu nela (quebraria o oráculo da varredura); mover o
 sprite SVG pro fim do body; `financas` no GET do dia (o painel não lê, mas vai
 no mesmo lote).
 
+### Limite por dia (24/10/2026)
+
+Limite de 48 esfihas por dia, gravado pelo dono no painel (Ajustes). O site
+recusa sozinho o pedido que não cabe: pedido aguardando também ocupa vaga
+(cancelar devolve), `/api/agenda?qtd=N` diz quais dias não cabem um pedido
+de N e o site reconsulta quando a quantidade muda, antes de abrir o WhatsApp.
+A mensagem diz o próximo dia com vaga. Pedido maior que o limite só aparece
+lotado em dia que já tem pedido; nos outros, cai como `fora_da_regra` e o
+dono conversa.
+
 ### Pagamento (22/10/2026)
 
 Pix na chave dele e cartão na retirada pelo Tap do Mercado Pago (celular

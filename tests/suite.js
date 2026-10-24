@@ -399,7 +399,10 @@
     c.definir("calabresa", 4);
     c.abrirGaveta();
     c.el("#fNome").value = "Breno";
+    // O último dia que já passou em que a Trindade abre (segunda a quinta):
+    // "ontem" puro caía na sexta ou no domingo e o aviso era de dia fechado.
     var ontem = new Date(Date.now() - 86400000);
+    while ([1, 2, 3, 4].indexOf(new Date(c.iso(ontem) + "T12:00:00").getDay()) === -1) ontem = new Date(ontem.getTime() - 86400000);
     c.el("#fData").value = c.iso(ontem);
     igual(c.enviar(), null, "não deveria aceitar data no passado");
     contem(c.texto("#aviso"), "antecedência");
@@ -1039,12 +1042,50 @@
       igual(c.el("#fData").value, "2026-10-26", "a data sugerida não pode ser a lotada");
       escolherData(c, "2026-10-23");
       var dica = c.texto("#dicaData");
-      contem(dica, "Esse dia já está cheio.");
-      contem(dica, "A mais próxima no Itacorubi é segunda, 26/10/2026.");
+      igual(dica, "Esse dia já está cheio, chegamos no limite de produção. Peça pra segunda, 26/10/2026, que ainda tem vaga no Itacorubi.");
       c.el("#fNome").value = "Breno";
       igual(c.enviar(), null, "dia lotado não pode enviar");
       ok(c.el("#aviso").classList.contains("on"), "o aviso deveria aparecer");
-      contem(c.texto("#aviso"), "Esse dia já está cheio.");
+      contem(c.texto("#aviso"), "limite de produção");
+    });
+  });
+
+  teste("Agenda", "pedido que não cabe no dia é recusado antes de abrir o WhatsApp", function (c) {
+    // Sexta 23/10 tem vaga pra 4 e não pra 8: a agenda falsa responde
+    // conforme o qtd da consulta, como o servidor faz.
+    var consultas = [];
+    c.win.Date.now = function () { return new c.win.Date("2026-10-21T10:00:00").getTime(); };
+    var anterior = c.win.fetch;
+    c.win.fetch = function (url, opcoes) {
+      var u = String(url);
+      if (u.indexOf("/api/agenda") !== -1) {
+        var qtd = +(/qtd=(\d+)/.exec(u) || [0, 1])[1];
+        consultas.push(qtd);
+        var ind = qtd > 4 ? { "2026-10-23": "lotado" } : {};
+        return Promise.resolve(new c.win.Response(JSON.stringify({ pausado: false, indisponiveis: ind }), { status: 200 }));
+      }
+      return anterior(url, opcoes);
+    };
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    return c.dormir(60).then(function () {
+      var ponto = c.el("#fPonto");
+      ponto.value = "1";   // Itacorubi
+      ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
+      escolherData(c, "2026-10-23");
+      c.el("#fNome").value = "Breno";
+      igual(consultas[consultas.length - 1], 4, "a consulta leva o tamanho do pedido");
+      igual(c.texto("#dicaData").indexOf("cheio"), -1, "com 4 o dia ainda tem vaga");
+      c.definir("calabresa", 8);
+      return c.esperar(function () { return consultas[consultas.length - 1] === 8 && c.texto("#dicaData").indexOf("cheio") !== -1; }, 3000);
+    }).then(function () {
+      igual(c.el("#fData").value, "2026-10-23", "a data que a pessoa escolheu não muda sozinha");
+      igual(c.enviar(), null, "8 esfihas não cabem, o WhatsApp não pode abrir");
+      igual(c.texto("#aviso"), "Esse dia já está cheio, chegamos no limite de produção. Peça pra segunda, 26/10/2026, que ainda tem vaga no Itacorubi.");
+      c.definir("calabresa", 4);
+      return c.esperar(function () { return consultas[consultas.length - 1] === 4 && c.texto("#dicaData").indexOf("cheio") === -1; }, 3000);
+    }).then(function () {
+      ok(c.enviar() !== null, "voltando pra 4, o pedido cabe e envia");
     });
   });
 

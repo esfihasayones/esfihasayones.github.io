@@ -256,12 +256,21 @@ function mostrarPausa(){
   aviso.textContent = AVISO_PAUSA;
   aviso.classList.add("on");
 }
+// A agenda vem pro tamanho do pedido: um dia com 40 de 48 aceita 8 e recusa
+// 12. Mudou a quantidade com a gaveta aberta, pergunta de novo (com uma
+// pausa curta, pra não consultar a cada clique no +). Resposta atrasada de
+// uma quantidade antiga é descartada.
+var qtdAgenda = null, consultaAgenda = 0, esperaAgenda = null;
 function carregarAgenda(){
+  clearTimeout(esperaAgenda);
+  var qtd = Math.max(1, totalQtd()), minha = ++consultaAgenda;
+  qtdAgenda = qtd;
   var p;
-  try { p = fetch("/api/agenda", { cache:"no-store" }); } catch(e){ return; }
+  try { p = fetch("/api/agenda?qtd=" + qtd, { cache:"no-store" }); } catch(e){ return; }
   if (!p || !p.then) return;
   p.then(function(r){ return r.ok ? r.json() : Promise.reject(); })
    .then(function(j){
+     if (minha !== consultaAgenda) return;
      var m = new Map();
      var ind = (j && j.indisponiveis) || {};
      Object.keys(ind).forEach(function(d){ if (ind[d] === "lotado" || ind[d] === "bloqueado") m.set(d, ind[d]); });
@@ -275,6 +284,11 @@ function carregarAgenda(){
    })
    .catch(function(){});
 }
+function revisarAgenda(){
+  if (!gaveta.classList.contains("aberta") || Math.max(1, totalQtd()) === qtdAgenda) return;
+  clearTimeout(esperaAgenda);
+  esperaAgenda = setTimeout(carregarAgenda, 300);
+}
 
 function comDia(valor){ return NOMES_DIA[diaDaData(valor)] + ", " + dataBR(valor); }
 
@@ -284,7 +298,8 @@ function textoData(pt, valor){
     return "Dia " + dataBR(valor) + " é feriado (" + FERIADOS[valor] + ") e não tem retirada. " +
            "A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
   if (sit === "lotado")
-    return "Esse dia já está cheio. A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
+    return "Esse dia já está cheio, chegamos no limite de produção. Peça pra " + comDia(proximaDataDe(pt)) +
+           ", que ainda tem vaga " + pt.prep + " " + pt.nome + ".";
   if (sit === "bloqueado")
     return "Nesse dia não tem retirada. A mais próxima " + pt.prep + " " + pt.nome + " é " + comDia(proximaDataDe(pt)) + ".";
   if (sit === "dia")
@@ -337,6 +352,7 @@ atualizarDica();
 
 /* ---------- render ---------- */
 function render(){
+  revisarAgenda();
   var q = totalQtd();
   var f = faixaDe(q);
   var bruto = q * f.preco;              // com o combo, antes do cupom

@@ -23,17 +23,55 @@ const confirmar = async (id) => assert.equal((await pedir("/api/painel/pedidos/"
   method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ status: "confirmado" }),
 })).status, 200);
 
-test("pedido aguardando não ocupa vaga: só o confirmado conta", async () => {
+const agendaPara = async (qtd) => (await pedir("/api/agenda?qtd=" + qtd)).json();
+const cancelar = async (id) => assert.equal((await pedir("/api/painel/pedidos/" + id, {
+  method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ status: "cancelado" }),
+})).status, 200);
+
+test("pedido aguardando já ocupa vaga: o terceiro de 40 não entra", async () => {
   zerar();
   const d = DIA();
   const a = await (await enviar(corpo(40, d))).json();
   const b = await (await enviar(corpo(40, d))).json();
-  assert.equal((await (await enviar(corpo(40, d))).json()).status, "aguardando");   // 120 aguardando e ainda cabe
-  assert.equal((await agenda()).indisponiveis[d], undefined);
-  await confirmar(a.id);
+  assert.equal(a.status, "aguardando");
+  assert.equal(b.status, "aguardando");
+  assert.equal((await agenda()).indisponiveis[d], "lotado");   // 80 aguardando, limite 80
+  const c = await (await enviar(corpo(40, d))).json();
+  assert.equal(c.status, "fora_da_regra");
+  const m = JSON.parse(wrangler(`SELECT motivo FROM pedidos WHERE id = ${c.id}`, true));
+  assert.equal(m[0].results[0].motivo, "lotado");
+});
+
+test("confirmar um pedido que já ocupava a vaga não conta ele duas vezes", async () => {
+  zerar();
+  const d = DIA();
+  const a = await (await enviar(corpo(40, d))).json();
+  const b = await (await enviar(corpo(40, d))).json();
+  await confirmar(a.id);   // 80 com ele mesmo; se contasse duas vezes daria 120 e 409
   await confirmar(b.id);
-  assert.equal((await agenda()).indisponiveis[d], "lotado");   // 80 confirmados
-  assert.equal((await (await enviar(corpo(1, d))).json()).status, "fora_da_regra");
+});
+
+test("agenda com qtd diz se o pedido daquele tamanho cabe no dia", async () => {
+  zerar();
+  const d = DIA();
+  await enviar(corpo(40, d));
+  assert.equal((await agendaPara(40)).indisponiveis[d], undefined);   // 40 + 40 = 80 cabe
+  assert.equal((await agendaPara(41)).indisponiveis[d], "lotado");
+  assert.equal((await agenda()).indisponiveis[d], undefined);         // sem qtd vale 1
+  assert.equal((await agendaPara("lixo")).indisponiveis[d], undefined);
+  assert.equal((await agendaPara(-5)).indisponiveis[d], undefined);   // vira 1
+  assert.equal((await agendaPara(99999)).indisponiveis[d], "lotado"); // vira 800
+});
+
+test("cancelar devolve a vaga", async () => {
+  zerar();
+  const d = DIA();
+  const a = await (await enviar(corpo(40, d))).json();
+  await enviar(corpo(40, d));
+  assert.equal((await agenda()).indisponiveis[d], "lotado");
+  await cancelar(a.id);
+  assert.equal((await agenda()).indisponiveis[d], undefined);
+  assert.equal((await (await enviar(corpo(40, d))).json()).status, "aguardando");
 });
 
 test("dia passa de 80 e o próximo pedido vira lotado", async () => {
