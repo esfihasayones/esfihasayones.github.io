@@ -256,7 +256,7 @@ test("confirmado sem data aparece em semData e sai ao marcar entregue", async ()
   j = await dia(DIA());
   assert.ok(!j.pendencias.some((p) => p.id === id));
   assert.deepEqual(j.semData.map((p) => p.id), [id]);
-  assert.equal(j.semData[0].ponto, "Combinar outro ponto");
+  assert.equal(j.semData[0].ponto, "Combinar outro ponto de entrega");
   const outro = await site(2, { ponto: 4, retirada: null });
   await patch(outro, { status: "confirmado" });
   assert.deepEqual((await dia(DIA())).semData.map((p) => p.id), [id, outro]);

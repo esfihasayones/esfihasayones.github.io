@@ -643,7 +643,7 @@
     c.el("#fNome").value = "Breno";
     var msg = c.enviar();
     ok(msg, "deveria enviar mesmo sem data");
-    contem(msg, "Combinar ponto e horário");
+    contem(msg, "Combinar ponto de entrega e horário");
   });
 
   teste("Retirada", "a concordância do texto acompanha o ponto", function (c) {

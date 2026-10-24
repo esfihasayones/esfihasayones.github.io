@@ -41,7 +41,7 @@
     { nome: "Centro", dias: {
         1: janela(19, 0, "das 19h às 21h"), 2: janela(19, 0, "das 19h às 21h"),
         3: janela(19, 0, "das 19h às 21h"), 4: janela(19, 0, "das 19h às 21h") } },
-    { nome: "Combinar outro ponto", dias: null }
+    { nome: "Combinar outro ponto de entrega", dias: null }
   ];
   var FERIADOS = ["2026-11-02", "2026-11-15", "2026-11-20", "2026-12-25", "2027-01-01",
                   "2027-03-23", "2027-03-26", "2027-04-21", "2027-05-01", "2027-09-07",

@@ -41,7 +41,7 @@ export const PONTOS = [
   { nome:"Itacorubi", prep:"no", dias:[1,2,3,4,5], diaNome:"segunda a sexta",  quando:"de segunda a sexta",  janela:"8h às 16h30" },
   { nome:"Abraão",    prep:"no", dias:[1,2,3,4,5], diaNome:"segunda a sexta",  quando:"de segunda a sexta",  janela:"9h às 12h" },
   { nome:"Centro",    prep:"no", dias:[1,2,3,4],   diaNome:"segunda a quinta", quando:"de segunda a quinta", janela:"19h às 21h" },
-  { nome:"Combinar outro ponto", dias:null }
+  { nome:"Combinar outro ponto de entrega", dias:null }
 ];
 
 export const NOMES_DIA = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];

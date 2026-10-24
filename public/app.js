@@ -311,7 +311,7 @@ function atualizarDica(){
   $("#campoData").hidden = pt.dias === null;
   if (pt.dias === null){
     el.hidden = false; el.className = "dica";
-    el.textContent = "A gente combina o ponto e o horário com você pelo WhatsApp.";
+    el.textContent = "A gente combina o ponto de entrega e o horário com você pelo WhatsApp.";
     return;
   }
   if (!fData.value){ el.hidden = true; return; }
@@ -739,7 +739,7 @@ btnEnviar.addEventListener("click", function(){
     .join("\n");
 
   var retiradaTxt = pt.dias === null
-    ? "Combinar ponto e horário"
+    ? "Combinar ponto de entrega e horário"
     : pt.nome + ", " + NOMES_DIA[diaDaData(fData.value)] + " " + dataBR(fData.value) + ", " + horarioTxt(pt, diaDaData(fData.value));
 
   var msg =
