@@ -74,7 +74,8 @@ O `ops/publicar.sh` às vezes não passa porque o Chromium da suíte cai por
 falta de memória na varredura aleatória; rodando grupo por grupo
 (`tests/index.html?grupo=Retirada` etc.) os outros 150 passam.
 
-Falta: lançar no painel os dois pedidos de 22/10 (na memória); repo público
+Falta: conferir se os dois pedidos de 22/10 já estão no painel (em 24/10 o
+banco tinha dois pedidos manuais, provavelmente eles); repo público
 `esfihasayones.github.io` só com o redirecionamento (`ops/redirecionamento/`);
 link do Instagram pro domínio novo.
 
@@ -139,6 +140,30 @@ de N e o site reconsulta quando a quantidade muda, antes de abrir o WhatsApp.
 A mensagem diz o próximo dia com vaga. Pedido maior que o limite só aparece
 lotado em dia que já tem pedido; nos outros, cai como `fora_da_regra` e o
 dono conversa.
+
+### Sessão de 24/10/2026
+
+- Painel liberado também pra Agatha (`agathagomes0903@gmail.com`): o e-mail
+  está na política "Dono" do Access e em `DONO_EMAIL`, que agora aceita lista
+  separada por vírgula. O login do Access só tinha "Cloudflare", que barra
+  quem não é membro da conta; foi ligado o One-time PIN (código por e-mail) em
+  Integrations, Identity providers. A aplicação "esfihas" aceita todos os
+  provedores, então não precisou mexer nela.
+- Limite de 48 por dia (seção acima) e o site passou a dizer "ponto de
+  entrega" em vez de "ponto" sozinho; a caixa "Como funciona a retirada" foi
+  reescrita em frases curtas.
+- `wrangler d1 execute --remote` dá erro 7403 com o login atual, mas
+  `d1 export` e `migrations apply` funcionam. Pra ler o banco de produção,
+  exporte pra pasta temporária e leia com sqlite3. A permissão do modo
+  automático barra `pages secret put` e o deploy: o dono roda com `!`.
+- Primeiro backup em `backups/2026-10-24.sql` (fora do git). Ele precisa
+  guardar uma cópia fora do computador.
+- Suíte completa passou no Chromium (184, com a varredura) e no Firefox (178);
+  API com 72.
+- Pendências do dia: lançar no painel o que faltar de 24/10 (o banco tinha 42
+  esfihas pro dia, ele disse que fez 48); marcar pago e entregue os pedidos da
+  Rita e do Thiago; confirmar o pedido da Luciana (15 esfihas, ponto de
+  entrega a combinar).
 
 ### Pagamento (22/10/2026)
 
