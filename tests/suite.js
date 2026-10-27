@@ -1025,6 +1025,9 @@
     c.definir("calabresa", 4);
     c.abrirGaveta();
     return c.dormir(60).then(function () {
+      // A data sugerida saiu no carregamento, com o relógio de verdade; sem
+      // ela o ponto novo sugere de novo, já pelo relógio de 21/10.
+      c.el("#fData").value = "";
       var ponto = c.el("#fPonto");
       ponto.value = "1";   // Itacorubi
       ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
