@@ -438,12 +438,15 @@ test("fila traz o que falta entregar, com atrasados de até 14 dias e sem cancel
   const cancelado = await criar(mais(1));
   const depois = await criar(mais(30));
   const entregueSemPagarAntes = await criar(mais(-2));
+  // Entregue e pago antes do dia marcado: não pode sumir da tela.
+  const adiantado = await criar(mais(3));
+  await patch(adiantado, { entregue: true, pago: true });
   await patch(entregue, { entregue: true, pago: true });
   await patch(cancelado, { status: "cancelado" });
   await patch(entregueSemPagarAntes, { entregue: true });
   const j = await (await pedir("/api/painel/fila?dia=" + d, comoDono())).json();
   assert.deepEqual(j.fila.map((p) => p.id), [atrasado, hoje, depois]);
-  assert.deepEqual(j.entregues.map((p) => p.id).sort(), [entregue, entregueSemPagarAntes].sort());
+  assert.deepEqual(j.entregues.map((p) => p.id).sort(), [entregue, entregueSemPagarAntes, adiantado].sort());
   assert.ok(!j.fila.some((p) => p.id === velho || p.id === cancelado));
   assert.deepEqual(j.fila[0].montadas, { carne: 0 });
   assert.equal((await pedir("/api/painel/fila?dia=ontem", comoDono())).status, 400);

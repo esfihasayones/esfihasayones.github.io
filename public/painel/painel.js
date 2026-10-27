@@ -269,7 +269,7 @@ function renderSemData(lista) {
   })));
 }
 
-// Entregues do dia e os de antes que ficaram sem pagar.
+// Entregues de hoje em diante e os de antes que ficaram sem pagar.
 function renderEntregues(lista) {
   const el = $("#blocoEntregues");
   el.hidden = lista.length === 0;
