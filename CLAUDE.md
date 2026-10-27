@@ -178,7 +178,9 @@ se alguém ficou sem pagar). Entregue tira da fila e o aviso tem Desfazer.
 Preço fica pequeno; o detalhe está no histórico. Rota `GET /api/painel/fila`;
 as montadas ficam na coluna `montadas` (migração 0003) e o "+1" manda
 `PATCH {montar:{sabor,delta}}`, somado no próprio UPDATE. O painel junta os
-toques por meio segundo antes de mandar. Os testes do painel cancelam no fim
+toques por meio segundo antes de mandar. Entregues mostra o do dia, os de
+dias que ainda vêm (entregue adiantado ou sem querer não some) e os de antes
+sem pagar. Os testes do painel cancelam no fim
 os pedidos que criaram, senão entram na fila de outro teste.
 
 Ideia do dono pra depois: vender o painel pra quem faz pão, bolo e afins.
