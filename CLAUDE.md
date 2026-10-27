@@ -251,7 +251,7 @@ parte da Trindade.
 - Calabresa: molho de tomate, calabresa moída, cebola e muçarela (azeitona e pimenta saíram
   em 21/10/2026)
 - Carne: carne bovina moída com cebola e tomate
-- Queijo: muçarela com requeijão e orégano
+- Queijo: muçarela, requeijão, pasta de ricota e orégano (ricota entrou em 27/10/2026)
 - Marguerita: molho de tomate, muçarela, tomate e manjericão (molho entrou em 23/10/2026) (entrou em 19/10/2026, mesmo
   preço e mesmos combos dos outros)
 
