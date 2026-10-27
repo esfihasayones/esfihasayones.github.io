@@ -11,11 +11,20 @@ export async function lerJson(request) {
   try { return await request.json(); } catch (e) { return null; }
 }
 
+// Montadas por sabor, nunca acima do que o pedido tem (o pedido pode ter
+// diminuído depois de editar) e só dos sabores que ele tem.
+function montadasDe(r, itens) {
+  let m = {};
+  try { m = JSON.parse(r.montadas || "{}") || {}; } catch (e) { /* coluna estragada vale zero */ }
+  return Object.fromEntries(itens.map((i) => [i.sabor, Math.max(0, Math.min(i.qtd, Number(m[i.sabor]) || 0))]));
+}
+
 // Pedido como o painel vê.
 export function serializar(r) {
+  const itens = JSON.parse(r.itens);
   return {
     id: r.id, status: r.status, motivo: r.motivo, origem: r.origem, nome: r.nome,
-    itens: JSON.parse(r.itens), qtd: r.qtd, total_centavos: r.total_centavos,
+    itens, montadas: montadasDe(r, itens), qtd: r.qtd, total_centavos: r.total_centavos,
     cupom: r.cupom, desconto_centavos: r.desconto_centavos, valor_manual: !!r.valor_manual,
     ponto: r.ponto, retirada: r.retirada, janela: r.janela, obs: r.obs,
     pago: !!r.pago, pagamento: r.pagamento || null, entregue: !!r.entregue,

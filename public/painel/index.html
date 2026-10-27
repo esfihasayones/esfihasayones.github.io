@@ -58,9 +58,6 @@ section.bloco{margin-top:22px}
 section.bloco>h2{margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .contagem{background:var(--tinta);color:var(--fundo);border-radius:99px;padding:2px 9px;font-family:var(--corpo);font-size:13px;font-weight:600;letter-spacing:0}
 .vazio{color:var(--suave);margin:0;padding:14px;border:1px dashed var(--linha);border-radius:var(--raio)}
-.ponto-grupo{margin-bottom:18px}
-.ponto-grupo>h3{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px;align-items:baseline}
-.ponto-grupo>h3 span{font-family:var(--corpo);font-weight:500;color:var(--suave);font-size:14px}
 
 /* cartões de pedido */
 .cartao{background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio);padding:14px;margin-bottom:10px;display:grid;gap:8px;min-width:0}
@@ -83,16 +80,8 @@ section.bloco>h2{margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .btn.marcado{background:var(--verde);border-color:var(--verde);color:#fff}
 .btn.suave{border-color:var(--linha);font-weight:600}
 .btn.perigo{border-color:var(--erro);color:var(--erro)}
-.btn:focus-visible,.navdia :focus-visible,.proximo:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #3B82F6;outline-offset:2px}
+.btn:focus-visible,.item-fila:focus-visible,.link:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #3B82F6;outline-offset:2px}
 
-/* próximos dias */
-.proximos{display:grid;gap:8px;margin:0;padding:0;list-style:none}
-.proximo{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px;padding:10px 14px;border-radius:var(--raio-sm);border:1px solid var(--linha);background:var(--branco);cursor:pointer;text-align:left}
-.proximo b{font-weight:700}
-.proximo span{color:var(--suave);font-size:15px;text-align:right}
-.proximo{flex-wrap:wrap}
-.proximo .nomes{flex-basis:100%;color:var(--tinta);font-size:14px;font-weight:600;overflow-wrap:anywhere}
-.proximo.vazio-dia{opacity:.6}
 
 /* agenda */
 details.agenda{background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio)}
@@ -127,7 +116,7 @@ dialog#form::backdrop{background:rgba(18,18,18,.55)}
   .nome-dia{font-size:24px}
 }
 
-/* ---------- painel em colunas (23/10/2026) ---------- */
+/* ---------- barra do topo ---------- */
 .barra{background:var(--tinta);color:var(--fundo);position:sticky;top:0;z-index:4}
 .barra-dentro{max-width:1320px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:20px;height:56px}
 .barra h1{color:var(--fundo);font-size:15px;margin-right:4px;white-space:nowrap}
@@ -137,31 +126,68 @@ dialog#form::backdrop{background:rgba(18,18,18,.55)}
 .barra small{color:#bdbab3;margin-left:auto}
 .barra #novo{margin-left:auto;min-height:36px;padding:0 14px;font-size:14px;background:var(--fundo);color:var(--tinta);border:0;border-radius:99px}
 .tela{max-width:1320px;margin:0 auto;padding:20px 20px 48px}
-.colunas{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.82fr);gap:16px;align-items:start}
-.coluna{min-width:0}
-.coluna>h2,.coluna>summary{display:flex;align-items:baseline;justify-content:space-between;gap:4px 10px;flex-wrap:wrap;margin:0 0 10px;padding:0 2px;list-style:none}
-.coluna>summary::-webkit-details-marker{display:none}
-.coluna .titulo{font-family:var(--display);font-size:15px;font-weight:600;color:var(--tinta)}
-.coluna>h2 small,.coluna>summary small{font-family:var(--corpo);font-size:13px;color:var(--suave);font-weight:500;letter-spacing:0}
-.coluna h3{font-family:var(--corpo);font-size:13px;font-weight:600;color:var(--suave);margin:14px 2px 6px;display:flex;justify-content:space-between;gap:8px}
-.contagem{background:var(--tinta);color:var(--fundo);border-radius:99px;padding:0 8px;font-size:12px;font-weight:600;line-height:20px}
-.coluna .sabores{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--linha);border:1px solid var(--linha);border-radius:var(--raio-sm);overflow:hidden}
-.coluna .sabores li{background:var(--branco);color:var(--tinta);padding:6px 4px;display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0;border:0;border-radius:0}
-.coluna .sabores .n{font-family:var(--display);font-size:18px;font-weight:700;line-height:1.1}
-.coluna .sabores .rotulo{font-size:11px;color:var(--suave);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-.coluna .ponto-grupo>h3{margin:12px 2px 6px}
-.coluna .ponto-grupo>h3 span{font-weight:500}
-.coluna .vazio{font-size:14px;padding:10px 12px}
-/* dia já feito: fica na esquerda, estreito, e abre igual às outras colunas */
-.colunas:has(#colDia.recolhido){grid-template-columns:170px minmax(0,1fr) minmax(0,1fr) minmax(0,.82fr)}
-.colunas:has(#colDia.recolhido[open]){grid-template-columns:repeat(3,minmax(0,1fr)) minmax(0,.82fr)}
-details.dia.recolhido:not([open]){background:var(--branco);border:1px solid var(--linha);border-radius:var(--raio-sm);padding:12px}
-details.dia.recolhido>summary{cursor:pointer}
-details.dia.recolhido:not([open])>summary{flex-direction:column;align-items:flex-start;gap:4px;margin:0}
-details.dia.recolhido:not([open])>summary .titulo{font-size:14px}
-details.dia.recolhido>summary::after{content:"ver ▸";font-size:13px;color:var(--tinta);font-weight:600}
-details.dia.recolhido[open]>summary::after{content:"fechar ◂";margin-left:auto}
-details.dia:not(.recolhido)>summary{pointer-events:none}
+.contagem{background:var(--tinta);color:var(--fundo);border-radius:99px;padding:0 8px;font-family:var(--corpo);font-size:12px;font-weight:600;line-height:20px;letter-spacing:0}
+
+/* ---------- fila (27/10/2026) ---------- */
+.fila-grade{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+.col-destaque,.col-lado{display:grid;gap:14px;min-width:0}
+.col-destaque{position:sticky;top:72px}
+.destaque{background:var(--branco);border:2px solid var(--tinta);border-radius:var(--raio);padding:20px;display:grid;gap:12px;box-shadow:0 10px 30px -18px rgba(18,18,18,.45)}
+.destaque-topo{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rotulo-fila{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--suave)}
+.quando{border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700;background:var(--areia);color:var(--tinta)}
+.quando.hoje{background:var(--tinta);color:var(--fundo)}
+.quando.atrasado{background:var(--alerta-fundo);color:var(--alerta)}
+.link{margin-left:auto;background:none;border:0;padding:4px 0;font:inherit;font-size:14px;font-weight:600;color:var(--tinta);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.destaque-nome{font-size:clamp(22px,3vw,30px);font-weight:700;overflow-wrap:anywhere}
+.destaque-onde{font-size:17px;color:var(--texto);overflow-wrap:anywhere}
+.destaque .obs{background:#FFF4D6;border-radius:var(--raio-sm);padding:10px 12px;font-size:16px;overflow-wrap:anywhere}
+.montagem{list-style:none;margin:4px 0 0;padding:0;display:grid}
+.montagem li{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--linha)}
+.montagem li:last-child{border-bottom:1px solid var(--linha)}
+.contador{font-family:var(--display);font-variant-numeric:tabular-nums;min-width:4.2ch;white-space:nowrap}
+.contador .feitas{font-size:32px;font-weight:700;color:var(--tinta)}
+.contador .de{font-size:20px;font-weight:600;color:#B3B0A8}
+.sabor{display:grid;gap:6px;min-width:0}
+.nome-sabor{font-size:20px;font-weight:600;overflow-wrap:break-word;hyphens:none}
+.barrinha{height:6px;background:var(--areia);border-radius:3px;overflow:hidden}
+.barrinha i{display:block;height:100%;background:var(--tinta);transition:width .2s}
+.montagem li.pronto .feitas,.montagem li.pronto .nome-sabor{color:var(--verde)}
+.montagem li.pronto .barrinha i{background:var(--verde)}
+.montagem .btn{min-height:52px}
+.montagem .menos{width:44px;padding:0;border-color:var(--linha);font-size:22px}
+.montagem .mais1{min-width:72px;font-size:19px}
+.montagem li.pronto .mais1{background:var(--verde);border-color:var(--verde);opacity:1}
+.destaque-preco{color:var(--suave);font-size:14px}
+.destaque .botoes{display:flex;gap:8px;align-items:flex-start}
+.destaque .botoes>.btn{flex:1;min-height:52px;font-size:16px}
+.destaque details.mais-acoes>summary{width:52px;min-height:52px}
+.fila-vazia{background:var(--branco);border:1px dashed var(--linha);border-radius:var(--raio);padding:28px 20px;display:grid;gap:6px;text-align:center}
+.fila-vazia b{font-family:var(--display);font-size:18px;color:var(--tinta)}
+.fila-vazia span{color:var(--suave)}
+.falta-montar{background:var(--branco);border:1px dashed #A8A49B;border-radius:var(--raio);padding:14px 16px}
+.falta-montar h3{font-family:var(--corpo);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--suave);margin-bottom:8px}
+.falta-montar ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.falta-montar li{display:flex;gap:10px;flex-wrap:wrap;font-size:16px}
+.falta-montar li b{min-width:7ch}
+.tudo-montado{margin:0;color:var(--verde);font-weight:600}
+.bloco-lado>h2,.bloco-lado>summary{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:15px}
+.bloco-lado.novos{background:var(--alerta-fundo);border-radius:var(--raio);padding:14px}
+.grupo-dia+.grupo-dia{margin-top:14px}
+.grupo-dia h3{font-family:var(--corpo);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--suave);margin:0 2px 6px}
+.item-fila{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:56px;padding:10px 14px;margin-bottom:6px;border:1px solid var(--linha);border-radius:var(--raio-sm);background:var(--branco);cursor:pointer;text-align:left;font:inherit;color:inherit}
+.item-fila:hover{border-color:var(--tinta)}
+.item-quem{display:grid;gap:1px;min-width:0}
+.item-quem b{font-size:16px;overflow-wrap:anywhere}
+.item-quem small{color:var(--suave);font-size:13px;overflow-wrap:anywhere}
+.item-quem .item-itens{color:var(--texto)}
+.item-conta{font-family:var(--display);font-weight:700;font-size:16px;white-space:nowrap}
+.item-conta.pronto{color:var(--verde)}
+details.entregues>summary{cursor:pointer;list-style:none}
+details.entregues>summary::-webkit-details-marker{display:none}
+details.entregues>summary::after{content:"ver ▸";margin-left:auto;font-family:var(--corpo);font-size:13px;color:var(--suave)}
+details.entregues[open]>summary::after{content:"fechar ▾"}
+details.entregues small{font-family:var(--corpo);font-weight:500;color:var(--suave);font-size:13px}
 /* cartões e botões enxutos */
 .cartao{padding:12px;gap:4px;margin-bottom:8px;border-radius:var(--raio-sm)}
 .cartao .quem{font-weight:700;font-size:15px}
@@ -186,14 +212,6 @@ details.mais-acoes .menu-acoes .btn{min-height:34px;font-size:13px;border-width:
 details.feitos{margin-top:4px}
 details.feitos>summary{cursor:pointer;color:var(--suave);font-size:13px;padding:4px 2px}
 details.feitos .cartao{border-style:dashed}
-/* outros dias: lista curta, só quando há */
-.outros{margin-top:18px}
-.outros .proximos{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.outros .proximo{width:100%;display:flex;justify-content:space-between;align-items:baseline;gap:8px;min-height:0;padding:8px 10px;border:1px solid var(--linha);border-radius:var(--raio-sm);background:var(--branco);cursor:pointer;text-align:left;font:inherit;font-size:13px;flex-wrap:wrap}
-.outros .proximo b{font-weight:600}
-.outros .proximo span{color:var(--suave)}
-.outros .proximo[aria-pressed="true"]{border-color:var(--tinta)}
-.outros .proximo .nomes{flex-basis:100%;color:var(--suave);font-size:12px;font-weight:500}
 #agenda{margin-top:28px}
 #agenda .agenda-corpo{padding:4px 14px 14px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .ajuste{border:1px solid var(--linha);border-radius:var(--raio-sm);padding:10px 12px;min-width:0}
@@ -233,8 +251,9 @@ section.bloco>h2{font-size:15px}
 #voltarHoje{margin-left:auto;opacity:1}
 #voltarHoje:not([hidden]) + #novo{margin-left:0}
 @media (max-width:1000px){
-  .colunas,.colunas:has(#colDia.recolhido),.colunas:has(#colDia.recolhido[open]){grid-template-columns:minmax(0,1fr)}
-  #colNovos{order:-1}
+  .fila-grade{grid-template-columns:minmax(0,1fr)}
+  .col-destaque{position:static}
+  .col-lado{display:contents}
   .barra-dentro{padding:0 12px;gap:10px}
   .barra #novo{padding:0 12px;font-size:13px}
   .aba{padding:0 10px}
@@ -242,6 +261,15 @@ section.bloco>h2{font-size:15px}
   details.mais-acoes>summary{width:44px}
   .barra small{display:none}
   .barra h1{display:none}
+}
+@media (max-width:480px){
+  .destaque{padding:16px}
+  .montagem li{gap:8px}
+  .contador .feitas{font-size:26px}
+  .contador .de{font-size:17px}
+  .nome-sabor{font-size:17px}
+  .montagem .menos{width:44px}
+  .montagem .mais1{min-width:58px}
 }
 </style>
 </head>
@@ -260,40 +288,30 @@ section.bloco>h2{font-size:15px}
 </header>
 
 <main class="tela" id="telaPedidos">
-  <div class="colunas" id="colunas">
-    <details class="coluna dia" id="colDia" open>
-      <summary><span class="titulo" id="nomeDia" aria-live="polite">Carregando…</span><small id="resumoDia"></small></summary>
-      <ul class="sabores" id="sabores" aria-label="Quanto montar de cada sabor"></ul>
-      <div id="pontos"><p class="vazio">Carregando…</p></div>
-    </details>
-
-    <section class="coluna dia" id="colSeguinte">
-      <h2><span class="titulo" id="nomeDia2">Carregando…</span><small id="resumoDia2"></small></h2>
-      <ul class="sabores" id="sabores2" aria-label="Quanto montar de cada sabor nesse dia"></ul>
-      <div id="pontos2"><p class="vazio">Carregando…</p></div>
+  <div class="fila-grade">
+    <section class="col-destaque" aria-label="Próximo pedido">
+      <div id="destaque" aria-live="polite"><p class="vazio">Carregando…</p></div>
+      <div class="falta-montar" id="faltaMontar" hidden></div>
     </section>
 
-    <section class="coluna dia" id="colTerceiro" hidden>
-      <h2><span class="titulo" id="nomeDia3"></span><small id="resumoDia3"></small></h2>
-      <ul class="sabores" id="sabores3" aria-label="Quanto montar de cada sabor nesse dia"></ul>
-      <div id="pontos3"></div>
-    </section>
-
-    <section class="coluna novos" id="colNovos">
-      <h2><span class="titulo">Novos</span><span class="contagem" id="nPendencias">0</span></h2>
-      <div id="blocoPendencias">
+    <div class="col-lado">
+      <section class="bloco-lado novos" id="blocoNovos" hidden>
+        <h2>Novos pra aceitar <span class="contagem" id="nPendencias">0</span></h2>
         <div id="pendencias"></div>
-        <p class="vazio" id="semPendencias">Nenhum pedido novo.</p>
-      </div>
-      <div id="blocoSemData" hidden>
-        <h3>Sem data <span class="contagem" id="nSemData">0</span></h3>
+      </section>
+      <section class="bloco-lado" id="blocoFila" hidden>
+        <h2>Na fila <span class="contagem" id="nFila">0</span></h2>
+        <div id="filaDias"></div>
+      </section>
+      <section class="bloco-lado" id="blocoSemData" hidden>
+        <h2>Sem data <span class="contagem" id="nSemData">0</span></h2>
         <div id="semData"></div>
-      </div>
-      <div class="outros" id="blocoProximos" hidden>
-        <h3 id="tituloProximos">Outros dias</h3>
-        <ul class="proximos" id="proximos"></ul>
-      </div>
-    </section>
+      </section>
+      <details class="bloco-lado entregues" id="blocoEntregues" hidden>
+        <summary><span>Entregues</span> <small id="resumoEntregues"></small></summary>
+        <div id="entregues"></div>
+      </details>
+    </div>
   </div>
 
   <details class="agenda" id="agenda">

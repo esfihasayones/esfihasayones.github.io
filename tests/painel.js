@@ -25,7 +25,15 @@
     });
     var j = null;
     try { j = await r.json(); } catch (e) {}
+    if (metodo === "POST" && j && j.id && /^\/api\/(pedidos|painel\/pedidos)$/.test(caminho)) criados.push(j.id);
     return { status: r.status, json: j };
+  }
+  // Pedidos criados no teste: no fim, cancelados, senão entram na fila de
+  // outro teste (a fila olha duas semanas pra trás e 90 dias pra frente).
+  var criados = [];
+  async function cancelarCriados() {
+    var ids = criados; criados = [];
+    for (var i = 0; i < ids.length; i++) await api("PATCH", "/api/painel/pedidos/" + ids[i], { status: "cancelado" });
   }
 
   async function esperar(cond, msg, limite) {
@@ -43,15 +51,15 @@
     var d = new Date(Date.UTC(2031 + Math.floor(Math.random() * 60), Math.floor(Math.random() * 12), 1 + Math.floor(Math.random() * 28), 12));
     return d.toISOString().slice(0, 10);
   };
-  // Dia sorteado de 2031 sem nenhum pedido; `serve` filtra o dia da semana (0 = domingo).
+  // Dia sorteado de 2031 com a fila vazia em volta; `serve` filtra o dia da semana (0 = domingo).
   async function diaLivre(serve) {
     for (var i = 0; i < 300; i++) {
       var d = DIAS31();
       if (serve && !serve(new Date(d + "T12:00:00Z").getUTCDay())) continue;
-      var r = await api("GET", "/api/painel/pedidos?dia=" + d);
-      if (r.json && r.json.pontos.length === 0) return d;
+      var r = await api("GET", "/api/painel/fila?dia=" + d);
+      if (r.json && r.json.fila.length === 0 && r.json.entregues.length === 0) return d;
     }
-    throw new Error("não achei um dia livre entre 2031 e 2090");
+    throw new Error("não achei um dia com a fila vazia entre 2031 e 2090");
   }
   var util = function (s) { return s >= 1 && s <= 5; };
   var sabado = function (s) { return s === 6; };
@@ -88,7 +96,8 @@
     P.el = function (s) { return P.doc().querySelector(s); };
     P.todos = function (s) { return Array.prototype.slice.call(P.doc().querySelectorAll(s)); };
     P.texto = function (s) { return (P.el(s) || {}).textContent || ""; };
-    P.cartao = function (id) { return P.el('.cartao[data-id="' + id + '"]'); };
+    P.cartao = function (id) { return P.el('article[data-id="' + id + '"]'); };
+    P.destaque = function () { var a = P.el("#destaque article"); return a ? Number(a.dataset.id) : null; };
     P.clicar = function (sel) { var e = typeof sel === "string" ? P.el(sel) : sel; if (!e) throw new Error("sem elemento " + sel); e.click(); };
     P.digitar = function (sel, v) {
       var e = typeof sel === "string" ? P.el(sel) : sel;
@@ -102,36 +111,41 @@
       q.src = "/painel/?dia=" + dia + "&t=" + Date.now();
       await esperar(function () { return P.doc().body && P.doc().body.dataset.pronto === dia; }, "recarregar painel", 10000);
     };
-    P.sabor = function (id) { return P.texto('#sabores [data-sabor="' + id + '"] .n').trim(); };
+    P.linha = function (sabor) { return P.el('#destaque .montagem [data-sabor="' + sabor + '"]'); };
+    P.contador = function (sabor) { return P.linha(sabor).querySelector(".contador").textContent.trim(); };
     return P;
   }
 
   // Roda `fn(P)` e sempre limpa os iframes.
   function comPainel(fn) {
     return async function () {
-      try { await fn.apply(null, arguments); } finally { limpar(); }
+      try { await fn.apply(null, arguments); } finally { limpar(); await cancelarCriados(); }
     };
   }
 
   /* ---------------- testes ---------------- */
 
-  teste("mostra o total por sabor do dia", comPainel(async function () {
+  teste("o próximo pedido fica em destaque com cada sabor", comPainel(async function () {
     var d = await diaLivre(util);
-    await manual(d, [{ sabor: "calabresa", qtd: 5 }, { sabor: "carne", qtd: 3 }]);
-    await manual(d, [{ sabor: "queijo", qtd: 2 }], { ponto: "Abraão" });
-    var cancelado = await manual(d, [{ sabor: "carne", qtd: 4 }]);
+    var tarde = await manual(d, [{ sabor: "calabresa", qtd: 5 }, { sabor: "carne", qtd: 3 }], { janela: "19h às 21h" });
+    var cedo = await manual(d, [{ sabor: "queijo", qtd: 2 }], { ponto: "Abraão", janela: "9h às 12h", obs: "sem orégano" });
+    var cancelado = await manual(d, [{ sabor: "carne", qtd: 4 }], { janela: "8h" });
     A.igual((await api("PATCH", "/api/painel/pedidos/" + cancelado.id, { status: "cancelado" })).status, 200);
-    var P = await abrir(d);
-    A.igual(P.sabor("calabresa"), "5", "calabresa");
-    A.igual(P.sabor("carne"), "3", "carne (o cancelado não conta)");
-    A.igual(P.sabor("queijo"), "2", "queijo");
-    A.igual(P.sabor("marguerita"), "0", "marguerita");
-    A.igual(P.texto("#totalEsfihas").trim(), "10", "total do dia");
-    A.ok(P.todos("#pontos .ponto-grupo").length === 2, "dois pontos com pedido");
-    A.contem(P.texto("#pontos"), "Abraão");
+    var P = await abrir(d, 1280);
+    A.igual(P.destaque(), cedo.id, "o de horário mais cedo vem primeiro");
+    A.contem(P.texto("#destaque"), "Próximo");
+    A.contem(P.texto("#destaque"), "Hoje", "o dia aberto conta como hoje");
+    A.contem(P.texto("#destaque"), "Abraão");
+    A.contem(P.texto("#destaque"), "sem orégano");
+    A.igual(P.contador("queijo"), "0/2");
+    A.ok(P.el('#filaDias [data-id="' + tarde.id + '"]'), "o outro está na fila ao lado");
+    A.ok(!P.el('[data-id="' + cancelado.id + '"]'), "cancelado não aparece");
+    A.contem(P.texto("#faltaMontar"), "Ainda falta montar pra hoje");
+    A.contem(P.texto("#faltaMontar"), "5 Calabresa · 3 Carne");
+    A.contem(P.texto("#faltaMontar"), "2 Queijo");
   }));
 
-  teste("confirmar pendência move pro ponto", comPainel(async function () {
+  teste("confirmar pendência põe o pedido na fila", comPainel(async function () {
     var d = await diaLivre(sabado);
     var nome = "Pendente " + sufixo();
     var site = await api("POST", "/api/pedidos", { id_envio: uuid(), nome: nome, itens: [{ sabor: "carne", qtd: 6 }], ponto: ITACORUBI, retirada: d });
@@ -140,17 +154,14 @@
     var P = await abrir(d);
     var c = P.cartao(site.json.id);
     A.ok(c && P.el("#pendencias").contains(c), "está nas pendências");
+    A.ok(!P.el("#blocoNovos").hidden, "Novos aparece");
     A.contem(c.textContent, "O ponto não abre nesse dia", "motivo em texto claro");
     A.contem(c.textContent, nome);
-    A.igual(P.el("#pontos .cartao[data-id]"), null, "ainda não está nos pontos");
-    A.igual(P.sabor("carne"), "0", "pendência não entra no total");
+    A.igual(P.destaque(), null, "fila vazia antes de aceitar");
+    A.contem(P.texto("#destaque"), "Nenhum pedido na fila.");
     P.clicar(c.querySelector('[data-acao="confirmar"]'));
-    await esperar(function () {
-      var n = P.cartao(site.json.id);
-      return n && P.el("#pontos").contains(n);
-    }, "pedido ir pro ponto");
-    A.igual(P.sabor("carne"), "6", "agora entra no total");
-    A.contem(P.el("#pontos .ponto-grupo").textContent, "Itacorubi");
+    await esperar(function () { return P.destaque() === site.json.id; }, "pedido virar o próximo");
+    A.igual(P.contador("carne"), "0/6");
     A.ok(!P.el("#pendencias").contains(P.cartao(site.json.id)), "saiu das pendências");
     var j = await api("GET", "/api/painel/pedidos?dia=" + d);
     A.igual(j.json.pontos[0].pedidos[0].status, "confirmado");
@@ -181,26 +192,39 @@
     A.contem(P.cartao(site.json.id).textContent, "Cupom não existe");
   }));
 
-  teste("Pago alterna e persiste ao recarregar", comPainel(async function () {
+  teste("Pago alterna e persiste, Entregue tira da fila e Desfazer volta", comPainel(async function () {
     var d = await diaLivre(util);
-    var ped = await manual(d, [{ sabor: "carne", qtd: 2 }]);
+    var ped = await manual(d, [{ sabor: "carne", qtd: 2 }], { janela: "8h" });
+    var outro = await manual(d, [{ sabor: "queijo", qtd: 3 }], { janela: "15h" });
     var P = await abrir(d);
+    A.igual(P.destaque(), ped.id);
     var pago = function () { return P.cartao(ped.id).querySelector('[data-acao="pago"]'); };
-    var entregue = function () { return P.cartao(ped.id).querySelector('[data-acao="entregue"]'); };
     A.igual(pago().getAttribute("aria-pressed"), "false");
     P.clicar(pago());
     await esperar(function () { return pago().getAttribute("aria-pressed") === "true"; }, "Pago ligar");
-    P.clicar(entregue());
-    await esperar(function () { return entregue().getAttribute("aria-pressed") === "true"; }, "Entregue ligar");
-    A.ok(P.cartao(ped.id).closest("details.feitos"), "pago e entregue sai da fila");
-    A.contem(P.texto("#pontos"), "Tudo entregue aqui.");
     await P.recarregar(d);
     A.igual(pago().getAttribute("aria-pressed"), "true", "Pago persistiu");
-    A.igual(entregue().getAttribute("aria-pressed"), "true", "Entregue persistiu");
-    P.clicar(pago());
-    await esperar(function () { return pago().getAttribute("aria-pressed") === "false"; }, "Pago desligar");
-    var s = (await api("GET", "/api/painel/pedidos?dia=" + d)).json.pontos[0].pedidos[0];
-    A.ok(!s.pago && s.entregue, "servidor concorda");
+    P.clicar(P.cartao(ped.id).querySelector('[data-acao="entregue"]'));
+    await esperar(function () { return P.destaque() === outro.id; }, "o próximo sobe");
+    A.ok(P.el("#entregues").contains(P.cartao(ped.id)), "foi pra Entregues");
+    A.ok(!P.el("#blocoEntregues").hidden);
+    A.contem(P.texto("#aviso"), "Entregue: " + ped.nome);
+    P.clicar(P.el("#aviso button"));
+    await esperar(function () { return P.destaque() === ped.id; }, "Desfazer põe de volta");
+    var s = (await api("GET", "/api/painel/pedidos?dia=" + d)).json.pontos[0].pedidos.find(function (x) { return x.id === ped.id; });
+    A.ok(s.pago && !s.entregue, "servidor concorda");
+  }));
+
+  teste("entregue sem pagar fica avisado em Entregues", comPainel(async function () {
+    var d = await diaLivre(util);
+    var ped = await manual(d, [{ sabor: "carne", qtd: 2 }]);
+    A.igual((await api("PATCH", "/api/painel/pedidos/" + ped.id, { entregue: true })).status, 200);
+    var P = await abrir(d);
+    A.ok(P.el("#blocoEntregues").open, "abre sozinho quando falta pagar");
+    A.contem(P.texto("#resumoEntregues"), "1 sem pagar");
+    A.contem(P.cartao(ped.id).textContent, "Falta pagar");
+    P.clicar(P.cartao(ped.id).querySelector('[data-acao="voltar-fila"]'));
+    await esperar(function () { return P.destaque() === ped.id; }, "Voltar pra fila");
   }));
 
   teste("erro de rede mostra aviso e mantém o estado", comPainel(async function () {
@@ -214,7 +238,7 @@
     A.ok(P.texto("#aviso").length > 5, "aviso tem texto");
     A.igual(pago().getAttribute("aria-pressed"), "false", "estado restaurado");
     A.ok(!pago().disabled, "botão volta a funcionar");
-    A.igual(P.sabor("carne"), "2", "o resto da tela fica como estava");
+    A.igual(P.destaque(), ped.id, "o resto da tela fica como estava");
   }));
 
   teste("confirmado sem data aparece na seção Sem data", comPainel(async function () {
@@ -284,7 +308,7 @@
     A.ok(ids[0] && ids[1] && ids[0] !== ids[1], "ids diferentes: " + ids.join(" / "));
   }));
 
-  teste("novo pedido manual aparece no dia", comPainel(async function () {
+  teste("novo pedido manual entra na fila", comPainel(async function () {
     var d = await diaLivre(util);
     var P = await abrir(d);
     P.clicar("#novo");
@@ -302,12 +326,13 @@
     P.digitar("#fObs", "sem cebola");
     P.clicar("#fSalvar");
     await esperar(function () { return !P.el("#form").open; }, "formulário fechar");
-    var c = await esperar(function () { return P.todos("#pontos .cartao").filter(function (e) { return e.textContent.indexOf(nome) !== -1; })[0]; }, "cartão aparecer");
-    A.contem(c.textContent, "R$ 22,00");
-    A.contem(c.textContent, "sem cebola");
-    A.contem(c.textContent, "19h");
-    A.igual(P.sabor("calabresa"), "2");
-    A.igual(P.sabor("carne"), "2");
+    await esperar(function () { return P.texto("#destaque").indexOf(nome) !== -1; }, "pedido em destaque");
+    var t = P.texto("#destaque");
+    A.contem(t, "R$ 22,00");
+    A.contem(t, "sem cebola");
+    A.contem(t, "19h");
+    A.igual(P.contador("calabresa"), "0/2");
+    A.igual(P.contador("carne"), "0/2");
     A.contem(P.texto("#aviso"), "R$ 22,00", "mostra o total que o servidor devolveu");
     var s = (await api("GET", "/api/painel/pedidos?dia=" + d)).json.pontos[0].pedidos[0];
     A.igual(s.status, "confirmado");
@@ -334,7 +359,7 @@
     P.digitar("#fPontoOutro", "Rua Lauro Linhares");
     P.clicar("#fSalvar");
     await esperar(function () { return !P.el("#form").open; }, "salvar com outro ponto");
-    await esperar(function () { return P.texto("#pontos").indexOf("Rua Lauro Linhares") !== -1; }, "ponto novo na tela");
+    await esperar(function () { return P.texto("#destaque").indexOf("Rua Lauro Linhares") !== -1; }, "ponto novo na tela");
   }));
 
   teste("editar muda o valor", comPainel(async function () {
@@ -375,25 +400,64 @@
     A.igual(P.el("#fValor").value, "42,80");
     P.clicar("#fSalvar");
     await esperar(function () { return !P.el("#form").open; });
-    await esperar(function () { return P.sabor("calabresa") === "8"; }, "total por sabor atualizar");
+    await esperar(function () { return P.contador("calabresa") === "0/8"; }, "montagem atualizar");
     A.contem(P.cartao(ped.id).textContent, "R$ 42,80");
   }));
 
-  teste("dia sem nada a fazer recolhe e a fila anda pro próximo dia com pedido", comPainel(async function () {
+  teste("fila em ordem de dia e horário, sem dia vazio, e tocar abre em destaque", comPainel(async function () {
     var d = await diaLivre(util);
-    var d2 = new Date(Date.parse(d + "T12:00:00Z") + 2 * 86400000).toISOString().slice(0, 10);
-    var r = await api("GET", "/api/painel/pedidos?dia=" + d2);
-    if (r.json.pontos.length) return;   // dia vizinho já ocupado por outra rodada
-    var ped = await manual(d2, [{ sabor: "carne", qtd: 7 }]);
+    var mais = function (n) { return new Date(Date.parse(d + "T12:00:00Z") + n * 86400000).toISOString().slice(0, 10); };
+    var tarde = await manual(mais(2), [{ sabor: "carne", qtd: 7 }], { janela: "19h às 21h" });
+    var cedo = await manual(mais(2), [{ sabor: "queijo", qtd: 1 }], { janela: "8h às 16h30" });
+    var longe = await manual(mais(5), [{ sabor: "calabresa", qtd: 4 }]);
     var P = await abrir(d, 1280);
-    A.ok(P.el("#colDia").classList.contains("recolhido") && !P.el("#colDia").open, "dia base vazio fica recolhido");
-    var c = P.cartao(ped.id);
-    A.ok(c && P.el("#pontos2").contains(c), "o próximo dia com pedido vira a primeira coluna");
-    A.igual(P.texto('#sabores2 [data-sabor="carne"] .n').trim(), "7");
     A.igual(P.doc().body.dataset.pronto, d, "o dia base continua o mesmo");
-    P.clicar("#colDia > summary");
-    await esperar(function () { return P.el("#colDia").open; }, "abrir o dia recolhido pelo clique");
-    A.ok(P.el("#colDia").getBoundingClientRect().width > 300, "aberto, vira coluna de verdade");
+    A.igual(P.destaque(), cedo.id, "o próximo é o mais cedo do primeiro dia com pedido");
+    var titulos = P.todos("#filaDias h3").map(function (e) { return e.textContent; });
+    A.ok(titulos.indexOf("Hoje") === -1 && titulos.indexOf("Amanhã") === -1, "dia sem pedido não aparece: " + titulos.join(", "));
+    A.igual(titulos.length, 2, "um grupo por dia com pedido: " + titulos.join(", "));
+    var ids = P.todos("#filaDias .item-fila").map(function (e) { return Number(e.dataset.id); });
+    A.igual(ids.join(","), [tarde.id, longe.id].join(","), "ordem da fila");
+    P.clicar('#filaDias [data-id="' + longe.id + '"]');
+    A.igual(P.destaque(), longe.id, "tocar abre em destaque");
+    A.contem(P.texto("#destaque"), "Pedido escolhido");
+    P.clicar('[data-acao="voltar-proximo"]');
+    A.igual(P.destaque(), cedo.id, "volta pro próximo");
+  }));
+
+  teste("+1 conta as montadas, junta toques e salva", comPainel(async function () {
+    var d = await diaLivre(util);
+    var ped = await manual(d, [{ sabor: "queijo", qtd: 3 }, { sabor: "carne", qtd: 2 }]);
+    var P = await abrir(d);
+    var mais = function () { return P.linha("queijo").querySelector('[data-acao="mais"]'); };
+    var marca = P.doc().body.dataset.montadas;
+    P.clicar(mais()); P.clicar(mais());
+    A.igual(P.contador("queijo"), "2/3", "muda na hora");
+    A.contem(P.texto("#faltaMontar"), "1 Queijo · 2 Carne");
+    await esperar(function () { return P.doc().body.dataset.montadas !== marca; }, "salvar as montadas");
+    var s = (await api("GET", "/api/painel/pedidos?dia=" + d)).json.pontos[0].pedidos[0];
+    A.igual(s.montadas.queijo, 2, "dois toques seguidos chegaram os dois");
+    P.clicar(mais());
+    A.ok(P.linha("queijo").classList.contains("pronto"), "sabor completo fica pronto");
+    A.ok(mais().disabled, "+1 trava no total do pedido");
+    P.clicar(P.linha("queijo").querySelector('[data-acao="menos"]'));
+    A.igual(P.contador("queijo"), "2/3", "o menos desfaz um");
+    marca = P.doc().body.dataset.montadas;
+    await esperar(function () { return P.doc().body.dataset.montadas !== marca; }, "salvar de novo");
+    await P.recarregar(d);
+    A.igual(P.contador("queijo"), "2/3", "persistiu");
+    A.igual(P.contador("carne"), "0/2");
+  }));
+
+  teste("pedido de dias atrás não entregue aparece como atrasado", comPainel(async function () {
+    var d = await diaLivre(util);
+    var antes = new Date(Date.parse(d + "T12:00:00Z") - 3 * 86400000).toISOString().slice(0, 10);
+    var hoje = await manual(d, [{ sabor: "carne", qtd: 1 }]);
+    var velho = await manual(antes, [{ sabor: "carne", qtd: 1 }], { forcar: true });
+    var P = await abrir(d);
+    A.igual(P.destaque(), velho.id, "o atrasado vem antes");
+    A.contem(P.el("#destaque .quando").textContent, "Atrasado");
+    A.ok(P.el('#filaDias [data-id="' + hoje.id + '"]'));
   }));
 
   teste("Pago pergunta a forma, grava e desmarcar limpa", comPainel(async function () {
@@ -430,7 +494,7 @@
     var site = await api("POST", "/api/pedidos", { id_envio: uuid(), nome: "Aceita " + sufixo(), itens: [{ sabor: "queijo", qtd: 4 }], ponto: ITACORUBI, retirada: d });
     var P = await abrir(d, 1280);
     P.clicar(P.cartao(site.json.id).querySelector('[data-acao="confirmar"]'));
-    await esperar(function () { return !P.el("#pendencias").contains(P.cartao(site.json.id)) && P.el("#pontos").contains(P.cartao(site.json.id)); }, "sair de Novos e entrar no dia");
+    await esperar(function () { return !P.el("#pendencias").contains(P.cartao(site.json.id)) && P.destaque() === site.json.id; }, "sair de Novos e entrar na fila");
     A.ok(!P.cartao(site.json.id).querySelector('[data-acao="confirmar"]'), "sem botão Aceitar no cartão confirmado");
   }));
 
@@ -459,7 +523,7 @@
     q.src = "/painel/?t=" + Date.now();
     var P = montar(q);
     await esperar(function () { return P.doc().body && P.doc().body.dataset.pronto === hoje; }, "abrir em hoje", 10000);
-    A.contem(P.texto("#nomeDia"), "Hoje");
+    A.ok(P.el("#voltarHoje").hidden, "sem Voltar pra hoje");
     A.ok(!P.el("#dia") && !P.el("#anterior"), "sem calendário nem setas");
   }));
 

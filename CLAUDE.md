@@ -165,6 +165,26 @@ dono conversa.
   Rita e do Thiago; confirmar o pedido da Luciana (15 esfihas, ponto de
   entrega a combinar).
 
+### Painel virou fila (27/10/2026)
+
+A tela de pedidos do painel é uma fila: à esquerda o próximo pedido em
+destaque (atrasado, depois hoje, depois por dia e começo do horário), com uma
+linha por sabor em que o número preto conta as montadas e o cinza é o pedido
+("4/6"), barrinha e botões "+1" e "−". Embaixo, o que ainda falta montar no dia
+daquele pedido, separado por cliente (o dono estranhou quando a soma juntava
+clientes sem dizer). À direita: Novos pra aceitar, o resto da fila por dia
+(dia sem pedido não aparece, nem "Hoje"), Sem data e Entregues (abre sozinho
+se alguém ficou sem pagar). Entregue tira da fila e o aviso tem Desfazer.
+Preço fica pequeno; o detalhe está no histórico. Rota `GET /api/painel/fila`;
+as montadas ficam na coluna `montadas` (migração 0003) e o "+1" manda
+`PATCH {montar:{sabor,delta}}`, somado no próprio UPDATE. O painel junta os
+toques por meio segundo antes de mandar. Os testes do painel cancelam no fim
+os pedidos que criaram, senão entram na fila de outro teste.
+
+Ideia do dono pra depois: vender o painel pra quem faz pão, bolo e afins.
+Ainda não conversamos sobre isso; o rascunho da fila aprovado está em
+`.superpowers/brainstorm/` (fora do git).
+
 ### Pagamento (22/10/2026)
 
 Pix na chave dele e cartão na retirada pelo Tap do Mercado Pago (celular
@@ -361,7 +381,7 @@ libera esse script na CSP por hash. O `public/_headers` nunca é enfraquecido;
 o teste `tests/api/cabecalhos.test.mjs` fala direto com a 8788 e confere a CSP
 exata.
 
-173 testes de navegador (`tests/suite.js` e `tests/painel.js`) e 55 de API, sem dependência. O
+Testes de navegador em `tests/suite.js` e `tests/painel.js` (29 do painel) e 75 de API, sem dependência. O
 runner carrega o site num iframe limpo, um teste por vez. `window.RESULTADO`
 expõe o resultado para automação.
 

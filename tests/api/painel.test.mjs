@@ -65,7 +65,7 @@ test("lista do dia soma por sabor só os confirmados", async () => {
   assert.equal(j.porSabor.calabresa, 5);
   assert.equal(j.porSabor.carne, 0);
   const p = achar(j, a);
-  assert.deepEqual(Object.keys(p).sort(), ["cupom", "desconto_centavos", "entregue", "id", "itens", "janela", "motivo", "nome", "obs",
+  assert.deepEqual(Object.keys(p).sort(), ["cupom", "desconto_centavos", "entregue", "id", "itens", "janela", "montadas", "motivo", "nome", "obs",
     "origem", "pago", "pagamento", "ponto", "qtd", "retirada", "status", "total_centavos", "valor_manual"].sort());
   assert.equal(p.pago, false);
   assert.deepEqual(p.itens, [{ sabor: "calabresa", qtd: 5 }]);
@@ -423,4 +423,48 @@ test("valor_manual false junto com total_centavos é recusado", async () => {
   zerar();
   const id = await site(2);
   assert.equal((await patch(id, { valor_manual: false, total_centavos: 100 })).status, 400);
+});
+
+test("fila traz o que falta entregar, com atrasados de até 14 dias e sem cancelados", async () => {
+  zerar();
+  const d = "2040-03-14";
+  const mais = (n) => new Date(Date.parse(d + "T12:00:00Z") + n * 86400000).toISOString().slice(0, 10);
+  const criar = async (retirada, extra) => (await (await pedir("/api/painel/pedidos",
+    json({ nome: "F", itens: [{ sabor: "carne", qtd: 2 }], ponto: "Rua", retirada, forcar: true, ...extra }))).json()).id;
+  const velho = await criar(mais(-20));
+  const atrasado = await criar(mais(-3));
+  const hoje = await criar(d);
+  const entregue = await criar(d);
+  const cancelado = await criar(mais(1));
+  const depois = await criar(mais(30));
+  const entregueSemPagarAntes = await criar(mais(-2));
+  await patch(entregue, { entregue: true, pago: true });
+  await patch(cancelado, { status: "cancelado" });
+  await patch(entregueSemPagarAntes, { entregue: true });
+  const j = await (await pedir("/api/painel/fila?dia=" + d, comoDono())).json();
+  assert.deepEqual(j.fila.map((p) => p.id), [atrasado, hoje, depois]);
+  assert.deepEqual(j.entregues.map((p) => p.id).sort(), [entregue, entregueSemPagarAntes].sort());
+  assert.ok(!j.fila.some((p) => p.id === velho || p.id === cancelado));
+  assert.deepEqual(j.fila[0].montadas, { carne: 0 });
+  assert.equal((await pedir("/api/painel/fila?dia=ontem", comoDono())).status, 400);
+});
+
+test("montar soma, não passa do pedido nem de zero e recusa sabor que não está no pedido", async () => {
+  zerar();
+  const id = (await (await pedir("/api/painel/pedidos",
+    json({ nome: "M", itens: [{ sabor: "carne", qtd: 3 }, { sabor: "queijo", qtd: 1 }], ponto: "Rua" }))).json()).id;
+  const montar = async (corpo) => { const r = await patch(id, { montar: corpo }); return { status: r.status, j: await r.json() }; };
+  assert.deepEqual((await montar({ sabor: "carne", delta: 2 })).j.montadas, { carne: 2, queijo: 0 });
+  assert.deepEqual((await montar({ sabor: "carne", delta: 5 })).j.montadas, { carne: 3, queijo: 0 });
+  assert.deepEqual((await montar({ sabor: "carne", delta: -9 })).j.montadas, { carne: 0, queijo: 0 });
+  // Dois aparelhos juntos: os dois cliques contam.
+  await Promise.all([montar({ sabor: "carne", delta: 1 }), montar({ sabor: "carne", delta: 1 })]);
+  assert.equal((await montar({ sabor: "queijo", delta: 1 })).j.montadas.carne, 2);
+  assert.equal((await montar({ sabor: "marguerita", delta: 1 })).status, 400);
+  assert.equal((await montar({ sabor: "carne", delta: 1.5 })).status, 400);
+  assert.equal((await montar({ sabor: "carne" })).status, 400);
+  // Diminuir o pedido não deixa montadas acima do total.
+  assert.equal((await patch(id, { itens: [{ sabor: "carne", qtd: 1 }] })).status, 200);
+  const s = await (await patch(id, { nome: "M2" })).json();
+  assert.deepEqual(s.montadas, { carne: 1 });
 });
