@@ -17,7 +17,7 @@ Endereço: <https://esfihas.sayones.com.br/>.
 | `public/fontes/` | Fontes Unbounded e Space Grotesk em woff2, com a licença OFL    |
 | `public/_headers` | Cabeçalhos de segurança (CSP) e regras de cache                |
 | `public/logo.svg`, `favicon.svg` | Logo horizontal e ícone da aba                  |
-| `public/og-v2.png` | Imagem 1200×630 do preview no WhatsApp/Insta. Ao trocar, mude o nome (`og-v3.png`) e a meta `og:image`, senão o WhatsApp segue mostrando a antiga |
+| `public/og-v3.png` | Imagem 1200×630 do preview no WhatsApp/Insta. Ao trocar, mude o nome (`og-v4.png`) e a meta `og:image`, senão o WhatsApp segue mostrando a antiga |
 | `functions/`     | API em Pages Functions (`/api/pedidos`, `/api/agenda`, `/api/cupom`, `/api/painel/*`) |
 | `migrations/`    | SQL do banco D1                                                 |
 | `tests/`         | Suíte de navegador e testes de API                              |
@@ -203,7 +203,7 @@ Os cards usam ilustração SVG. Para trocar por foto, substitua o
 <img class="card-ilu" src="img/calabresa.jpg" alt="Esfiha de calabresa">
 ```
 
-Foto quadrada, pelo menos 400×400, fundo claro. Vale trocar o `og-v2.png`
+Foto quadrada, pelo menos 400×400, fundo claro. Vale trocar o `og-v3.png`
 também: o preview do WhatsApp com foto de verdade rende mais que ilustração.
 
 ## Como o texto do site foi escrito

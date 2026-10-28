@@ -26,7 +26,7 @@ test("a home e o painel não ficam em cache, o painel sai dos buscadores", async
 });
 
 test("arquivos imutáveis levam cache de um ano", async () => {
-  for (const c of ["/logo.svg", "/og-v2.png", "/fontes/unbounded.woff2"]) {
+  for (const c of ["/logo.svg", "/og-v3.png", "/fontes/unbounded.woff2"]) {
     const r = await pedir(c);
     assert.equal(r.status, 200, c);
     assert.equal(r.headers.get("cache-control"), "public, max-age=31536000, immutable", c);

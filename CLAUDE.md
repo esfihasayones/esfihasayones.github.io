@@ -38,7 +38,9 @@ faça commit e push logo, sem deixar nada solto.
   cativa", nas palavras dele.
 - Abraão: segunda a sexta, das 9h ao meio-dia.
 
-- Air fryer: 6 minutos em todo o site (era "6 a 8" na seção de esquentar).
+- Air fryer (28/10/2026): congelada a 140 a 160 °C por 8 a 10 minutos, pra
+  descongelar bem por dentro; descongelada antes, 3 a 5 minutos. O destaque
+  virou "pronta em 10 minutos" (topo, números, Sobre, metas e `og-v3.png`).
 
 ### Pendente, por decisão dele
 
@@ -234,7 +236,7 @@ pacotes que o instalador pedir e `LD_LIBRARY_PATH` apontando pra eles.
 **Só congelada.** Assar e entregar quente exige rota apertada e cliente em
 casa na hora certa. Congelada, ele monta e assa depois da encomenda (confirmado em
 21/10/2026: "você encomenda, a gente monta e assa"), congela e entrega no ponto. O
-argumento de venda virou "pronta em 6 minutos na air fryer".
+argumento de venda virou "pronta em 10 minutos na air fryer".
 
 **Não existe delivery porta a porta.** Em cada dia ele leva as encomendas a
 um ponto combinado do bairro e o cliente passa lá para pegar. Por isso não
@@ -306,7 +308,7 @@ pedido mais feito. Quando faltar informação, pergunte.
 public/      o que o Cloudflare Pages serve: index.html (markup e CSS), app.js
              (tela), regras.js (preço, datas e pontos, sem DOM), painel/,
              fontes/ (woff2 próprios, com a licença OFL), _headers (CSP e
-             cache), 404.html, robots.txt, sitemap.xml, logo/favicon/og-v2.png
+             cache), 404.html, robots.txt, sitemap.xml, logo/favicon/og-v3.png
 functions/   API em Pages Functions: /api/pedidos, /api/agenda, /api/cupom,
              /api/saude e /api/painel/* (atrás do Cloudflare Access)
 migrations/  SQL do D1
@@ -318,7 +320,7 @@ Não há build. A CSP em `public/_headers` não aceita script inline: todo
 JavaScript fica em arquivo `.js` (o JSON-LD é `application/ld+json` e não
 executa). Estilo inline é permitido. As fontes são servidas do próprio
 domínio; não volte a apontar pro Google Fonts, a CSP bloqueia.
-`logo.svg`, `favicon.svg` e `og-v2.png` são gerados e saem com cache de um
+`logo.svg`, `favicon.svg` e `og-v3.png` são gerados e saem com cache de um
 ano: ao trocar um deles, mude o nome do arquivo.
 
 **O bloco de configuração** fica em `public/regras.js` (WhatsApp, antecedência,
@@ -339,7 +341,7 @@ arquivos de estampa da camisa ficam fora do repositório.
 
 **O topo** tem a tabela de combos e a faixa de sabores montadas pelo JS a
 partir de `FAIXAS` e `SABORES`, pra preço e sabor nunca divergirem do
-carrinho. No celular a tabela e a faixa somem e entram três números (6 min,
+carrinho. No celular a tabela e a faixa somem e entram três números (10 min,
 60 dias, R$ 5,90).
 
 **Os desenhos das esfihas** são SVG gerados por script Python, um `<symbol>`

@@ -1693,7 +1693,7 @@
     var base = "https://esfihas.sayones.com.br/";
     igual(c.el('link[rel="canonical"]').href, base);
     igual(c.el('meta[property="og:url"]').content, base);
-    igual(c.el('meta[property="og:image"]').content, base + "og-v2.png");
+    igual(c.el('meta[property="og:image"]').content, base + "og-v3.png");
     var ld = c.el('script[type="application/ld+json"]').textContent;
     contem(ld, '"url": "' + base + '"');
     naoContem(ld, "github.io");
