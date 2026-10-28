@@ -78,7 +78,11 @@ main{padding:18px 22px 60px;max-width:1000px}
      testes chama isto antes de o site rodar. Quem precisa de outra resposta
      troca `win.fetch` depois de carregar; `window.__redeReal = true` desliga. */
   window.__agendaPadrao = { pausado: false, indisponiveis: {} };
+  /* Os lembretes do canto (cupom e carrinho parado) esperam 20 s e 3 min.
+     Fora dos testes deles, a espera é longa o bastante pra nunca aparecer. */
+  window.__esperaLembretes = null;
   window.__preparar = function(win){
+    win.__esperaLembretes = window.__esperaLembretes || { cupom: 1e9, parado: 1e9 };
     if (window.__redeReal) return;
     var real = win.fetch.bind(win);
     win.fetch = function(url, opcoes){

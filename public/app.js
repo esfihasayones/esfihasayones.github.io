@@ -498,6 +498,7 @@ function definir(id, n){
   if (!(id in carrinho)) return;
   carrinho[id] = Math.max(0, Math.min(MAX_ITEM, n));
   render();
+  vigiarCarrinho();
   return carrinho[id];
 }
 function mexer(id, delta){ definir(id, carrinho[id] + delta); }
@@ -654,6 +655,8 @@ function abrir(){
   gaveta.removeAttribute("inert");
   document.body.style.overflow = "hidden";
   barra.classList.remove("visivel");
+  fecharLembrete();
+  clearTimeout(tParado);
   setTimeout(function(){ $("#btnFechar").focus(); }, 80);
   if (!idEnvio) idEnvio = novoIdEnvio();
   carregarAgenda();
@@ -668,6 +671,7 @@ function fechar(){
   tVeu = setTimeout(function(){ veu.hidden = true; }, 300);
   if (ultimoFoco) ultimoFoco.focus();
   render();
+  vigiarCarrinho();
 }
 $$("[data-abrir-pedido]").forEach(function(b){ b.addEventListener("click", abrir); });
 $("#btnFechar").addEventListener("click", fechar);
@@ -780,6 +784,7 @@ btnEnviar.addEventListener("click", function(){
   // Grava o pedido sem esperar: o WhatsApp abre no mesmo clique e não
   // depende do servidor. Nunca vai total; quem calcula é o servidor.
   gravarPedido(pt);
+  enviou = true;
   window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
 });
 function gravarPedido(pt){
@@ -838,6 +843,71 @@ var topo = $("#topo");
 var aoRolar = function(){ topo.classList.toggle("grudado", window.scrollY > 10); };
 window.addEventListener("scroll", aoRolar, {passive:true});
 aoRolar();
+
+/* ---------- lembrete no canto ---------- */
+// Dois avisos pequenos, sem cobrir a tela: o cupom de primeira compra, uma
+// vez por visitante, e o pedido esquecido no carrinho, uma vez por visita.
+// Os testes encurtam as esperas por window.__esperaLembretes.
+var CHAVE_LEMBRETE = "sayones-lembrete-cupom";
+var ESPERA = window.__esperaLembretes || { cupom: 20000, parado: 180000 };
+var lembrete = $("#lembrete"), lembreteTxt = $("#lembreteTxt"), lembreteAcao = $("#lembreteAcao");
+var acaoLembrete = null, tLembrete = null, tParado = null, avisouParado = false, enviou = false;
+
+function mostrarLembrete(txt, botao, acao){
+  clearTimeout(tLembrete);
+  lembreteTxt.textContent = txt;
+  lembreteAcao.hidden = !botao;
+  lembreteAcao.textContent = botao || "";
+  acaoLembrete = acao || null;
+  lembrete.hidden = false;
+}
+function fecharLembrete(){ clearTimeout(tLembrete); lembrete.hidden = true; acaoLembrete = null; }
+lembreteAcao.addEventListener("click", function(){ if (acaoLembrete) acaoLembrete(); });
+$("#lembreteFechar").addEventListener("click", fecharLembrete);
+
+// Qual cupom oferecer e de quanto é o desconto vêm do servidor
+// (CUPOM_DIVULGADO em functions/_lib/cupons.js); sem cupom lá, sem aviso.
+function oferecerCupom(){
+  try { if (localStorage.getItem(CHAVE_LEMBRETE)) return; } catch(e){ return; }
+  if (cupomTxt.trim() || enviou) return;
+  if (gaveta.classList.contains("aberta") || !lembrete.hidden){ setTimeout(oferecerCupom, 5000); return; }
+  try {
+    fetch("/api/cupom?divulgado=1")
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if (!j || typeof j.codigo !== "string" || typeof j.pct !== "number") return;
+        cupomRes[j.codigo] = { estado: "ok", pct: j.pct };
+        if (cupomTxt.trim() || enviou) return;
+        if (gaveta.classList.contains("aberta") || !lembrete.hidden){ setTimeout(oferecerCupom, 5000); return; }
+        try { localStorage.setItem(CHAVE_LEMBRETE, "1"); } catch(e){}
+        mostrarLembrete("Primeira compra? Com o cupom " + j.codigo + " você ganha " +
+                        pctTxt(j.pct) + " de desconto.", "Usar o cupom", function(){
+          cupomTxt = j.codigo;
+          salvar();
+          render();
+          mostrarLembrete("Pronto, o cupom já está no seu pedido.");
+          tLembrete = setTimeout(fecharLembrete, 5000);
+        });
+      })
+      .catch(function(){});
+  } catch(e){}
+}
+
+function vigiarCarrinho(){
+  clearTimeout(tParado);
+  if (avisouParado || enviou || totalQtd() === 0 || gaveta.classList.contains("aberta")) return;
+  tParado = setTimeout(lembrarCarrinho, ESPERA.parado);
+}
+function lembrarCarrinho(){
+  if (avisouParado || enviou || totalQtd() === 0 || gaveta.classList.contains("aberta")) return;
+  avisouParado = true;
+  var q = totalQtd();
+  mostrarLembrete("Seu pedido ainda está no carrinho, com " + q + (q === 1 ? " esfiha" : " esfihas") +
+                  ". Falta só mandar no WhatsApp.", "Ver pedido", function(){ fecharLembrete(); abrir(); });
+}
+
+setTimeout(oferecerCupom, ESPERA.cupom);
+vigiarCarrinho();   // carrinho que sobrou de uma visita anterior
 
 $("#ano").textContent = new Date().getFullYear();
 consultarCupom(cupomTxt.trim());   // cupom que sobrou de uma visita anterior

@@ -1718,5 +1718,72 @@
     });
   });
 
+  /* =========================================================
+     LEMBRETES NO CANTO
+     ========================================================= */
+  // Recarrega o site com as esperas encurtadas; as do teste seguinte voltam
+  // a ser longas.
+  function comEsperas(c, esperas) {
+    global.__esperaLembretes = esperas;
+    return c.recarregar().then(function (n) { global.__esperaLembretes = null; return n; },
+                               function (e) { global.__esperaLembretes = null; throw e; });
+  }
+  function lembreteVisivel(c) { return c.el("#lembrete").getBoundingClientRect().height > 0; }
+
+  teste("Lembretes", "o cupom de primeira compra aparece e o botão põe ele no pedido", function (c) {
+    return comEsperas(c, { cupom: 50, parado: 1e9 }).then(function (n) {
+      return n.esperar(function () { return lembreteVisivel(n); }, 4000).then(function () {
+        contem(n.texto("#lembreteTxt"), "PRIMEIRACOMPRA");
+        contem(n.texto("#lembreteTxt"), "10%");
+        n.el("#lembreteAcao").click();
+        contem(n.texto("#lembreteTxt"), "já está no seu pedido");
+        n.definir("carne", 4);
+        n.abrirGaveta();
+        igual(n.el("#fCupom").value, "PRIMEIRACOMPRA");
+        ok(!lembreteVisivel(n), "o aviso continua na tela com a gaveta aberta");
+      });
+    });
+  });
+
+  teste("Lembretes", "o cupom aparece uma vez só pra cada visitante", function (c) {
+    return comEsperas(c, { cupom: 50, parado: 1e9 }).then(function (n) {
+      return n.esperar(function () { return lembreteVisivel(n); }, 4000).then(function () {
+        n.el("#lembreteFechar").click();
+        ok(!lembreteVisivel(n), "o X não fechou o aviso");
+        return comEsperas(n, { cupom: 50, parado: 1e9 });
+      }).then(function (n2) {
+        return n2.dormir(600).then(function () { ok(!lembreteVisivel(n2), "o cupom voltou na segunda visita"); });
+      });
+    });
+  });
+
+  teste("Lembretes", "carrinho parado lembra do pedido e o botão abre a gaveta", function (c) {
+    return comEsperas(c, { cupom: 1e9, parado: 150 }).then(function (n) {
+      return n.dormir(400).then(function () {
+        ok(!lembreteVisivel(n), "lembrou de carrinho vazio");
+        n.definir("queijo", 3);
+        return n.esperar(function () { return lembreteVisivel(n); }, 3000);
+      }).then(function () {
+        return n.dormir(450);   // a barra e o aviso entram com animação
+      }).then(function () {
+        contem(n.texto("#lembreteTxt"), "3 esfihas");
+        var rl = n.el("#lembrete").getBoundingClientRect(), rb = n.el("#barra").getBoundingClientRect();
+        ok(rl.bottom <= rb.top, "o aviso ficou por cima da barra do carrinho: " + Math.round(rl.top) + "-" + Math.round(rl.bottom) + " x " + Math.round(rb.top) + "-" + Math.round(rb.bottom));
+        n.el("#lembreteAcao").click();
+        ok(n.el("#gaveta").classList.contains("aberta"), "a gaveta não abriu");
+        ok(!lembreteVisivel(n), "o aviso continua na tela com a gaveta aberta");
+      });
+    });
+  });
+
+  teste("Lembretes", "depois de mandar o pedido o carrinho parado não lembra", function (c) {
+    return comEsperas(c, { cupom: 1e9, parado: 150 }).then(function (n) {
+      n.definir("calabresa", 4);
+      n.pedidoCompleto();
+      n.el("#btnFechar").click();
+      return n.dormir(600).then(function () { ok(!lembreteVisivel(n), "lembrou de um pedido já mandado"); });
+    });
+  });
+
   global.SUITE = { testes: testes, A: A };
 })(window);

@@ -385,6 +385,20 @@ main,header,footer{position:relative;z-index:1}
 .barra .btn{margin-left:auto;padding:12px 22px;font-size:15px;background:#FFF;color:var(--carvao)}
 @media(max-width:420px){.barra{padding-left:18px;gap:10px}.barra .btn{padding:12px 16px}}
 
+/* ---------- lembrete no canto (cupom e carrinho parado) ---------- */
+.lembrete{
+  position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+  z-index:75;width:min(560px,calc(100vw - 28px));
+  background:var(--branco);color:var(--carvao);border:1px solid var(--areia-esc);border-radius:18px;
+  padding:16px 60px 16px 20px;box-shadow:var(--sombra-alta);
+  animation:lembrete-entra .3s ease-out;
+}
+body.tem-barra .lembrete{bottom:100px}
+.lembrete p{margin:0;font-size:15.5px;line-height:1.45}
+.lembrete .btn{margin-top:12px;padding:11px 20px;font-size:15px}
+.lembrete .fechar{position:absolute;top:10px;right:10px}
+@keyframes lembrete-entra{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+
 /* ---------- gaveta do pedido ---------- */
 .veu{position:fixed;inset:0;background:rgba(18,18,18,.5);backdrop-filter:blur(3px);z-index:80;opacity:0;
   pointer-events:none;transition:opacity .28s}
@@ -473,7 +487,7 @@ body.tem-barra{padding-bottom:96px}
 .pular:focus{top:12px}
 .sem-js{text-align:center;margin-top:18px;font-size:16px}
 @media print{
-  .barra,.gaveta,.veu,.nav,.pular,.topo .btn,.hero-acoes{display:none!important}
+  .barra,.lembrete,.gaveta,.veu,.nav,.pular,.topo .btn,.hero-acoes{display:none!important}
   .topo{position:static}
   body.tem-barra{padding-bottom:0}
   .sobre,.rodape{background:none!important;color:#121212!important}
@@ -1596,6 +1610,13 @@ body.tem-barra{padding-bottom:96px}
     <span id="barraQtd">nenhuma esfiha</span>
   </div>
   <button class="btn btn-primario" type="button" data-abrir-pedido>Ver pedido</button>
+</div>
+
+<!-- ====== lembrete no canto ====== -->
+<div class="lembrete" id="lembrete" role="status" hidden>
+  <p id="lembreteTxt"></p>
+  <button class="btn btn-primario" type="button" id="lembreteAcao"></button>
+  <button class="fechar" type="button" id="lembreteFechar" aria-label="Fechar aviso">✕</button>
 </div>
 
 <!-- ====== gaveta ====== -->

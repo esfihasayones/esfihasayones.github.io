@@ -189,6 +189,19 @@ Ideia do dono pra depois: vender o painel pra quem faz pão, bolo e afins.
 Ainda não conversamos sobre isso; o rascunho da fila aprovado está em
 `.superpowers/brainstorm/` (fora do git).
 
+### Lembretes no canto (28/10/2026)
+
+Aviso pequeno embaixo da tela (acima da barra do carrinho), nunca janela no
+meio. Depois de 20 s, uma vez por visitante (`sayones-lembrete-cupom` no
+localStorage), oferece o cupom com botão "Usar o cupom", que já preenche o
+campo. Qual cupom e o desconto vêm de `GET /api/cupom?divulgado=1`
+(`CUPOM_DIVULGADO` em `functions/_lib/cupons.js`; `null` desliga): o nome
+do cupom não pode aparecer no código do site, há teste. Com esfiha no
+carrinho e 3 min sem mexer, uma vez por visita, lembra do pedido com botão
+"Ver pedido"; depois de mandar no WhatsApp não lembra mais. Os testes
+encurtam as esperas por `window.__esperaLembretes` (no harness, o padrão é
+nunca aparecer).
+
 ### Pagamento (22/10/2026)
 
 Pix na chave dele e cartão na retirada pelo Tap do Mercado Pago (celular
