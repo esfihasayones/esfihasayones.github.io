@@ -228,8 +228,22 @@ ordem de impressão) e o painel mostra o código no pedido; cancelado ou abaixo
 de 4 devolve o cartão não trocado. A troca pede os 5 códigos e só marca se
 todos existem, saíram com pedido, não foram trocados e não se repetem;
 o aviso tem Desfazer. O dono decidiu não assinar nem numerar em sequência.
-Um PDF numerado 001 a 160 em `~/Documents/brenisio/esfihas-cartao-fidelidade/`
-não vale: os códigos válidos só existem no banco.
+A folha tem 6 mm de margem (papelaria não imprime colado na borda) e linha de
+corte nos quatro lados de cada cartão; imprimir em 100%, sem ajustar à página.
+
+**Lote 1 (29/10/2026):** 192 códigos (12 folhas) sorteados com `sortear` e
+gravados em produção pelo dono com `wrangler d1 execute --remote --file`
+(ids 1 a 192, primeiro código DHR). PDF mandado pra papelaria:
+`~/Documents/brenisio/esfihas-cartao-fidelidade/cartoes-fidelidade-lote1-192.pdf`
+(o SQL do lote está ao lado, `lote1-producao.sql`; não rodar de novo). Os
+cartões cortados ficam na ordem das folhas, da esquerda pra direita e de cima
+pra baixo, porque o painel distribui nessa ordem. Próximos lotes saem pelo
+botão "Gerar e imprimir" da aba Cartões. Na mesma pasta, os PDFs
+`cartoes-fidelidade-A4*.pdf` (numerados 001 a 160 ou sem código) são
+rascunhos e não valem.
+
+Pendente: publicar de novo pra margem de 6 mm (f61744d) chegar à página de
+impressão do painel; ver o primeiro pedido real ganhar o DHR e a primeira troca.
 
 ### Pagamento (22/10/2026)
 
