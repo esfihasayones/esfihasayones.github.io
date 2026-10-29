@@ -1,4 +1,5 @@
-import { validarCampos, montar, serializar, mudancas, erro, resposta, lerJson } from "../../../_lib/painel.js";
+import { sincronizarCartao } from "../../../_lib/cartoes.js";
+import { validarCampos, montar, serializar, mudancas, erro, resposta, lerJson, COLUNAS_PEDIDO } from "../../../_lib/painel.js";
 import { lerAgenda } from "../../../_lib/agenda.js";
 import { isoBrasilia } from "../../../../public/regras.js";
 
@@ -7,7 +8,7 @@ const EDITAVEIS = ["status", "pago", "pagamento", "entregue", "nome", "itens", "
 
 export async function onRequestPatch({ request, env, params }) {
   if (!/^\d+$/.test(String(params.id))) return erro("pedido não encontrado", 404);
-  const atual = await env.DB.prepare("SELECT * FROM pedidos WHERE id = ?").bind(Number(params.id)).first();
+  const atual = await env.DB.prepare("SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE id = ?").bind(Number(params.id)).first();
   if (!atual) return erro("pedido não encontrado", 404);
 
   const c = await lerJson(request);
@@ -39,7 +40,9 @@ export async function onRequestPatch({ request, env, params }) {
     await env.DB.prepare(`UPDATE pedidos SET ${cols.map((k) => k + " = ?").join(", ")} WHERE id = ?`)
       .bind(...cols.map((k) => l[k]), atual.id).run();
   }
-  const novo = await env.DB.prepare("SELECT * FROM pedidos WHERE id = ?").bind(atual.id).first();
+  // Aceito com 4 ou mais ganha cartão; cancelado devolve.
+  if (cols.includes("status") || cols.includes("qtd")) await sincronizarCartao(env.DB, atual.id);
+  const novo = await env.DB.prepare("SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE id = ?").bind(atual.id).first();
   return resposta(serializar(novo));
 }
 
@@ -57,6 +60,6 @@ async function montar1(env, atual, m) {
     "UPDATE pedidos SET montadas = json_set(COALESCE(montadas, '{}'), ?1, " +
     "MAX(0, MIN(?2, COALESCE(json_extract(montadas, ?1), 0) + ?3))) WHERE id = ?4")
     .bind(caminho, item.qtd, m.delta, atual.id).run();
-  const novo = await env.DB.prepare("SELECT * FROM pedidos WHERE id = ?").bind(atual.id).first();
+  const novo = await env.DB.prepare("SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE id = ?").bind(atual.id).first();
   return resposta(serializar(novo));
 }

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Cartões de fidelidade</title>
+<style>
+@font-face{font-family:Unbounded;src:url(/fontes/unbounded.woff2) format("woff2");font-weight:200 900;font-display:block}
+@font-face{font-family:"Space Grotesk";src:url(/fontes/space-grotesk.woff2) format("woff2");font-weight:300 700;font-display:block}
+@page{size:A4;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#fff;color:#121212}
+body{font-family:"Space Grotesk",sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+[hidden]{display:none!important}
+.topo{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 16px;background:#F7F6F2;border-bottom:1px solid #DCD9D2;font-size:15px}
+.topo button{min-height:44px;padding:0 16px;border:2px solid #121212;border-radius:8px;background:#121212;color:#F7F6F2;font:inherit;font-weight:700;cursor:pointer}
+.folha{display:grid;grid-template-columns:105mm 105mm;grid-template-rows:repeat(8,37.125mm);width:210mm;height:297mm;margin:0 auto;break-after:page;background:#fff}
+@media screen{ .folha{margin:16px auto;box-shadow:0 1px 6px rgba(0,0,0,.18)} body{background:#e6e4df} }
+@media print{ .topo{display:none} }
+/* linha de corte tracejada, só por dentro da folha */
+.cartao{padding:4mm 5mm;display:grid;grid-template-columns:22mm 1fr 20mm;column-gap:3.5mm;align-items:center}
+.cartao:nth-child(odd){border-right:.2mm dashed #9a9a9a}
+.cartao:nth-child(-n+14){border-bottom:.2mm dashed #9a9a9a}
+.selo{width:22mm;height:22mm}
+.meio{display:flex;flex-direction:column;justify-content:space-between;align-self:stretch}
+.chamada{font-family:Unbounded;font-weight:700;font-size:8pt;line-height:1.25}
+.regra{font-size:7.2pt;line-height:1.25;margin-top:1mm}
+.base{display:flex;align-items:flex-end;gap:3mm}
+.escrita{flex:1;border-bottom:.25mm solid #121212;height:5mm}
+.codigo{font-family:Unbounded;font-weight:700;font-size:8pt;letter-spacing:.08em}
+.qr{width:20mm;height:20mm}
+</style>
+</head>
+<body>
+<div class="topo">
+  <span id="estado">Carregando…</span>
+  <button type="button" id="imprimir" hidden>Imprimir</button>
+</div>
+<div id="folhas"></div>
+<template id="modelo">
+  <section class="cartao">
+    <img class="selo" src="/logo.svg" alt="">
+    <div class="meio">
+      <div>
+        <p class="chamada">Junte 5 e troque por um combo com 4 esfihas grátis.</p>
+        <p class="regra">Você ganha este cartão em cada pedido de 4 esfihas ou mais.</p>
+      </div>
+      <div class="base"><span class="escrita"></span><span class="codigo"></span></div>
+    </div>
+    <img class="qr" src="qr-site.svg" alt="">
+  </section>
+</template>
+<script type="module" src="cartoes.js"></script>
+</body>
+</html>

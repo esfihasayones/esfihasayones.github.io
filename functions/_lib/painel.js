@@ -4,6 +4,9 @@ import { validarItens, precificar, dataIsoValida, texto, limpar } from "./pedido
 
 export const STATUS = ["aguardando", "confirmado", "cancelado", "fora_da_regra"];
 
+// Colunas do pedido como o painel lê: tudo mais o código do cartão de fidelidade.
+export const COLUNAS_PEDIDO = "*, (SELECT codigo FROM cartoes WHERE cartoes.pedido_id = pedidos.id) AS cartao";
+
 export const resposta = (corpo, status) => Response.json(corpo, { status: status || 200 });
 export const erro = (msg, status) => resposta({ erro: msg }, status || 400);
 
@@ -27,7 +30,7 @@ export function serializar(r) {
     itens, montadas: montadasDe(r, itens), qtd: r.qtd, total_centavos: r.total_centavos,
     cupom: r.cupom, desconto_centavos: r.desconto_centavos, valor_manual: !!r.valor_manual,
     ponto: r.ponto, retirada: r.retirada, janela: r.janela, obs: r.obs,
-    pago: !!r.pago, pagamento: r.pagamento || null, entregue: !!r.entregue,
+    pago: !!r.pago, pagamento: r.pagamento || null, entregue: !!r.entregue, cartao: r.cartao || null,
   };
 }
 

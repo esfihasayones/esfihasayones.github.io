@@ -250,6 +250,23 @@ section.bloco>h2{font-size:15px}
 .tabela .mes[aria-current="true"]{text-decoration:none}
 #voltarHoje{margin-left:auto;opacity:1}
 #voltarHoje:not([hidden]) + #novo{margin-left:0}
+/* cartões de fidelidade */
+.fid-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:16px;align-items:start}
+.fid-codigos{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.fid-codigos input{min-width:0;min-height:52px;padding:6px;text-align:center;font-family:var(--display);font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:1px solid #bdb9b0;border-radius:var(--raio-sm);background:#fff}
+.fid-codigos input[aria-invalid="true"]{border:2px solid var(--erro);color:var(--erro)}
+.fid-resultado{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:4px;font-size:14px}
+.fid-resultado li{padding:6px 10px;border-radius:var(--raio-sm);background:var(--areia)}
+.fid-resultado li.ruim{background:var(--alerta-fundo);color:var(--erro);font-weight:600}
+.fid-resultado li.bom{background:var(--verde-fundo)}
+.fid-no-pedido{margin-top:8px;padding:6px 10px;border-radius:var(--raio-sm);background:var(--areia);font-size:14px}
+.fid-no-pedido b{font-family:var(--display);letter-spacing:.1em}
+.fid-no-pedido.falta{background:var(--alerta-fundo);color:var(--alerta)}
+.fid-gerar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fid-gerar input{width:84px;min-height:48px;padding:6px 10px;border:1px solid #bdb9b0;border-radius:var(--raio-sm);background:#fff}
+@media (max-width:480px){ .fid-codigos input{min-height:48px;letter-spacing:.05em} }
+/* a regra do histórico que esconde colunas no celular não vale aqui */
+#fidLotes th,#fidLotes td{display:table-cell}
 @media (max-width:1000px){
   .fila-grade{grid-template-columns:minmax(0,1fr)}
   .col-destaque{position:static}
@@ -263,6 +280,13 @@ section.bloco>h2{font-size:15px}
   .barra h1{display:none}
 }
 @media (max-width:480px){
+  /* três abas e o botão de novo pedido cabem em 360px */
+  .barra-dentro{gap:6px;padding:0 8px;flex-wrap:wrap;height:auto;min-height:56px}
+  .abas{height:56px}
+  /* "Voltar pra hoje" desce pra uma segunda linha quando não cabe */
+  #voltarHoje{height:40px}
+  .aba{padding:0 6px;font-size:14px}
+  .barra #novo{padding:0 10px;font-size:12px;white-space:nowrap}
   .destaque{padding:16px}
   .montagem li{gap:8px}
   .contador .feitas{font-size:26px}
@@ -280,6 +304,7 @@ section.bloco>h2{font-size:15px}
     <nav class="abas" aria-label="Seções do painel">
       <button type="button" class="aba" id="abaPedidos" aria-pressed="true">Pedidos</button>
       <button type="button" class="aba" id="abaHistorico" aria-pressed="false">Histórico</button>
+      <button type="button" class="aba" id="abaCartoes" aria-pressed="false">Cartões</button>
     </nav>
     <small id="situacao"></small>
     <button type="button" class="aba" id="voltarHoje" hidden>Voltar pra hoje</button>
@@ -355,6 +380,30 @@ section.bloco>h2{font-size:15px}
     <div class="tabela-rola"><table class="tabela" id="tabelaMeses"></table></div>
   </section>
   <p class="dica" id="dicaCustos">Conta os pedidos confirmados com retirada até hoje.</p>
+</main>
+
+<main class="tela" id="telaCartoes" hidden>
+  <div class="fid-grade">
+    <section class="bloco">
+      <h2>Trocar 5 cartões por um combo</h2>
+      <form id="fidTroca" novalidate>
+        <div class="fid-codigos" id="fidCodigos"></div>
+        <button type="submit" class="btn cheio" id="fidTrocar">Trocar</button>
+      </form>
+      <ul class="fid-resultado" id="fidResultado" aria-live="polite"></ul>
+      <p class="dica">Digite o código de cada cartão. Se algum não existir, não tiver saído com um pedido, já tiver sido trocado ou vier repetido, nenhum é trocado. Depois da troca, fique com os cartões.</p>
+    </section>
+    <section class="bloco">
+      <h2>Imprimir cartões</h2>
+      <div class="fid-gerar">
+        <label for="fidFolhas">Folhas A4</label>
+        <input type="number" id="fidFolhas" inputmode="numeric" min="1" max="25" step="1" value="10">
+        <button type="button" class="btn" id="fidGerar">Gerar e imprimir</button>
+      </div>
+      <p class="dica">Cada folha tem 16 cartões com códigos novos. Cada pedido aceito de 4 ou mais leva o próximo cartão livre, na ordem da folha, e o código aparece no pedido. Deixe os cartões na ordem em que saíram da impressora.</p>
+      <div class="tabela-rola" style="margin-top:12px"><table class="tabela" id="fidLotes"></table></div>
+    </section>
+  </div>
 </main>
 
 <div id="aviso" role="alert" hidden></div>

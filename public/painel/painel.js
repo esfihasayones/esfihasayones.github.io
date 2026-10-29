@@ -178,11 +178,21 @@ function renderDestaque(p) {
     p.obs ? h("div", { className: "obs", texto: p.obs }) : null,
     h("ul", { className: "montagem", "aria-label": "Montagem por sabor" }, p.itens.map((i) => linhaSabor(p, i))),
     h("div", { className: "destaque-preco", texto: preco }),
+    linhaCartao(p),
     h("div", { className: "botoes destaque-botoes" },
       alternador(p, "pago", "Pago"),
       h("button", { type: "button", className: "btn cheio", "data-acao": "entregue", texto: "Entregue", onclick: (e) => entregar(p, e.currentTarget) }),
       menuMais([botaoEditar(p), botaoCancelar(p)])),
     formaPagamento(p)));
+}
+
+// Cartão de fidelidade que vai junto com o pedido (o servidor dá o próximo
+// livre quando o pedido de 4 ou mais é aceito).
+const MIN_ESFIHAS_CARTAO = 4;
+function linhaCartao(p) {
+  if (p.cartao) return h("div", { className: "fid-no-pedido" }, "Cartão de fidelidade: ", h("b", { texto: p.cartao }));
+  if (p.qtd >= MIN_ESFIHAS_CARTAO) return h("div", { className: "fid-no-pedido falta", texto: "Sem cartão livre: gere mais na aba Cartões." });
+  return null;
 }
 
 // Uma linha por sabor: montadas em preto, o pedido em cinza, barra e +1.
@@ -321,6 +331,7 @@ function cartao(p, o) {
     h("div", { className: "itens", texto: itensTexto(p.itens) }),
     onde ? h("div", { className: "detalhe", texto: onde }) : null,
     p.cupom ? h("div", { className: "detalhe", texto: "Cupom " + p.cupom + (p.desconto_centavos ? " (menos " + brl(p.desconto_centavos) + ")" : "") }) : null,
+    p.status === "confirmado" ? linhaCartao(p) : null,
     p.cupom_repetido ? h("div", { className: "motivo cupom-repetido", texto: "Esse nome já fez pedido antes. Confira no WhatsApp se é mesmo a primeira compra." }) : null,
     p.obs ? h("div", { className: "obs", texto: p.obs }) : null,
     h("div", { className: "botoes" }, o.botoes),
@@ -389,9 +400,110 @@ function abrirAba(qual) {
   estado.aba = qual;
   $("#telaPedidos").hidden = qual !== "pedidos";
   $("#telaHistorico").hidden = qual !== "historico";
+  $("#telaCartoes").hidden = qual !== "cartoes";
   $("#abaPedidos").setAttribute("aria-pressed", qual === "pedidos" ? "true" : "false");
   $("#abaHistorico").setAttribute("aria-pressed", qual === "historico" ? "true" : "false");
+  $("#abaCartoes").setAttribute("aria-pressed", qual === "cartoes" ? "true" : "false");
   if (qual === "historico") carregarHistorico();
+  if (qual === "cartoes") carregarCartoes();
+}
+
+// ---------- cartões de fidelidade ----------
+const CARTOES_POR_TROCA = 5;
+const SITUACAO = {
+  ok: "vale",
+  inexistente: "não existe",
+  sem_pedido: "não saiu com nenhum pedido",
+  repetido: "repetido nesta troca",
+};
+const doPedido = (c) => c.pedido ? " (pedido " + c.pedido.id + ", " + c.pedido.nome + ")" : "";
+const quando = (iso) => dataCurta(isoBrasilia(Date.parse(iso)));
+
+function montarCodigos() {
+  $("#fidCodigos").replaceChildren(...Array.from({ length: CARTOES_POR_TROCA }, (_, i) =>
+    h("input", { type: "text", maxLength: 6, autocomplete: "off", autocapitalize: "characters", spellcheck: false,
+      "aria-label": "Código do cartão " + (i + 1),
+      oninput: (e) => { e.currentTarget.removeAttribute("aria-invalid"); $("#fidResultado").replaceChildren(); } })));
+}
+const camposCodigo = () => [...document.querySelectorAll("#fidCodigos input")];
+
+function mostrarResultado(cartoes) {
+  const campos = camposCodigo();
+  $("#fidResultado").replaceChildren(...cartoes.map((c, i) => {
+    const ruim = c.situacao !== "ok" && c.situacao !== "trocado";
+    const ja = c.situacao === "trocado" && c.trocado_em;
+    if (campos[i]) campos[i].setAttribute("aria-invalid", ruim || ja ? "true" : "false");
+    const txt = c.codigo + doPedido(c) + ": " + (c.situacao === "trocado" ? "já trocado em " + quando(c.trocado_em) : SITUACAO[c.situacao]);
+    return h("li", { className: ruim || ja ? "ruim" : "", texto: txt });
+  }));
+}
+
+async function trocarCartoes(e) {
+  e.preventDefault();
+  const campos = camposCodigo();
+  const codigos = campos.map((c) => c.value.trim());
+  const vazio = codigos.findIndex((c) => !c);
+  if (vazio >= 0) { campos[vazio].focus(); return aviso("Faltou o código do cartão " + (vazio + 1) + "."); }
+  const botao = $("#fidTrocar");
+  botao.disabled = true;
+  try {
+    const r = await api("POST", "/api/painel/cartoes/troca", { codigos });
+    for (const c of campos) c.value = "";
+    $("#fidResultado").replaceChildren(h("li", { className: "bom", texto: "Trocados, pode entregar o combo." }),
+      ...r.cartoes.map((c) => h("li", { texto: c.codigo + doPedido(c) })));
+    aviso("5 cartões trocados por um combo.", { bom: true, acao: { rotulo: "Desfazer", fazer: () => desfazerTroca(r) } });
+    carregarCartoes();
+  } catch (err) {
+    if (err.dados && err.dados.cartoes) mostrarResultado(err.dados.cartoes);
+    aviso(err.dados && err.dados.cartoes ? "Nenhum cartão foi trocado: confira os marcados." : err.message);
+  } finally {
+    botao.disabled = false;
+  }
+}
+
+async function desfazerTroca(r) {
+  try {
+    await api("DELETE", "/api/painel/cartoes/troca", { codigos: r.cartoes.map((c) => c.codigo), trocado_em: r.trocado_em });
+    $("#fidResultado").replaceChildren();
+    aviso("Troca desfeita: os 5 cartões voltaram a valer.", { bom: true });
+    carregarCartoes();
+  } catch (err) {
+    aviso("Não consegui desfazer. " + err.message);
+  }
+}
+
+async function carregarCartoes() {
+  try {
+    const j = await api("GET", "/api/painel/cartoes");
+    const cab = h("tr", {}, ...["Lote", "Gerado em", "Cartões", "Com pedido", "Trocados", ""].map((t) => h("th", { texto: t })));
+    const linhas = j.lotes.map((l) => h("tr", {},
+      h("td", { texto: "Lote " + l.lote }), h("td", { texto: quando(l.criado_em) }),
+      h("td", { texto: String(l.n) }), h("td", { texto: String(l.entregues) }), h("td", { texto: String(l.trocados) }),
+      h("td", {}, h("a", { className: "link", href: "cartoes.html?lote=" + l.lote, target: "_blank", texto: "Imprimir" }))));
+    $("#fidLotes").replaceChildren(cab, ...(linhas.length ? linhas : [h("tr", {}, h("td", { colSpan: 6, texto: "Nenhum cartão gerado ainda." }))]));
+  } catch (err) {
+    aviso("Não consegui ler os cartões. " + err.message);
+  }
+}
+
+async function gerarCartoes(e) {
+  const folhas = Number($("#fidFolhas").value);
+  if (!Number.isInteger(folhas) || folhas < 1 || folhas > 25) return aviso("Escolha de 1 a 25 folhas.");
+  const botao = e.currentTarget;
+  // Abre a aba já no clique, senão o navegador bloqueia como pop-up.
+  const janela = window.open("", "_blank");
+  botao.disabled = true;
+  try {
+    const r = await api("POST", "/api/painel/cartoes", { quantidade: folhas * 16 });
+    if (janela) janela.location = "cartoes.html?lote=" + r.lote;
+    aviso(plural(r.cartoes.length, "cartão gerado", "cartões gerados") + " no lote " + r.lote + ".", { bom: true });
+    carregarCartoes();
+  } catch (err) {
+    if (janela) janela.close();
+    aviso(err.message);
+  } finally {
+    botao.disabled = false;
+  }
 }
 
 // ---------- ações sobre um pedido ----------
@@ -697,6 +809,9 @@ function ligar() {
     for (const d of document.querySelectorAll("details.mais-acoes[open]")) if (!d.contains(e.target)) d.open = false;
   });
   $("#abaHistorico").addEventListener("click", () => abrirAba("historico"));
+  $("#abaCartoes").addEventListener("click", () => abrirAba("cartoes"));
+  $("#fidTroca").addEventListener("submit", trocarCartoes);
+  $("#fidGerar").addEventListener("click", gerarCartoes);
   $("#novo").addEventListener("click", () => abrirForm(null));
   $("#fFechar").addEventListener("click", () => form.close());
   $("#formPedido").addEventListener("submit", salvar);
@@ -720,6 +835,7 @@ function ligar() {
 }
 
 montarFormulario();
+montarCodigos();
 ligar();
 const pedido = new URLSearchParams(location.search).get("dia");
 carregarDia(validoIso(pedido) ? pedido : hoje());

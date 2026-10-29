@@ -215,6 +215,22 @@ foi gerada no Gemini pelo dono, recortada sem o "FORNEAVÉL", a seta e os
 ícones (o de micro-ondas estava errado pra alumínio). É provisória: trocar
 pela foto real junto com as dos sabores, com nome de arquivo novo.
 
+### Cartão de fidelidade (29/10/2026)
+
+Cada pedido de 4 esfihas ou mais leva um cartão; 5 cartões trocam por um
+combo com 4 esfihas. Impressos 16 deitados por A4 (selo, frase, linha pra
+escrever "pedido x, cliente y", código e QR do site), pela aba Cartões do
+painel (`/painel/cartoes.html?lote=N`, imprimir ou salvar em PDF). Código de 3
+caracteres sorteado de `ALFABETO` (`functions/_lib/cartoes.js`, sem letra que
+se confunde), tabela `cartoes` (migração 0004). Quando um pedido de 4 ou mais
+fica confirmado, o servidor dá a ele o primeiro cartão livre (menor id, a
+ordem de impressão) e o painel mostra o código no pedido; cancelado ou abaixo
+de 4 devolve o cartão não trocado. A troca pede os 5 códigos e só marca se
+todos existem, saíram com pedido, não foram trocados e não se repetem;
+o aviso tem Desfazer. O dono decidiu não assinar nem numerar em sequência.
+Um PDF numerado 001 a 160 em `~/Documents/brenisio/esfihas-cartao-fidelidade/`
+não vale: os códigos válidos só existem no banco.
+
 ### Pagamento (22/10/2026)
 
 Pix na chave dele e cartão na retirada pelo Tap do Mercado Pago (celular

@@ -1,6 +1,6 @@
 import { isoBrasilia, MAX_DIAS_RETIRADA } from "../../../public/regras.js";
 import { dataIsoValida } from "../../_lib/pedido.js";
-import { serializar, erro, resposta } from "../../_lib/painel.js";
+import { serializar, erro, resposta, COLUNAS_PEDIDO } from "../../_lib/painel.js";
 
 const DIA_MS = 86400000;
 const somaDias = (dia, n) => new Date(Date.parse(dia + "T12:00:00Z") + n * DIA_MS).toISOString().slice(0, 10);
@@ -35,16 +35,16 @@ export async function onRequestGet({ request, env }) {
 
   const [fila, pend, sd, entregues, nomes] = await env.DB.batch([
     env.DB.prepare(
-      "SELECT * FROM pedidos WHERE status = 'confirmado' AND entregue = 0 AND retirada BETWEEN ? AND ? ORDER BY retirada, id")
+      "SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE status = 'confirmado' AND entregue = 0 AND retirada BETWEEN ? AND ? ORDER BY retirada, id")
       .bind(somaDias(dia, -ATRASO_DIAS), somaDias(dia, MAX_DIAS_RETIRADA + 1)),
     // Toda pendência, mesmo com data passada: sumir em silêncio deixava o
     // cliente sem resposta.
-    env.DB.prepare("SELECT * FROM pedidos WHERE status IN ('aguardando','fora_da_regra') ORDER BY retirada IS NULL, retirada, id"),
-    env.DB.prepare("SELECT * FROM pedidos WHERE status = 'confirmado' AND retirada IS NULL AND entregue = 0 ORDER BY id"),
+    env.DB.prepare("SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE status IN ('aguardando','fora_da_regra') ORDER BY retirada IS NULL, retirada, id"),
+    env.DB.prepare("SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE status = 'confirmado' AND retirada IS NULL AND entregue = 0 ORDER BY id"),
     // Entregues do dia e dos dias que ainda vêm (entregue adiantado, ou
     // marcado sem querer, não pode sumir), e os de antes que ficaram sem pagar.
     env.DB.prepare(
-      "SELECT * FROM pedidos WHERE status = 'confirmado' AND entregue = 1 AND (retirada BETWEEN ? AND ? OR (pago = 0 AND retirada BETWEEN ? AND ?)) ORDER BY retirada DESC, id")
+      "SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE status = 'confirmado' AND entregue = 1 AND (retirada BETWEEN ? AND ? OR (pago = 0 AND retirada BETWEEN ? AND ?)) ORDER BY retirada DESC, id")
       .bind(dia, somaDias(dia, MAX_DIAS_RETIRADA + 1), somaDias(dia, -ATRASO_DIAS), dia),
     env.DB.prepare("SELECT id, nome FROM pedidos WHERE status IN ('aguardando','confirmado')"),
   ]);

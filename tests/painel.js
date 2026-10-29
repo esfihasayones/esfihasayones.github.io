@@ -279,6 +279,66 @@
     A.ok(t.indexOf("PRIMEIRACOMPRA") === -1, "lista de cupons só no servidor");
   });
 
+  teste("cartões: pedido aceito mostra o cartão; código que não existe barra a troca, os cinco certos trocam e Desfazer devolve", comPainel(async function () {
+    var g = await api("POST", "/api/painel/cartoes", { quantidade: 16 });
+    A.igual(g.status, 201, "gerar lote");
+    var d = await diaLivre(util);
+    var cods = [];
+    for (var i = 0; i < 5; i++) {
+      var p = await manual(d, [{ sabor: "carne", qtd: 4 }]);
+      A.ok(p.cartao, "pedido de 4 levou cartão");
+      cods.push(p.cartao);
+    }
+    A.igual(new Set(cods).size, 5, "um cartão diferente por pedido");
+    var P = await abrir(d);
+    A.ok(/Cartão de fidelidade: \w{3}/.test(P.texto("#destaque")), "pedido em destaque mostra o cartão: " + P.texto("#destaque .fid-no-pedido"));
+    P.clicar("#abaCartoes");
+    await esperar(function () { return P.todos("#fidLotes td").length > 1; }, "lista de lotes");
+    var campos = P.todos("#fidCodigos input");
+    A.igual(campos.length, 5, "cinco campos");
+    var inventado = "ZZZ";   // Z não está no alfabeto, então nunca existe
+    [cods[0], cods[1].toLowerCase(), " " + cods[2], cods[3], inventado].forEach(function (v, i) { P.digitar(campos[i], v); });
+    P.clicar("#fidTrocar");
+    await esperar(function () { return P.todos("#fidResultado li.ruim").length; }, "marcar o inventado");
+    A.igual(P.todos("#fidResultado li.ruim").length, 1, "só o inventado fica marcado");
+    A.igual(campos[4].getAttribute("aria-invalid"), "true", "campo do inventado em vermelho");
+    var trocados = async function () {
+      var j = (await api("GET", "/api/painel/cartoes")).json;
+      return j.trocados;
+    };
+    var antes = await trocados();
+
+    P.digitar(campos[4], cods[4]);
+    P.clicar("#fidTrocar");
+    await esperar(function () { return P.el("#fidResultado li.bom"); }, "troca feita");
+    A.ok(campos.every(function (c) { return c.value === ""; }), "campos limpos depois da troca");
+    A.igual(await trocados(), antes + 5, "cinco trocados no banco");
+    A.ok(P.todos("#fidResultado li").some(function (li) { return li.textContent.indexOf(cods[0] + " (pedido ") === 0; }), "diz de que pedido era cada cartão");
+
+    var desfazer = P.todos("#aviso button").filter(function (b) { return b.textContent === "Desfazer"; })[0];
+    A.ok(desfazer, "aviso tem Desfazer");
+    desfazer.click();
+    await esperar(function () { return /desfeita/.test(P.texto("#aviso")); }, "aviso de desfeito");
+    A.igual(await trocados(), antes, "voltaram a valer");
+  }));
+
+  teste("cartões: a página de impressão põe 16 por folha, com código, linha e QR", comPainel(async function () {
+    var g = await api("POST", "/api/painel/cartoes", { quantidade: 20 });
+    var q = document.createElement("iframe");
+    q.style.cssText = "position:fixed;left:0;top:0;border:0;opacity:.01;pointer-events:none;z-index:-1;width:900px;height:900px";
+    document.body.appendChild(q);
+    quadros.push(q);
+    q.src = "/painel/cartoes.html?lote=" + g.json.lote;
+    var P = montar(q);
+    await esperar(function () { return P.el("#imprimir") && !P.el("#imprimir").hidden; }, "página de impressão", 10000);
+    A.igual(P.todos(".folha").length, 2, "20 cartões em duas folhas");
+    A.igual(P.todos(".folha")[0].querySelectorAll(".cartao").length, 16, "16 na primeira");
+    A.igual(P.todos(".codigo").map(function (e) { return e.textContent; }).join(), g.json.cartoes.map(function (c) { return c.codigo; }).join(), "códigos na ordem do lote");
+    A.ok(P.todos(".cartao").every(function (c) { return c.querySelector(".escrita") && c.querySelector(".qr"); }), "linha pra escrever e QR em todos");
+    var f = P.el(".folha").getBoundingClientRect();
+    A.ok(Math.abs(f.height / f.width - 297 / 210) < 0.01, "folha na proporção do A4");
+  }));
+
   teste("sessão expirada avisa pra recarregar em vez de falar de conexão", comPainel(async function () {
     var d = await diaLivre(util);
     var ped = await manual(d, [{ sabor: "carne", qtd: 2 }]);

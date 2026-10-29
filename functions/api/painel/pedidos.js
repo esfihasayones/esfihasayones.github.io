@@ -2,7 +2,8 @@ import { isoBrasilia, MAX_DIAS_RETIRADA } from "../../../public/regras.js";
 import { dataIsoValida, texto } from "../../_lib/pedido.js";
 import { contas } from "../../_lib/custos.js";
 import { lerAgenda } from "../../_lib/agenda.js";
-import { validarCampos, montar, serializar, vazioSabores, erro, resposta, lerJson } from "../../_lib/painel.js";
+import { sincronizarCartao } from "../../_lib/cartoes.js";
+import { validarCampos, montar, serializar, vazioSabores, erro, resposta, lerJson, COLUNAS_PEDIDO } from "../../_lib/painel.js";
 
 const DIA_MS = 86400000;
 const somaDias = (dia, n) => new Date(Date.parse(dia + "T12:00:00Z") + n * DIA_MS).toISOString().slice(0, 10);
@@ -22,15 +23,15 @@ export async function onRequestGet({ request, env }) {
   // cada ida e volta saindo do Brasil custa mais de 100 ms.
   const mes = dia.slice(0, 7);
   const [doDia, pend, sd, px, doMes] = await env.DB.batch([
-    env.DB.prepare("SELECT * FROM pedidos WHERE retirada = ? ORDER BY id").bind(dia),
+    env.DB.prepare("SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE retirada = ? ORDER BY id").bind(dia),
     // Toda pendência, mesmo com data passada: sumir em silêncio deixava o
     // cliente sem resposta. O cartão mostra a data e o dono recusa.
     env.DB.prepare(
-      "SELECT * FROM pedidos WHERE status IN ('aguardando','fora_da_regra') " +
+      "SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE status IN ('aguardando','fora_da_regra') " +
       "ORDER BY retirada IS NULL, retirada, id"),
     // Confirmados sem data de retirada (ex.: "Combinar outro ponto"): sem isto
     // sumiriam do painel depois de Confirmar.
-    env.DB.prepare("SELECT * FROM pedidos WHERE status = 'confirmado' AND retirada IS NULL AND entregue = 0 ORDER BY id"),
+    env.DB.prepare("SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE status = 'confirmado' AND retirada IS NULL AND entregue = 0 ORDER BY id"),
     env.DB.prepare(
       "SELECT retirada, SUM(qtd) AS q, COUNT(*) AS n, GROUP_CONCAT(nome, ', ') AS nomes, SUM(CASE WHEN pago = 1 AND entregue = 1 THEN 0 ELSE 1 END) AS falta FROM pedidos WHERE status = 'confirmado' AND retirada BETWEEN ? AND ? GROUP BY retirada ORDER BY retirada")
       .bind(de, ate),
@@ -73,7 +74,7 @@ export async function onRequestPost({ request, env }) {
   if (c.id_envio != null && !texto(c.id_envio, 64, 1)) return erro("id_envio inválido");
 
   if (c.id_envio) {
-    const ja = await env.DB.prepare("SELECT * FROM pedidos WHERE id_envio = ?").bind(c.id_envio).first();
+    const ja = await env.DB.prepare("SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE id_envio = ?").bind(c.id_envio).first();
     if (ja) return resposta(serializar(ja), 200);
   }
 
@@ -92,6 +93,7 @@ export async function onRequestPost({ request, env }) {
   }
   const r = await env.DB.prepare(`INSERT INTO pedidos (${COLUNAS.join(",")}) VALUES (${COLUNAS.map(() => "?").join(",")})`)
     .bind(...COLUNAS.map((k) => l[k])).run();
-  const novo = await env.DB.prepare("SELECT * FROM pedidos WHERE id = ?").bind(r.meta.last_row_id).first();
+  await sincronizarCartao(env.DB, r.meta.last_row_id);
+  const novo = await env.DB.prepare("SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE id = ?").bind(r.meta.last_row_id).first();
   return resposta(serializar(novo), 201);
 }
