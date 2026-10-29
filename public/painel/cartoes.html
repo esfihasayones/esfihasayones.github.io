@@ -15,21 +15,22 @@ body{font-family:"Space Grotesk",sans-serif;-webkit-print-color-adjust:exact;pri
 [hidden]{display:none!important}
 .topo{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 16px;background:#F7F6F2;border-bottom:1px solid #DCD9D2;font-size:15px}
 .topo button{min-height:44px;padding:0 16px;border:2px solid #121212;border-radius:8px;background:#121212;color:#F7F6F2;font:inherit;font-weight:700;cursor:pointer}
-.folha{display:grid;grid-template-columns:105mm 105mm;grid-template-rows:repeat(8,37.125mm);width:210mm;height:297mm;margin:0 auto;break-after:page;background:#fff}
+/* 6 mm de margem: impressora de papelaria não imprime colado na borda */
+.folha{display:grid;grid-template-columns:99mm 99mm;grid-template-rows:repeat(8,35.625mm);align-content:start;width:210mm;height:297mm;padding:6mm;margin:0 auto;break-after:page;background:#fff}
 @media screen{ .folha{margin:16px auto;box-shadow:0 1px 6px rgba(0,0,0,.18)} body{background:#e6e4df} }
 @media print{ .topo{display:none} }
-/* linha de corte tracejada, só por dentro da folha */
-.cartao{padding:4mm 5mm;display:grid;grid-template-columns:22mm 1fr 20mm;column-gap:3.5mm;align-items:center}
-.cartao:nth-child(odd){border-right:.2mm dashed #9a9a9a}
-.cartao:nth-child(-n+14){border-bottom:.2mm dashed #9a9a9a}
-.selo{width:22mm;height:22mm}
+/* linha de corte tracejada em volta de cada cartão */
+.cartao{padding:3mm 4mm;display:grid;grid-template-columns:21mm 1fr 19mm;column-gap:3mm;align-items:center;border-right:.2mm dashed #9a9a9a;border-bottom:.2mm dashed #9a9a9a}
+.cartao:nth-child(-n+2){border-top:.2mm dashed #9a9a9a}
+.cartao:nth-child(odd){border-left:.2mm dashed #9a9a9a}
+.selo{width:21mm;height:21mm}
 .meio{display:flex;flex-direction:column;justify-content:space-between;align-self:stretch}
 .chamada{font-family:Unbounded;font-weight:700;font-size:8pt;line-height:1.25}
 .regra{font-size:7.2pt;line-height:1.25;margin-top:1mm}
 .base{display:flex;align-items:flex-end;gap:3mm}
 .escrita{flex:1;border-bottom:.25mm solid #121212;height:5mm}
 .codigo{font-family:Unbounded;font-weight:700;font-size:8pt;letter-spacing:.08em}
-.qr{width:20mm;height:20mm}
+.qr{width:19mm;height:19mm}
 </style>
 </head>
 <body>
