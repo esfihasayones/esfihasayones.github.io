@@ -2,6 +2,8 @@
 export const CUPONS = { PRIMEIRACOMPRA: 0.10 };
 // O cupom que o site oferece no aviso do canto; null desliga o aviso.
 export const CUPOM_DIVULGADO = "PRIMEIRACOMPRA";
+// Cupons que valem uma vez por cliente; o site avisa ao aplicar.
+export const SO_PRIMEIRA_COMPRA = ["PRIMEIRACOMPRA"];
 
 export function cupomDe(codigo) {
   if (typeof codigo !== "string") return null;

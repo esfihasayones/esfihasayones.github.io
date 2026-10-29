@@ -1785,5 +1785,30 @@
     });
   });
 
+  teste("Lembretes", "o cupom de primeira compra avisa que vale uma vez só", function (c) {
+    c.definir("carne", 4);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "PRIMEIRACOMPRA");
+    return c.esperar(function () { return c.texto("#dicaCupom").indexOf("Cupom aplicado") !== -1; }, 4000).then(function () {
+      contem(c.texto("#dicaCupom"), "Vale só na primeira compra.");
+    });
+  });
+
+  teste("Lembretes", "depois de mandar o pedido o cupom não volta nem é oferecido de novo", function (c) {
+    c.definir("carne", 4);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "PRIMEIRACOMPRA");
+    return c.esperar(function () { return c.texto("#dicaCupom").indexOf("Cupom aplicado") !== -1; }, 4000).then(function () {
+      c.el("#fNome").value = "Breno";
+      contem(c.enviarValido(), "PRIMEIRACOMPRA");
+      return comEsperas(c, { cupom: 50, parado: 1e9 });
+    }).then(function (n) {
+      igual(n.qtd("carne"), 4, "o carrinho continua guardado");
+      n.abrirGaveta();
+      igual(n.el("#fCupom").value, "", "o cupom voltou preenchido");
+      return n.dormir(600).then(function () { ok(!lembreteVisivel(n), "o aviso do cupom apareceu pra quem já pediu"); });
+    });
+  });
+
   global.SUITE = { testes: testes, A: A };
 })(window);

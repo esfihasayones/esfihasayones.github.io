@@ -311,6 +311,11 @@ cupom tem o nome (sem acento, caixa e espaço extra) de outro pedido anterior
 aguardando ou confirmado, e o cartão avisa pra conferir no WhatsApp. Não
 barra nada: nome igual não prova que é a mesma pessoa, e trocar o nome burla.
 Barrar de verdade só pelo telefone, que o site não pede.
+Também desde 28/10: ao aplicar um cupom de `SO_PRIMEIRA_COMPRA` (em
+`cupons.js`, vem como `so_primeira` no `/api/cupom`) o site diz "Vale só na
+primeira compra.", e depois de mandar um pedido o aparelho grava
+`sayones-ja-pediu`: o cupom guardado não volta preenchido e o aviso do cupom
+não aparece mais.
 
 ## Como o texto tem que soar
 

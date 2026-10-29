@@ -5,7 +5,7 @@ import { BASE } from "./ajuda.mjs";
 test("cupom existente responde 200 com o desconto, sem importar caixa", async () => {
   const r = await fetch(`${BASE}/api/cupom?codigo=primeiracompra`);
   assert.equal(r.status, 200);
-  assert.deepEqual(await r.json(), { codigo: "PRIMEIRACOMPRA", pct: 0.1 });
+  assert.deepEqual(await r.json(), { codigo: "PRIMEIRACOMPRA", pct: 0.1, so_primeira: true });
 });
 
 test("cupom que não existe responde 404", async () => {
@@ -17,7 +17,7 @@ test("cupom que não existe responde 404", async () => {
 test("o cupom divulgado vem com código e desconto", async () => {
   const r = await fetch(`${BASE}/api/cupom?divulgado=1`);
   assert.equal(r.status, 200);
-  assert.deepEqual(await r.json(), { codigo: "PRIMEIRACOMPRA", pct: 0.1 });
+  assert.deepEqual(await r.json(), { codigo: "PRIMEIRACOMPRA", pct: 0.1, so_primeira: true });
 });
 
 test("cupom sem código responde 404", async () => {

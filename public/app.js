@@ -19,6 +19,11 @@ var brl = function(n){
   return "R$ " + p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "," + p[1];
 };
 var CHAVE = "sayones-pedido-v2";
+// Quem já mandou pedido deste aparelho não ganha de volta o cupom guardado
+// nem o aviso do cupom: o de primeira compra vale uma vez só.
+var CHAVE_JA_PEDIU = "sayones-ja-pediu";
+var jaPediu = false;
+try { jaPediu = !!localStorage.getItem(CHAVE_JA_PEDIU); } catch(e){}
 var MAX_ITEM = 200;   // teto por sabor, pra um erro de digitação não virar pedido absurdo
 
 var chaveLinhas = null;   // assinatura da lista montada na gaveta
@@ -37,7 +42,7 @@ try {
     var o = salvo.obs && salvo.obs[s.id];
     if (typeof o === "string") obsItem[s.id] = o.slice(0, 140);
   });
-  if (typeof salvo.cupom === "string") cupomTxt = salvo.cupom.toUpperCase().slice(0, 30);
+  if (typeof salvo.cupom === "string" && !jaPediu) cupomTxt = salvo.cupom.toUpperCase().slice(0, 30);
 } catch(e){ /* localStorage bloqueado, segue sem persistir */ }
 
 // localStorage.setItem é síncrono e pode encostar no disco. Gravar a cada
@@ -86,7 +91,7 @@ function estadoCupom(){
 // Cupom que o servidor confirmou, ou null. Espaço em volta não conta.
 function cupomAtual(){
   var cod = cupomTxt.trim();
-  return estadoCupom() === "ok" ? { cod: cod, pct: cupomRes[cod].pct } : null;
+  return estadoCupom() === "ok" ? { cod: cod, pct: cupomRes[cod].pct, primeira: !!cupomRes[cod].primeira } : null;
 }
 // Pergunta ao servidor se o código existe. Falha de rede nunca estoura: vira
 // "falha" e o pedido segue, com o cupom escrito na mensagem.
@@ -99,7 +104,7 @@ function consultarCupom(cod){
         if (r.status === 404) return guardar({ estado: "nao" });
         if (!r.ok) return guardar({ estado: "falha" });
         return r.json().then(function(j){
-          guardar(typeof j.pct === "number" ? { estado: "ok", pct: j.pct } : { estado: "falha" });
+          guardar(typeof j.pct === "number" ? { estado: "ok", pct: j.pct, primeira: !!j.so_primeira } : { estado: "falha" });
         });
       })
       .catch(function(){ guardar({ estado: "falha" }); });
@@ -468,7 +473,8 @@ function render(){
   var estCupom = estadoCupom();
   dicaCupom.classList.toggle("ok", !!cup);
   dicaCupom.classList.toggle("falha", estCupom === "nao");
-  dicaCupom.textContent = cup ? "Cupom aplicado: " + pctTxt(cup.pct) + " de desconto no total."
+  dicaCupom.textContent = cup ? "Cupom aplicado: " + pctTxt(cup.pct) + " de desconto no total." +
+                              (cup.primeira ? " Vale só na primeira compra." : "")
                         : estCupom === "nao" ? "Esse cupom não existe. Confira se digitou certo."
                         : estCupom === "falha" ? "Não deu pra conferir o cupom agora. Ele vai na mensagem e a gente confere."
                         : "Conferindo o cupom...";
@@ -785,6 +791,7 @@ btnEnviar.addEventListener("click", function(){
   // depende do servidor. Nunca vai total; quem calcula é o servidor.
   gravarPedido(pt);
   enviou = true;
+  try { localStorage.setItem(CHAVE_JA_PEDIU, "1"); } catch(e){}
   window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(msg), "_blank", "noopener");
 });
 function gravarPedido(pt){
@@ -869,14 +876,14 @@ $("#lembreteFechar").addEventListener("click", fecharLembrete);
 // (CUPOM_DIVULGADO em functions/_lib/cupons.js); sem cupom lá, sem aviso.
 function oferecerCupom(){
   try { if (localStorage.getItem(CHAVE_LEMBRETE)) return; } catch(e){ return; }
-  if (cupomTxt.trim() || enviou) return;
+  if (cupomTxt.trim() || enviou || jaPediu) return;
   if (gaveta.classList.contains("aberta") || !lembrete.hidden){ setTimeout(oferecerCupom, 5000); return; }
   try {
     fetch("/api/cupom?divulgado=1")
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(j){
         if (!j || typeof j.codigo !== "string" || typeof j.pct !== "number") return;
-        cupomRes[j.codigo] = { estado: "ok", pct: j.pct };
+        cupomRes[j.codigo] = { estado: "ok", pct: j.pct, primeira: !!j.so_primeira };
         if (cupomTxt.trim() || enviou) return;
         if (gaveta.classList.contains("aberta") || !lembrete.hidden){ setTimeout(oferecerCupom, 5000); return; }
         try { localStorage.setItem(CHAVE_LEMBRETE, "1"); } catch(e){}
