@@ -202,6 +202,17 @@ carrinho e 3 min sem mexer, uma vez por visita, lembra do pedido com botão
 encurtam as esperas por `window.__esperaLembretes` (no harness, o padrão é
 nunca aparecer).
 
+### Embalagem no site (28/10/2026)
+
+Card "A embalagem" embaixo de Como esquentar: marmita de alumínio de 1100 ml
+com tampa de alumínio (Distribuidora De Pauli, na Shopee). Só fatos do
+fabricante: tampa encaixa firme, vai ao forno convencional sem a tampa,
+livre de BPA, reciclável, e não vai ao micro-ondas (a linha do micro-ondas
+em Como esquentar diz "fora da marmita"). A imagem `public/embalagem.webp`
+foi gerada no Gemini pelo dono, recortada sem o "FORNEAVÉL", a seta e os
+ícones (o de micro-ondas estava errado pra alumínio). É provisória: trocar
+pela foto real junto com as dos sabores, com nome de arquivo novo.
+
 ### Pagamento (22/10/2026)
 
 Pix na chave dele e cartão na retirada pelo Tap do Mercado Pago (celular

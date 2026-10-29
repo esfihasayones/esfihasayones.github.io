@@ -299,6 +299,10 @@ main,header,footer{position:relative;z-index:1}
   display:flex;flex-direction:column;gap:10px;
 }
 .preparo.fria{background:var(--branco)}
+.embalagem{margin-top:20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:30px;align-items:center}
+.embalagem img{width:100%;height:auto;display:block}
+.embalagem > div{display:flex;flex-direction:column;gap:10px}
+@media(max-width:820px){.embalagem{grid-template-columns:1fr;gap:18px}}
 .preparo .ico{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:var(--areia);color:var(--terracota)}
 .preparo.fria .ico{background:var(--areia);color:var(--carvao)}
 .preparo h3{font-size:19px;font-weight:600}
@@ -1483,9 +1487,23 @@ body.tem-barra{padding-bottom:96px}
       <ul>
         <li><span><b>Air fryer:</b> 140 a 160&nbsp;°C por 8 a 10 minutos, pra ela descongelar bem por dentro. Se deixar descongelar antes, 3 a 5 minutos.</span></li>
         <li><span><b>Forno:</b> 180&nbsp;°C por 12 a 15 minutos.</span></li>
-        <li><span><b>Micro-ondas:</b> 50 a 70 segundos por unidade. É o mais rápido, mas a massa fica mais mole.</span></li>
+        <li><span><b>Micro-ondas:</b> fora da marmita, 50 a 70 segundos por unidade. É o mais rápido, mas a massa fica mais mole.</span></li>
       </ul>
       <p style="margin-top:10px;font-size:15px;color:var(--texto-suave)">Qualquer dúvida, é só chamar a gente no <a href="https://wa.me/5548992210812" target="_blank" rel="noopener" style="display:inline-block;padding:7px 0;margin:-7px 0">WhatsApp</a>.</p>
+    </div>
+  </div>
+  <div class="preparo embalagem">
+    <img src="/embalagem.webp" width="900" height="751" loading="lazy" alt="Marmita de alumínio com esfihas de carne e a tampa meio aberta">
+    <div>
+      <h3>A embalagem</h3>
+      <p>As esfihas vão congeladas numa marmita de alumínio de 1100&nbsp;ml, com tampa também de alumínio.</p>
+      <ul>
+        <li><span>A tampa encaixa firme na borda da marmita</span></li>
+        <li><span>Pode ir ao forno convencional, sem a tampa</span></li>
+        <li><span>Livre de BPA</span></li>
+        <li><span>O alumínio é reciclável</span></li>
+        <li><span>Não vai ao micro-ondas: tire a esfiha da marmita antes</span></li>
+      </ul>
     </div>
   </div>
 </section>
