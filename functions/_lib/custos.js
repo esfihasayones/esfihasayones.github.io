@@ -3,8 +3,9 @@
 export const CUSTOS = {
   // massa, recheio e luz da air fryer por esfiha (conta de 21/10/2026, sem a embalagem)
   esfiha_centavos: 205,
-  // marmita de alumínio de 1100 ml: 10 por R$ 21 em 23/10/2026 (no pacote de 100 sai R$ 1,40)
-  marmita_centavos: 210,
+  // bandeja de alumínio de 2000 ml: 100 por R$ 170 em 28/10/2026; cabem 8 no máximo
+  // (antes era a de 1100 ml, 10 por R$ 21)
+  marmita_centavos: 170,
   esfihas_por_marmita: 8,
   // Tap do Mercado Pago, em centésimos de por cento
   taxa_bp: { pix: 0, debito: 89, credito: 309 },

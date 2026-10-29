@@ -204,9 +204,11 @@ nunca aparecer).
 
 ### Embalagem no site (28/10/2026)
 
-Card "A embalagem" embaixo de Como esquentar: marmita de alumínio de 1100 ml
-com tampa de alumínio (Distribuidora De Pauli, na Shopee). Só fatos do
-fabricante: tampa encaixa firme, vai ao forno convencional sem a tampa,
+Card "A embalagem" embaixo de Como esquentar: marmita de alumínio de 2000 ml
+com tampa de alumínio (Distribuidora De Pauli, na Shopee; 100 por R$ 170 em
+28/10/2026, cabem 8 esfihas no máximo, conta em `functions/_lib/custos.js`). Só fatos do
+fabricante: tampa encaixa firme, vai ao forno e à air fryer sem a tampa
+(air fryer a pedido do dono em 28/10, "se couber na sua"),
 livre de BPA, reciclável, e não vai ao micro-ondas (a linha do micro-ondas
 em Como esquentar diz "fora da marmita"). A imagem `public/embalagem.webp`
 foi gerada no Gemini pelo dono, recortada sem o "FORNEAVÉL", a seta e os

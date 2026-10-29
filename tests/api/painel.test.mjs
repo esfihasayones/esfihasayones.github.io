@@ -308,7 +308,7 @@ test("contas do dia e do mês: bruto, ingredientes, marmita por pedido, taxa e l
   assert.equal(c.bruto, 6240 + 2200);
   assert.equal(c.ingredientes, 16 * 205);
   assert.equal(c.marmitas, 2 + 1);   // 12 esfihas pedem duas marmitas de 8
-  assert.equal(c.embalagem, 3 * 210);
+  assert.equal(c.embalagem, 3 * 170);
   assert.equal(c.taxa, Math.round(6240 * 309 / 10000));
   assert.equal(c.pagos_sem_forma, 1);
   assert.equal(c.liquido, c.bruto - c.ingredientes - c.embalagem - c.taxa);
@@ -344,7 +344,7 @@ test("histórico soma só confirmados com retirada até hoje, por dia, mês e to
   assert.equal(j.total.esfihas, 16);
   assert.equal(j.total.bruto, 6240 + 2200);
   assert.deepEqual(j.meses.map((m) => m.mes), ["2026-10", "2026-09"]);
-  assert.equal(j.meses[1].embalagem, 2 * 210);
+  assert.equal(j.meses[1].embalagem, 2 * 170);
   assert.deepEqual(j.dias.map((d) => d.dia), ["2026-10-02", "2026-09-10"]);
   assert.equal(j.total.liquido, j.total.bruto - j.total.ingredientes - j.total.embalagem - j.total.taxa);
 });
