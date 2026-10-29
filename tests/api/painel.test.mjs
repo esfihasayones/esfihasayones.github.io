@@ -452,6 +452,24 @@ test("fila traz o que falta entregar, com atrasados de até 14 dias e sem cancel
   assert.equal((await pedir("/api/painel/fila?dia=ontem", comoDono())).status, 400);
 });
 
+test("fila marca pedido com cupom de nome que já pediu antes", async () => {
+  zerar();
+  const antigo = await site(4, { nome: "Ana Souza" });
+  await patch(antigo, { status: "confirmado" });
+  const cancelado = await site(4, { nome: "Bia Lima" });
+  await patch(cancelado, { status: "cancelado" });
+  const repetido = await site(4, { nome: "  ana  SOUZA ", cupom: "PRIMEIRACOMPRA" });
+  const novo = await site(4, { nome: "Bia Lima", cupom: "PRIMEIRACOMPRA" });
+  const semCupom = await site(4, { nome: "Ana Souza" });
+  const j = await (await pedir("/api/painel/fila?dia=" + DIA(), comoDono())).json();
+  const todos = [...j.fila, ...j.pendencias];
+  const de = (id) => todos.find((p) => p.id === id);
+  assert.equal(de(repetido).cupom_repetido, true);
+  assert.equal(de(novo).cupom_repetido, false, "pedido cancelado não conta como compra");
+  assert.equal(de(semCupom).cupom_repetido, undefined);
+  assert.equal(de(antigo).cupom_repetido, undefined);
+});
+
 test("montar soma, não passa do pedido nem de zero e recusa sabor que não está no pedido", async () => {
   zerar();
   const id = (await (await pedir("/api/painel/pedidos",

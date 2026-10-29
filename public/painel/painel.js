@@ -167,7 +167,7 @@ function renderDestaque(p) {
   const quando = nomeDoDia(p.retirada);
   const onde = [p.retirada === estado.dia || p.retirada === somaDias(estado.dia, 1) ? dataCurta(p.retirada) : null, p.janela, p.ponto].filter(Boolean).join(" · ");
   const preco = plural(p.qtd, "esfiha", "esfihas") + " · " + brl(p.total_centavos) + (p.valor_manual ? " (valor combinado)" : "") +
-    (p.cupom ? " · cupom " + p.cupom : "");
+    (p.cupom ? " · cupom " + p.cupom + (p.cupom_repetido ? " (nome que já pediu antes)" : "") : "");
   el.replaceChildren(h("article", { className: "destaque", "data-id": String(p.id) },
     h("div", { className: "destaque-topo" },
       h("span", { className: "rotulo-fila", texto: estado.escolhido ? "Pedido escolhido" : "Próximo" }),
@@ -321,6 +321,7 @@ function cartao(p, o) {
     h("div", { className: "itens", texto: itensTexto(p.itens) }),
     onde ? h("div", { className: "detalhe", texto: onde }) : null,
     p.cupom ? h("div", { className: "detalhe", texto: "Cupom " + p.cupom + (p.desconto_centavos ? " (menos " + brl(p.desconto_centavos) + ")" : "") }) : null,
+    p.cupom_repetido ? h("div", { className: "motivo cupom-repetido", texto: "Esse nome já fez pedido antes. Confira no WhatsApp se é mesmo a primeira compra." }) : null,
     p.obs ? h("div", { className: "obs", texto: p.obs }) : null,
     h("div", { className: "botoes" }, o.botoes),
     o.depois || null);

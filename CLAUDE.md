@@ -306,6 +306,11 @@ maiúscula e desconto sobre o total já com o combo. O primeiro é
 avulso. O site não sabe quem já comprou; o cupom chega escrito na mensagem e
 ele confere no WhatsApp. Cupom digitado errado barra o envio, pra ninguém
 mandar o pedido achando que tem desconto.
+Desde 28/10/2026 a fila do painel marca `cupom_repetido` quando o pedido com
+cupom tem o nome (sem acento, caixa e espaço extra) de outro pedido anterior
+aguardando ou confirmado, e o cartão avisa pra conferir no WhatsApp. Não
+barra nada: nome igual não prova que é a mesma pessoa, e trocar o nome burla.
+Barrar de verdade só pelo telefone, que o site não pede.
 
 ## Como o texto tem que soar
 

@@ -192,6 +192,20 @@
     A.contem(P.cartao(site.json.id).textContent, "Cupom não existe");
   }));
 
+  teste("cupom de nome que já pediu antes ganha aviso no cartão", comPainel(async function () {
+    var d = await diaLivre(util);
+    var nome = "Repete " + sufixo();
+    var corpo = function (extra) {
+      return Object.assign({ id_envio: uuid(), nome: nome, itens: [{ sabor: "calabresa", qtd: 4 }], ponto: ITACORUBI, retirada: d }, extra);
+    };
+    var primeiro = await api("POST", "/api/pedidos", corpo({ cupom: "PRIMEIRACOMPRA" }));
+    A.igual((await api("PATCH", "/api/painel/pedidos/" + primeiro.json.id, { status: "confirmado", forcar: true })).status, 200);
+    var segundo = await api("POST", "/api/pedidos", corpo({ nome: nome.toUpperCase(), cupom: "PRIMEIRACOMPRA" }));
+    var P = await abrir(d);
+    A.ok(!P.cartao(primeiro.json.id).querySelector(".cupom-repetido"), "o primeiro pedido não tem por que avisar");
+    A.contem(P.cartao(segundo.json.id).textContent, "Esse nome já fez pedido antes");
+  }));
+
   teste("Pago alterna e persiste, Entregue tira da fila e Desfazer volta", comPainel(async function () {
     var d = await diaLivre(util);
     var ped = await manual(d, [{ sabor: "carne", qtd: 2 }], { janela: "8h" });
