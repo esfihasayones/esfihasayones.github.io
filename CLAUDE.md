@@ -185,6 +185,12 @@ dias que ainda vêm (entregue adiantado ou sem querer não some) e os de antes
 sem pagar. Os testes do painel cancelam no fim
 os pedidos que criaram, senão entram na fila de outro teste.
 
+Comemoração (30/10/2026): o +1 que fecha um sabor faz a linha dar um pulo;
+o que fecha o pedido dá aviso verde ("Pedido de X montado."); o que fecha
+tudo o que está na fila daquele dia dá aviso com o total e confete por uns 2 s.
+O "−" e o recarregar não comemoram. Sem animação com
+`prefers-reduced-motion`. `body.dataset.comemorou` diz o nível pros testes.
+
 Ideia do dono pra depois: vender o painel pra quem faz pão, bolo e afins.
 Ainda não conversamos sobre isso; o rascunho da fila aprovado está em
 `.superpowers/brainstorm/` (fora do git).

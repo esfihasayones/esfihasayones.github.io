@@ -558,14 +558,57 @@ function montar(p, sabor, delta) {
   const atual = p.montadas[sabor] || 0;
   const novo = Math.max(0, Math.min(item.qtd, atual + delta));
   if (novo === atual) return;
+  const pedidoAntes = pedidoMontado(p), diaAntes = diaMontado(p.retirada);
   p.montadas = { ...p.montadas, [sabor]: novo };
   const chave = p.id + "|" + sabor;
   const m = montando.get(chave) || { p, sabor, delta: 0 };
   m.delta += novo - atual;
   montando.set(chave, m);
   renderFila();
+  if (novo === item.qtd) comemorar(p, sabor, !pedidoAntes && pedidoMontado(p), !diaAntes && diaMontado(p.retirada));
   clearTimeout(tMontar);
   tMontar = setTimeout(enviarMontadas, 500);
+}
+
+// ---------- comemoração ----------
+// Fechou um sabor, a linha pula; fechou o pedido, aviso verde; fechou tudo
+// o que é do dia, confete. Só no +1 que fecha: o "−" e o recarregar não comemoram.
+const pedidoMontado = (p) => p.itens.every((i) => (p.montadas[i.sabor] || 0) >= i.qtd);
+const diaMontado = (dia) => fila().filter((p) => p.retirada === dia).every(pedidoMontado);
+const semMovimento = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function comemorar(p, sabor, pedido, dia) {
+  const pular = (el) => { if (el && !semMovimento()) { el.classList.remove("comemora"); void el.offsetWidth; el.classList.add("comemora"); } };
+  pular($('#destaque .montagem [data-sabor="' + sabor + '"]'));
+  let nivel = "sabor";
+  if (dia) {
+    nivel = "dia";
+    const doDia = fila().filter((x) => x.retirada === p.retirada);
+    const pra = nomeDoDia(p.retirada);
+    const quando = pra === "Atrasado" ? "dos atrasados" : "pra " + (pra === "Hoje" || pra === "Amanhã" ? pra.toLowerCase() : pra);
+    aviso("Tudo montado " + quando + ": " + plural(doDia.reduce((s, x) => s + x.qtd, 0), "esfiha", "esfihas") +
+      (doDia.length > 1 ? " em " + doDia.length + " pedidos" : "") + ".", { bom: true });
+    pular($("#destaque article"));
+    confete();
+  } else if (pedido) {
+    nivel = "pedido";
+    aviso("Pedido de " + p.nome + " montado.", { bom: true });
+    pular($("#destaque article"));
+  }
+  document.body.dataset.comemorou = nivel;
+}
+
+const CORES_CONFETE = ["#121212", "#2E6B3E", "#E8B04B", "#C9402F", "#3B82F6"];
+function confete() {
+  if (semMovimento()) return;
+  const caixa = h("div", { className: "confete", "aria-hidden": "true" });
+  for (let i = 0; i < 80; i++) {
+    caixa.append(h("i", { style: "left:" + (Math.random() * 100).toFixed(1) + "%;background:" + CORES_CONFETE[i % CORES_CONFETE.length] +
+      ";--x:" + Math.round(Math.random() * 160 - 80) + "px;--r:" + Math.round(Math.random() * 720 - 360) + "deg" +
+      ";--d:" + (1.4 + Math.random()).toFixed(2) + "s;--a:" + (Math.random() * 0.5).toFixed(2) + "s" }));
+  }
+  document.body.append(caixa);
+  setTimeout(() => caixa.remove(), 3200);
 }
 async function enviarMontadas() {
   const lote = [...montando.values()].filter((m) => m.delta);

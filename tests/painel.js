@@ -523,6 +523,37 @@
     A.igual(P.contador("carne"), "0/2");
   }));
 
+  teste("fechar sabor, pedido e o dia todo comemora cada um", comPainel(async function () {
+    var d = await diaLivre(util);
+    var a = await manual(d, [{ sabor: "carne", qtd: 1 }, { sabor: "calabresa", qtd: 2 }]);
+    var b = await manual(d, [{ sabor: "queijo", qtd: 1 }]);
+    var P = await abrir(d);
+    var corpo = P.doc().body;
+    var mais = function (sabor) { P.clicar(P.linha(sabor).querySelector('[data-acao="mais"]')); };
+    A.igual(P.destaque(), a.id);
+    mais("calabresa");
+    A.ok(!corpo.dataset.comemorou, "sabor pela metade não comemora");
+    mais("carne");
+    A.igual(corpo.dataset.comemorou, "sabor");
+    A.ok(P.linha("carne").classList.contains("comemora"), "a linha do sabor pula");
+    A.ok(P.el("#aviso").hidden, "sabor sozinho não dá aviso");
+    P.clicar(P.linha("carne").querySelector('[data-acao="menos"]'));
+    mais("carne");
+    mais("calabresa");
+    A.igual(corpo.dataset.comemorou, "pedido");
+    A.contem(P.texto("#aviso"), "Pedido de " + a.nome + " montado.");
+    A.ok(!P.el(".confete"), "pedido sozinho não tem confete");
+    P.clicar(P.el('#filaDias [data-id="' + b.id + '"]'));
+    A.igual(P.destaque(), b.id);
+    mais("queijo");
+    A.igual(corpo.dataset.comemorou, "dia");
+    A.contem(P.texto("#aviso"), "Tudo montado pra hoje: 4 esfihas em 2 pedidos.");
+    A.ok(P.el(".confete"), "o dia fechado solta confete");
+    var marca = corpo.dataset.montadas;
+    await esperar(function () { return corpo.dataset.montadas !== marca; }, "salvar as montadas");
+    await esperar(function () { return !P.el(".confete"); }, "o confete sai sozinho", 5000);
+  }));
+
   teste("pedido de dias atrás não entregue aparece como atrasado", comPainel(async function () {
     var d = await diaLivre(util);
     var antes = new Date(Date.parse(d + "T12:00:00Z") - 3 * 86400000).toISOString().slice(0, 10);
