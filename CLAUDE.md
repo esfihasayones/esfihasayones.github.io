@@ -340,12 +340,30 @@ Desde 28/10/2026 a fila do painel marca `cupom_repetido` quando o pedido com
 cupom tem o nome (sem acento, caixa e espaço extra) de outro pedido anterior
 aguardando ou confirmado, e o cartão avisa pra conferir no WhatsApp. Não
 barra nada: nome igual não prova que é a mesma pessoa, e trocar o nome burla.
-Barrar de verdade só pelo telefone, que o site não pede.
+Desde 29/10/2026 quem barra é o telefone (seção "Telefone e uso de cupom").
 Também desde 28/10: ao aplicar um cupom de `SO_PRIMEIRA_COMPRA` (em
 `cupons.js`, vem como `so_primeira` no `/api/cupom`) o site diz "Vale só na
 primeira compra.", e depois de mandar um pedido o aparelho grava
 `sayones-ja-pediu`: o cupom guardado não volta preenchido e o aviso do cupom
 não aparece mais.
+
+**Telefone e uso de cupom (29/10/2026).** O site pede o telefone (obrigatório,
+campo `#fTelefone`, vai na mensagem do WhatsApp e no POST). Coluna `telefone`
+(migração 0005), só dígitos com DDD, sem o 55: `telefoneLimpo` e
+`telefoneBR` em `public/regras.js`, usados no site, no servidor e no painel.
+Regra em `functions/_lib/uso-cupom.js` (`cupomJaUsado`): cupom de
+`SO_PRIMEIRA_COMPRA` não vale pra telefone que já tem pedido aguardando ou
+confirmado (com ou sem cupom); os outros cupons valem uma vez por telefone.
+Cancelado e fora da regra não gastam. O site pergunta em
+`GET /api/cupom?codigo=X&telefone=Y` (resposta ganha `usado`), tira o desconto
+e barra o envio; o POST confere de novo e, se passou, grava `fora_da_regra`
+com motivo `cupom_usado`. O servidor ainda aceita pedido sem telefone (página
+velha no cache), sem conferir uso. A fila marca `cupom_repetido_por:
+"telefone"` com `cupom_repetido_pedido` (o Nº do pedido anterior); sem bater
+pelo telefone, cai na regra do nome. O painel mostra o telefone como link pro
+WhatsApp e aceita telefone opcional no pedido manual. Pedidos de antes de
+29/10 não têm telefone, então não contam. `ops/anonimizar.sh` também apaga o
+telefone depois de 12 meses.
 
 ## Como o texto tem que soar
 

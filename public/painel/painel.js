@@ -1,7 +1,7 @@
 // Painel do dia. Lê e grava só pela API em /api/painel; nada de cliente fica
 // no navegador. Preço, sabores e pontos vêm de /regras.js, mas quem manda no
 // valor é o servidor: depois de salvar, a tela mostra o que ele devolveu.
-import { SABORES, PONTOS, NOMES_DIA, isoBrasilia, diaDaData, precoCentavos } from "../regras.js";
+import { SABORES, PONTOS, NOMES_DIA, isoBrasilia, diaDaData, precoCentavos, telefoneLimpo, telefoneBR } from "../regras.js";
 
 const MOTIVOS = {
   cedo: "Pediu com menos antecedência que o mínimo",
@@ -13,6 +13,7 @@ const MOTIVOS = {
   bloqueado: "Dia bloqueado",
   pausado: "Pedidos estavam pausados",
   cupom: "Cupom não existe",
+  cupom_usado: "Esse telefone já usou o cupom",
 };
 const NOME_SABOR = Object.fromEntries(SABORES.map((s) => [s.id, s.nome]));
 const PONTOS_FIXOS = PONTOS.filter((p) => p.dias);
@@ -21,6 +22,14 @@ const OUTRO = "__outro";
 const $ = (s) => document.querySelector(s);
 
 // ---------- utilidades ----------
+// Telefone do cliente como link pro WhatsApp dele (o número é guardado com DDD, sem o 55).
+const linkTelefone = (tel) => tel
+  ? h("a", { className: "tel", href: "https://wa.me/55" + tel, target: "_blank", rel: "noopener", texto: telefoneBR(tel) })
+  : null;
+// Aviso de cupom repetido: pelo telefone é certeza, pelo nome é só suspeita.
+const textoCupomRepetido = (p) => p.cupom_repetido_por === "telefone"
+  ? "Esse telefone já fez o pedido Nº " + p.cupom_repetido_pedido + " antes. O cupom não vale de novo."
+  : "Esse nome já fez pedido antes. Confira no WhatsApp se é mesmo a primeira compra.";
 const brl = (centavos) => {
   const [r, c] = (centavos / 100).toFixed(2).split(".");
   return "R$ " + r.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "," + c;
@@ -167,13 +176,14 @@ function renderDestaque(p) {
   const quando = nomeDoDia(p.retirada);
   const onde = [p.retirada === estado.dia || p.retirada === somaDias(estado.dia, 1) ? dataCurta(p.retirada) : null, p.janela, p.ponto].filter(Boolean).join(" · ");
   const preco = plural(p.qtd, "esfiha", "esfihas") + " · " + brl(p.total_centavos) + (p.valor_manual ? " (valor combinado)" : "") +
-    (p.cupom ? " · cupom " + p.cupom + (p.cupom_repetido ? " (nome que já pediu antes)" : "") : "");
+    (p.cupom ? " · cupom " + p.cupom + (p.cupom_repetido ? (p.cupom_repetido_por === "telefone" ? " (telefone que já pediu antes)" : " (nome que já pediu antes)") : "") : "");
   el.replaceChildren(h("article", { className: "destaque", "data-id": String(p.id) },
     h("div", { className: "destaque-topo" },
       h("span", { className: "rotulo-fila", texto: estado.escolhido ? "Pedido escolhido" : "Próximo" }),
       h("span", { className: "quando" + (p.retirada < estado.dia ? " atrasado" : p.retirada === estado.dia ? " hoje" : ""), texto: quando }),
       estado.escolhido ? h("button", { type: "button", className: "link", "data-acao": "voltar-proximo", texto: "Voltar pro próximo", onclick: () => { estado.escolhido = null; renderFila(); } }) : null),
     h("h2", { className: "destaque-nome", texto: p.nome }),
+    p.telefone ? h("div", { className: "destaque-tel" }, linkTelefone(p.telefone)) : null,
     h("div", { className: "destaque-onde", texto: onde }),
     p.obs ? h("div", { className: "obs", texto: p.obs }) : null,
     h("ul", { className: "montagem", "aria-label": "Montagem por sabor" }, p.itens.map((i) => linhaSabor(p, i))),
@@ -329,10 +339,11 @@ function cartao(p, o) {
       h("span", { className: "quem" }, p.nome, p.status === "cancelado" ? h("span", { className: "etiqueta", texto: "Cancelado" }) : null),
       h("span", { className: "dinheiro", texto: dinheiro })),
     h("div", { className: "itens", texto: itensTexto(p.itens) }),
+    p.telefone ? h("div", { className: "detalhe" }, linkTelefone(p.telefone)) : null,
     onde ? h("div", { className: "detalhe", texto: onde }) : null,
     p.cupom ? h("div", { className: "detalhe", texto: "Cupom " + p.cupom + (p.desconto_centavos ? " (menos " + brl(p.desconto_centavos) + ")" : "") }) : null,
     p.status === "confirmado" ? linhaCartao(p) : null,
-    p.cupom_repetido ? h("div", { className: "motivo cupom-repetido", texto: "Esse nome já fez pedido antes. Confira no WhatsApp se é mesmo a primeira compra." }) : null,
+    p.cupom_repetido ? h("div", { className: "motivo cupom-repetido", texto: textoCupomRepetido(p) }) : null,
     p.obs ? h("div", { className: "obs", texto: p.obs }) : null,
     h("div", { className: "botoes" }, o.botoes),
     o.depois || null);
@@ -664,6 +675,7 @@ function abrirForm(p) {
   $("#fSalvar").textContent = p ? "Salvar mudanças" : "Salvar pedido";
   $("#fErro").hidden = true;
   $("#fNome").value = p ? p.nome : "";
+  $("#fTelefone").value = p && p.telefone ? telefoneBR(p.telefone) : "";
   for (const s of SABORES) {
     const item = p && p.itens.find((i) => i.sabor === s.id);
     $("#fq-" + s.id).value = item ? String(item.qtd) : "";
@@ -705,12 +717,14 @@ async function salvar(ev) {
   const ponto = $("#fPonto").value === OUTRO ? $("#fPontoOutro").value.trim() : $("#fPonto").value;
   const dia = $("#fDia").value;
   if (!nome) return erroForm("Falta o nome.");
+  const telTxt = $("#fTelefone").value.trim();
+  if (telTxt && !telefoneLimpo(telTxt)) return erroForm("O telefone precisa do DDD, como (48) 99999-0000.");
   if (!itens.length) return erroForm("Ponha a quantidade de pelo menos um sabor.");
   if (!ponto) return erroForm("Falta dizer o ponto.");
   if (!validoIso(dia)) return erroForm("Falta o dia.");
   const cupom = $("#fCupom").value.trim() || null;
   const corpo = {
-    nome, ponto, retirada: dia,
+    nome, ponto, retirada: dia, telefone: telTxt ? telefoneLimpo(telTxt) : null,
     janela: $("#fJanela").value.trim() || null,
     obs: $("#fObs").value.trim() || null,
   };

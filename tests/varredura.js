@@ -232,6 +232,7 @@
     var fPonto = c.el("#fPonto"), fData = c.el("#fData"), fNome = c.el("#fNome"), fObs = c.el("#fObs");
     var ev = function (el, tipo) { el.dispatchEvent(new c.win.Event(tipo, { bubbles: true })); };
     c.abrirGaveta();
+    c.el("#fTelefone").value = "48999990000";
     F.checa(fPonto.options.length === PONTOS.length, "pontos no seletor",
             "esperado " + PONTOS.length + ", veio " + fPonto.options.length);
 

@@ -8,7 +8,7 @@ import { validarCampos, montar, serializar, vazioSabores, erro, resposta, lerJso
 const DIA_MS = 86400000;
 const somaDias = (dia, n) => new Date(Date.parse(dia + "T12:00:00Z") + n * DIA_MS).toISOString().slice(0, 10);
 
-const COLUNAS = ["id_envio", "criado_em", "origem", "status", "motivo", "nome", "itens", "qtd", "unit_centavos", "total_centavos",
+const COLUNAS = ["id_envio", "criado_em", "origem", "status", "motivo", "nome", "telefone", "itens", "qtd", "unit_centavos", "total_centavos",
   "cupom", "desconto_centavos", "valor_manual", "ponto", "retirada", "janela", "obs", "pago", "pagamento", "entregue"];
 
 export async function onRequestGet({ request, env }) {
@@ -80,7 +80,7 @@ export async function onRequestPost({ request, env }) {
 
   const base = {
     id_envio: c.id_envio || null, criado_em: new Date().toISOString(), origem: "manual", status: "confirmado", motivo: null,
-    itens: "[]", cupom: null, desconto_centavos: 0, valor_manual: 0, retirada: null, janela: null, obs: null, pago: 0, pagamento: null, entregue: 0,
+    telefone: null, itens: "[]", cupom: null, desconto_centavos: 0, valor_manual: 0, retirada: null, janela: null, obs: null, pago: 0, pagamento: null, entregue: 0,
   };
   const l = montar(base, f);
   if (l.retirada && c.forcar !== true) {

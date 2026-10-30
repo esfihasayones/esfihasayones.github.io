@@ -66,7 +66,7 @@ test("lista do dia soma por sabor só os confirmados", async () => {
   assert.equal(j.porSabor.carne, 0);
   const p = achar(j, a);
   assert.deepEqual(Object.keys(p).sort(), ["cartao", "cupom", "desconto_centavos", "entregue", "id", "itens", "janela", "montadas", "motivo", "nome", "obs",
-    "origem", "pago", "pagamento", "ponto", "qtd", "retirada", "status", "total_centavos", "valor_manual"].sort());
+    "origem", "pago", "pagamento", "ponto", "qtd", "retirada", "status", "telefone", "total_centavos", "valor_manual"].sort());
   assert.equal(p.pago, false);
   assert.deepEqual(p.itens, [{ sabor: "calabresa", qtd: 5 }]);
   assert.ok(b);

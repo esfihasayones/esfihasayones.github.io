@@ -1,14 +1,15 @@
 import { MAX_DIAS_RETIRADA, longeDemais,
   WHATSAPP, ANTECEDENCIA_H, PEDIDO_GRANDE, ANTECEDENCIA_GRANDE_H, FERIADOS, PONTOS, NOMES_DIA, SABORES, FAIXAS,
-  faixaDe, isoBrasilia, diaDaData, janelaDe, proximaData,
+  faixaDe, isoBrasilia, diaDaData, janelaDe, proximaData, telefoneLimpo, telefoneBR,
   horasAntecedencia as horasAntecedenciaDe, situacaoData as situacaoDataDe
 } from "./regras.js";
 
 // Cupons: quem sabe quais existem é o servidor (GET /api/cupom). O site
 // guarda a resposta de cada código digitado em cupomRes: "ok" com o pct,
 // "nao" (404) ou "falha" (rede ou 5xx). Sem resposta ainda, o código está
-// pendente: o total sai sem desconto. A regra (primeira compra etc.) é
-// conferida depois pelo dono, no WhatsApp e no painel.
+// pendente: o total sai sem desconto. Com o telefone preenchido, o site
+// pergunta também se esse número já gastou o cupom (usoRes); se já, o cupom
+// não desconta e o envio é barrado. O servidor confere de novo ao gravar.
 
 
 var $  = function(s,c){ return (c||document).querySelector(s); };
@@ -32,6 +33,8 @@ var obsItem = {};         // observação por sabor, ex.: {calabresa: "sem cebol
 var cupomTxt = "";        // o que está digitado no campo de cupom
 var cupomRes = {};        // resposta do servidor por código: {estado, pct}
 var tCupom = null;        // espera de 300 ms depois da última tecla
+var usoRes = {};          // "CUPOM|telefone" -> "usado" ou "livre"
+var tUso = null;
 SABORES.forEach(function(s){ carrinho[s.id] = 0; });
 try {
   var salvo = JSON.parse(localStorage.getItem(CHAVE) || "{}") || {};
@@ -82,11 +85,34 @@ function totalQtd(){
   return SABORES.reduce(function(t,s){ return t + carrinho[s.id]; }, 0);
 }
 // Estado do cupom digitado: "vazio", "pendente", "ok", "nao" ou "falha".
+// "usado" quando o servidor disse que este telefone já gastou o cupom.
 function estadoCupom(){
   var cod = cupomTxt.trim();
   if (!cod) return "vazio";
   var r = cupomRes[cod];
-  return r ? r.estado : "pendente";
+  if (!r) return "pendente";
+  if (r.estado === "ok" && usoRes[chaveUso(cod)] === "usado") return "usado";
+  return r.estado;
+}
+function telAtual(){ return fTel ? telefoneLimpo(fTel.value) : null; }
+function chaveUso(cod){ return cod + "|" + (telAtual() || ""); }
+// Com cupom que existe e telefone completo, pergunta se esse número já usou.
+// Falha de rede não barra nada: o servidor confere quando o pedido chega.
+function consultarUso(){
+  var cod = cupomTxt.trim(), tel = telAtual(), chave = chaveUso(cod);
+  if (!cod || !tel || !cupomRes[cod] || cupomRes[cod].estado !== "ok" || usoRes[chave]) return;
+  try {
+    fetch("/api/cupom?codigo=" + encodeURIComponent(cod) + "&telefone=" + tel)
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if (j && typeof j.usado === "boolean"){ usoRes[chave] = j.usado ? "usado" : "livre"; render(); }
+      })
+      .catch(function(){});
+  } catch(e){}
+}
+function agendarUso(esperaMs){
+  clearTimeout(tUso);
+  tUso = setTimeout(consultarUso, esperaMs);
 }
 // Cupom que o servidor confirmou, ou null. Espaço em volta não conta.
 function cupomAtual(){
@@ -97,7 +123,7 @@ function cupomAtual(){
 // "falha" e o pedido segue, com o cupom escrito na mensagem.
 function consultarCupom(cod){
   if (!cod || cupomRes[cod]) return;
-  var guardar = function(res){ cupomRes[cod] = res; render(); };
+  var guardar = function(res){ cupomRes[cod] = res; render(); consultarUso(); };
   try {
     fetch("/api/cupom?codigo=" + encodeURIComponent(cod))
       .then(function(r){
@@ -206,7 +232,7 @@ var barra = $("#barra"), veu = $("#veu"), gaveta = $("#gaveta");
 var blocoVazio = $("#blocoVazio"), blocoPedido = $("#blocoPedido");
 var linhas = $("#linhas"), btnEnviar = $("#btnEnviar"), aviso = $("#aviso");
 var fPonto = $("#fPonto"), fNome = $("#fNome"), fData = $("#fData"), fObs = $("#fObs");
-var fCupom = $("#fCupom");
+var fCupom = $("#fCupom"), fTel = $("#fTelefone");
 
 PONTOS.forEach(function(pt, i){
   var op = document.createElement("option");
@@ -472,10 +498,11 @@ function render(){
   dicaCupom.hidden = !digitado;
   var estCupom = estadoCupom();
   dicaCupom.classList.toggle("ok", !!cup);
-  dicaCupom.classList.toggle("falha", estCupom === "nao");
+  dicaCupom.classList.toggle("falha", estCupom === "nao" || estCupom === "usado");
   dicaCupom.textContent = cup ? "Cupom aplicado: " + pctTxt(cup.pct) + " de desconto no total." +
                               (cup.primeira ? " Vale só na primeira compra." : "")
                         : estCupom === "nao" ? "Esse cupom não existe. Confira se digitou certo."
+                        : estCupom === "usado" ? textoCupomUsado()
                         : estCupom === "falha" ? "Não deu pra conferir o cupom agora. Ele vai na mensagem e a gente confere."
                         : "Conferindo o cupom...";
 
@@ -690,15 +717,26 @@ $("#btnIrCardapio").addEventListener("click", function(){
   setTimeout(function(){ $("#cardapio").scrollIntoView({behavior: comoRolar()}); }, 120);
 });
 
+// ["a", "b", "c"] vira "a, b e c".
+function juntarComE(l){ return l.length < 2 ? l.join("") : l.slice(0, -1).join(", ") + " e " + l[l.length - 1]; }
+function textoCupomUsado(){
+  var r = cupomRes[cupomTxt.trim()] || {};
+  return r.primeira ? "Esse telefone já fez pedido com a gente, e o cupom vale só na primeira compra."
+                    : "Esse telefone já usou esse cupom.";
+}
+
 /* ---------- envio ---------- */
 // O aviso vermelho é a resposta ao último clique em enviar; mexeu no
 // formulário, ele deixa de valer.
 function limparAviso(){
   aviso.classList.remove("on");
-  [fNome, fData, fCupom].forEach(function(el){ marcarErro(el, false); });
+  [fNome, fTel, fData, fCupom].forEach(function(el){ marcarErro(el, false); });
   mostrarPausa();   // o aviso de pausa vale enquanto durar a pausa
 }
 fNome.addEventListener("input", limparAviso);
+fTel.addEventListener("input", function(){ limparAviso(); render(); agendarUso(300); });
+// Saindo do campo, um número completo ganha a máscara: (48) 99999-0000.
+fTel.addEventListener("blur", function(){ var t = telAtual(); if (t) fTel.value = telefoneBR(t); });
 
 // O cupom vira maiúscula enquanto a pessoa digita, mantendo o cursor no lugar.
 fCupom.addEventListener("input", function(){
@@ -736,18 +774,27 @@ btnEnviar.addEventListener("click", function(){
   marcarErro(fNome, !fNome.value.trim());
   if (!fNome.value.trim()) faltando.push("seu nome");
 
+  var telTxt = fTel.value.trim(), tel = telefoneLimpo(telTxt);
+  var telRuim = !!telTxt && !tel;
+  marcarErro(fTel, !tel);
+  if (!telTxt) faltando.push("seu telefone");
+
   var precisaData = pt.dias !== null;
   var dataRuim = precisaData && !!fData.value && situacaoData(pt, fData.value) !== "ok";
   marcarErro(fData, precisaData && (!fData.value || dataRuim));
   if (precisaData && !fData.value) faltando.push("o dia da retirada");
 
   // Cupom errado não some calado: o cliente achou que tinha desconto.
-  var cupomRuim = estadoCupom() === "nao";
+  // Telefone que já gastou o cupom também barra: o desconto não vale.
+  var estCupom = estadoCupom();
+  var cupomRuim = estCupom === "nao" || estCupom === "usado";
   marcarErro(fCupom, cupomRuim);
 
-  if (faltando.length || dataRuim || cupomRuim){
-    aviso.textContent = faltando.length ? "Falta preencher: " + faltando.join(" e ") + "."
+  if (faltando.length || telRuim || dataRuim || cupomRuim){
+    aviso.textContent = faltando.length ? "Falta preencher: " + juntarComE(faltando) + "."
+                      : telRuim ? "Confira o telefone: precisa ter o DDD, como (48) 99999-0000."
                       : dataRuim ? textoData(pt, fData.value)
+                      : estCupom === "usado" ? textoCupomUsado() + " Apague o campo do cupom pra mandar o pedido."
                       : "Esse cupom não existe. Corrija ou apague o campo do cupom.";
     aviso.classList.add("on");
     var alvo = $(".erro");
@@ -779,6 +826,7 @@ btnEnviar.addEventListener("click", function(){
     "\n" +
     "*Retirada:* " + retiradaTxt + "\n" +
     "*Nome:* " + fNome.value.trim() + "\n" +
+    "*Telefone:* " + telefoneBR(tel) + "\n" +
     (fObs.value.trim() ? "*Observações:* " + fObs.value.trim() + "\n" : "") +
     "\nAguardo a confirmação. Obrigado!";
 
@@ -803,6 +851,8 @@ function gravarPedido(pt){
       return it;
     });
     var corpo = { id_envio: idEnvio || novoIdEnvio(), nome: fNome.value.trim(), itens: itens, ponto: +fPonto.value || 0 };
+    var tel = telAtual();
+    if (tel) corpo.telefone = tel;
     if (pt.dias !== null) corpo.retirada = fData.value;
     if (cupomTxt.trim()) corpo.cupom = cupomTxt.trim();
     if (fObs.value.trim()) corpo.obs = fObs.value.trim();
@@ -815,7 +865,7 @@ function gravarPedido(pt){
   } catch(e){ /* sem servidor, o pedido segue só pelo WhatsApp */ }
 }
 
-[fNome, fData].forEach(function(el){
+[fNome, fTel, fData].forEach(function(el){
   el.addEventListener("input", function(){ marcarErro(el, false); });
 });
 
@@ -892,6 +942,7 @@ function oferecerCupom(){
           cupomTxt = j.codigo;
           salvar();
           render();
+          consultarUso();
           mostrarLembrete("Pronto, o cupom já está no seu pedido.");
           tLembrete = setTimeout(fecharLembrete, 5000);
         });

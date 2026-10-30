@@ -70,6 +70,8 @@ section.bloco>h2{margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .cartao .itens{font-size:17px;overflow-wrap:anywhere}
 .cartao .dinheiro{font-weight:700;white-space:nowrap}
 .cartao .detalhe{color:var(--suave);font-size:14px;overflow-wrap:anywhere}
+.tel{color:inherit;text-decoration:underline;text-underline-offset:2px;font-variant-numeric:tabular-nums}
+.destaque-tel{font-size:17px;margin-top:-4px}
 .cartao .obs{background:var(--areia);border-radius:var(--raio-sm);padding:8px 10px;font-size:15px;overflow-wrap:anywhere}
 .motivo{background:var(--alerta-fundo);color:var(--alerta);border-radius:var(--raio-sm);padding:8px 10px;font-weight:600;font-size:15px}
 .etiqueta{display:inline-block;background:var(--areia);border-radius:99px;padding:1px 9px;font-size:13px;font-weight:600;margin-left:6px;vertical-align:1px}
@@ -415,6 +417,7 @@ section.bloco>h2{font-size:15px}
       <button type="button" class="btn suave" id="fFechar">Fechar</button>
     </div>
     <div class="campo"><label for="fNome">Nome</label><input id="fNome" maxlength="60" autocomplete="off" required></div>
+    <div class="campo"><label for="fTelefone">Telefone</label><input id="fTelefone" type="tel" inputmode="tel" maxlength="20" autocomplete="off" placeholder="(48) 99999-0000"></div>
     <div class="campo">
       <span class="rot">Quantas de cada</span>
       <div class="qtds" id="fQtds"></div>

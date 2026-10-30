@@ -160,3 +160,23 @@ export function proximaData(ponto, qtd, agoraMs, bloqueados){
   }
   return isoBrasilia(agoraMs + horasAntecedencia(qtd) * 3600 * 1000);
 }
+
+// Telefone do cliente: só os dígitos, DDD + número (10 ou 11 dígitos), sem o
+// 55 do país nem o 0 da operadora. Devolve null se não der um número
+// brasileiro. É a chave que diz se um telefone já usou um cupom, então
+// "(48) 99999-0000", "+55 48 999990000" e "048999990000" têm que dar igual.
+export function telefoneLimpo(v){
+  if (typeof v !== "string" && typeof v !== "number") return null;
+  let d = String(v).replace(/\D/g, "");
+  if (d.length > 11 && d.startsWith("55")) d = d.slice(2);
+  if (d.length > 10 && d.startsWith("0")) d = d.slice(1);
+  if (d.length !== 10 && d.length !== 11) return null;
+  if (d[0] === "0" || d[1] === "0") return null;        // DDD vai de 11 a 99
+  if (d.length === 11 && d[2] !== "9") return null;     // celular de 11 dígitos começa com 9
+  return d;
+}
+// "48999990000" vira "(48) 99999-0000".
+export function telefoneBR(d){
+  if (!d) return "";
+  return "(" + d.slice(0, 2) + ") " + d.slice(2, d.length - 4) + "-" + d.slice(-4);
+}

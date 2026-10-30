@@ -1,4 +1,4 @@
-import { PONTOS, SABORES, precoCentavos, situacaoData, longeDemais, diaDaData, janelaDe } from "../../public/regras.js";
+import { PONTOS, SABORES, precoCentavos, situacaoData, longeDemais, diaDaData, janelaDe, telefoneLimpo } from "../../public/regras.js";
 import { cupomDe } from "./cupons.js";
 
 export const texto = (v, max, min) => typeof v === "string" && v.trim().length >= (min || 0) && v.length <= max;
@@ -58,6 +58,13 @@ export function validar(bruto) {
   const c = { ...bruto, id_envio: limpar(bruto.id_envio), nome: limpar(bruto.nome), cupom: limpar(bruto.cupom), obs: limpar(bruto.obs, true) };
   if (!texto(c.id_envio, 64, 1)) return { erro: "id_envio inválido" };
   if (!texto(c.nome, 60, 1)) return { erro: "nome inválido" };
+  // Telefone é obrigatório no site; o servidor ainda aceita sem, pra não
+  // perder o pedido de quem está com a página velha no cache.
+  let telefone = null;
+  if (c.telefone != null && c.telefone !== "") {
+    telefone = telefoneLimpo(c.telefone);
+    if (!telefone) return { erro: "telefone inválido" };
+  }
   const vi = validarItens(c.itens);
   if (vi.erro) return { erro: vi.erro };
   const itens = vi.itens;
@@ -75,7 +82,7 @@ export function validar(bruto) {
   if (c.obs != null && !texto(c.obs, 500)) return { erro: "observação inválida" };
   return {
     corpo: {
-      id_envio: c.id_envio, nome: c.nome.trim(), itens, ponto: c.ponto, retirada,
+      id_envio: c.id_envio, nome: c.nome.trim(), telefone, itens, ponto: c.ponto, retirada,
       cupom: c.cupom && c.cupom.trim() ? c.cupom : null, obs: c.obs || null,
     },
   };
@@ -84,8 +91,9 @@ export function validar(bruto) {
 // Puro: decide status e motivo e monta a linha a gravar. O valor é sempre
 // recalculado aqui, nunca lido do corpo. `corpo` já passou por validar().
 // Se mais de uma regra falhar, vale a primeira desta ordem:
-// pausado > bloqueado > feriado > dia > cedo > lotado > cupom.
-export function avaliar(corpo, agoraMs, agenda) {
+// pausado > bloqueado > feriado > dia > cedo > lotado > cupom > cupom_usado.
+// `cupomUsado` vem de cupomJaUsado(): este telefone já gastou o cupom.
+export function avaliar(corpo, agoraMs, agenda, cupomUsado) {
   const ponto = PONTOS[corpo.ponto];
   const preco = precificar(corpo.itens, corpo.cupom);
   const qtd = preco.qtd;
@@ -99,6 +107,7 @@ export function avaliar(corpo, agoraMs, agenda) {
     if (sit !== "ok") motivo = sit;
     else if (fixo && (agenda.ocupado.get(corpo.retirada) || 0) + qtd > agenda.limite) motivo = "lotado";
     else if (corpo.cupom && !preco.cupomValido) motivo = "cupom";
+    else if (corpo.cupom && cupomUsado) motivo = "cupom_usado";
     else if (fixo && longeDemais(corpo.retirada, agoraMs)) motivo = "longe";
   }
 
@@ -113,6 +122,7 @@ export function avaliar(corpo, agoraMs, agenda) {
       status,
       motivo,
       nome: corpo.nome,
+      telefone: corpo.telefone || null,
       itens: JSON.stringify(corpo.itens),
       qtd,
       unit_centavos: preco.unit_centavos,

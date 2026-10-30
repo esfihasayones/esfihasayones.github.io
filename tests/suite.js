@@ -389,16 +389,65 @@
     ok(c.el("#fNome").classList.contains("erro"), "o campo do nome deveria ficar marcado");
   });
 
-  teste("Retirada", "não envia com o carrinho vazio", function (c) {
+  teste("Retirada", "não envia sem o telefone", function (c) {
+    c.definir("calabresa", 4);
     c.abrirGaveta();
     c.el("#fNome").value = "Breno";
+    igual(c.enviar(), null, "não deveria abrir o WhatsApp");
+    contem(c.texto("#aviso"), "Falta preencher: seu telefone.");
+    ok(c.el("#fTelefone").classList.contains("erro"), "o campo do telefone deveria ficar marcado");
+  });
+
+  teste("Retirada", "telefone sem DDD não passa", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.el("#fNome").value = "Breno";
+    c.digitar(c.el("#fTelefone"), "99999-0000");
+    igual(c.enviar(), null);
+    contem(c.texto("#aviso"), "DDD");
+    c.digitar(c.el("#fTelefone"), "48 99999-0000");
+    igual(c.el("#aviso").getBoundingClientRect().height, 0, "corrigir o telefone tinha que tirar o aviso");
+    ok(!c.el("#fTelefone").classList.contains("erro"));
+  });
+
+  teste("Retirada", "a mensagem e o pedido gravado levam o telefone", function (c) {
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.el("#fNome").value = "Breno";
+    c.digitar(c.el("#fTelefone"), "+55 48 9 9999-0000");
+    var e = enviarEspiando(c);
+    contem(decodeURIComponent(e.aberturas[0].split("text=")[1]), "*Telefone:* (48) 99999-0000");
+    igual(JSON.parse(postsDe(e)[0].opcoes.body).telefone, "48999990000");
+  });
+
+  teste("Retirada", "ao sair do campo o telefone ganha a máscara", function (c) {
+    c.abrirGaveta();
+    var t = c.el("#fTelefone");
+    var sair = function () { t.dispatchEvent(new c.win.Event("blur")); };
+    c.digitar(t, "48999990000");
+    sair();
+    igual(t.value, "(48) 99999-0000");
+    c.digitar(t, "4899");
+    sair();
+    igual(t.value, "4899", "número incompleto fica como a pessoa digitou");
+  });
+
+  teste("Retirada", "o campo de telefone abre o teclado de telefone e tem 16px", function (c) {
+    var t = c.el("#fTelefone");
+    igual(t.type, "tel");
+    igual(c.win.getComputedStyle(t).fontSize, "16px");
+  });
+
+  teste("Retirada", "não envia com o carrinho vazio", function (c) {
+    c.abrirGaveta();
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     igual(c.enviar(), null);
   });
 
   teste("Retirada", "não aceita data antes da antecedência mínima", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     // O último dia que já passou em que a Trindade abre (segunda a quinta):
     // "ontem" puro caía na sexta ou no domingo e o aviso era de dia fechado.
     var ontem = new Date(Date.now() - 86400000);
@@ -517,7 +566,7 @@
   teste("Retirada", "o envio é barrado num dia em que o ponto não abre", function (c) {
     c.definir("calabresa", 4);
     retirada(c, "2026-10-21T10:00:00", 1, "2026-10-24");   // Itacorubi num sábado
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     igual(c.enviar(), null, "o pedido não podia sair");
     contem(c.texto("#aviso"), "só de segunda a sexta");
   });
@@ -528,7 +577,7 @@
     var dica = retirada(c, "2026-10-21T23:00:00", 1, "2026-10-22");
     contem(dica, "não dá tempo");
     contem(dica, "24 horas");
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     igual(c.enviar(), null, "o pedido com 9 horas não podia sair");
     // sexta 8h já tem 33 horas
     contem(retirada(c, "2026-10-21T23:00:00", 1, "2026-10-23"), "✓");
@@ -538,7 +587,7 @@
     c.definir("calabresa", 41);
     var dica = retirada(c, "2026-10-21T10:00:00", 1, "2026-10-23");   // 46 horas
     contem(dica, "3 dias");
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     igual(c.enviar(), null, "41 esfihas com 46 horas não podia sair");
     contem(retirada(c, "2026-10-21T10:00:00", 1, "2026-10-26"), "✓");   // segunda, 118 horas
     c.definir("calabresa", 40);
@@ -551,7 +600,7 @@
     contem(dica, "feriado");
     contem(dica, "Finados");
     contem(dica, "terça, 03/11/2026", "a próxima no Itacorubi é o dia seguinte");
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     igual(c.enviar(), null, "pedido pra feriado não podia sair");
     // trocar de ponto com o relógio na sexta 30/10: a primeira data livre pulou o feriado
     var p = c.el("#fPonto");
@@ -566,7 +615,7 @@
     var dica = retirada(c, "2026-10-27T10:00:00", 0, "2026-10-29");
     contem(dica, "não monta esfiha na terça nem na quarta");
     contem(dica, "terça, 03/11/2026", "a próxima pula o feriado de 02/11 e cai depois da produção de quinta");
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     igual(c.enviar(), null, "pedido sem dia de produção não podia sair");
     // segunda 10h pra quarta: dá pra produzir na própria segunda
     contem(retirada(c, "2026-10-26T10:00:00", 0, "2026-10-28"), "✓");
@@ -633,7 +682,7 @@
     c.el("#fData").value = "";
     c.el("#fNome").value = "";
     igual(c.enviar(), null);
-    contem(c.texto("#aviso"), "seu nome e o dia da retirada");
+    contem(c.texto("#aviso"), "seu nome, seu telefone e o dia da retirada");
   });
 
   teste("Retirada", "combinar outro ponto não exige data", function (c) {
@@ -643,7 +692,7 @@
     ponto.value = String(ponto.options.length - 1);
     ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
     c.el("#fData").value = "";
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     var msg = c.enviar();
     ok(msg, "deveria enviar mesmo sem data");
     contem(msg, "Combinar ponto de entrega e horário");
@@ -686,7 +735,7 @@
   teste("WhatsApp", "clique duplo em enviar abre uma conversa só", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     var abertas = 0, original = c.win.open;
     c.win.open = function () { abertas++; return null; };
     c.el("#btnEnviar").click();
@@ -702,7 +751,7 @@
   teste("WhatsApp", "a mensagem vai para o número da casa", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     igual(c.enviarUrl().split("?")[0], "https://wa.me/5548992210812");
   });
 
@@ -817,7 +866,7 @@
     return c.esperar(function () { return c.texto("#dicaCupom").indexOf("não existe") !== -1; }, 3000).then(function () {
       igual(c.texto("#rsTotal"), "R$ 22,00");
       igual(c.el("#rsLinhaCupom").getBoundingClientRect().height, 0);
-      c.el("#fNome").value = "Breno";
+      c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
       igual(c.enviar(), null, "não deveria mandar pedido com cupom errado");
       contem(c.texto("#aviso"), "cupom");
     });
@@ -892,6 +941,75 @@
     });
   });
 
+  /* Servidor de mentira pro cupom: o telefone 48999990000 já usou. */
+  function cupomComUso(c) {
+    var consultas = [];
+    c.win.fetch = function (url) {
+      var u = String(url);
+      if (u.indexOf("/api/cupom") !== -1) {
+        consultas.push(u);
+        var j = { codigo: "PRIMEIRACOMPRA", pct: 0.1, so_primeira: true };
+        var tel = (u.match(/telefone=(\d+)/) || [])[1];
+        if (tel) j.usado = tel === "48999990000";
+        return Promise.resolve(new c.win.Response(JSON.stringify(j), { status: 200 }));
+      }
+      return Promise.resolve(new c.win.Response("{}", { status: 201 }));
+    };
+    return consultas;
+  }
+
+  teste("Cupom", "telefone que já usou o cupom não ganha desconto e não manda o pedido", function (c) {
+    cupomComUso(c);
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.el("#fNome").value = "Breno";
+    c.digitar(c.el("#fCupom"), "PRIMEIRACOMPRA");
+    c.digitar(c.el("#fTelefone"), "(48) 99999-0000");
+    return c.esperar(function () { return c.texto("#dicaCupom").indexOf("já fez pedido") !== -1; }, 3000).then(function () {
+      contem(c.texto("#dicaCupom"), "só na primeira compra");
+      igual(c.texto("#rsTotal"), "R$ 22,00", "não pode dar o desconto");
+      igual(c.el("#rsLinhaCupom").getBoundingClientRect().height, 0);
+      igual(c.enviar(), null, "não deveria mandar com cupom já usado");
+      contem(c.texto("#aviso"), "Apague o campo do cupom");
+      ok(c.el("#fCupom").classList.contains("erro"), "o campo do cupom deveria ficar marcado");
+      c.digitar(c.el("#fCupom"), "");
+      ok(c.enviar(), "sem o cupom o pedido tinha que sair");
+    });
+  });
+
+  teste("Cupom", "trocar pra um telefone que não usou devolve o desconto", function (c) {
+    var consultas = cupomComUso(c);
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "PRIMEIRACOMPRA");
+    c.digitar(c.el("#fTelefone"), "48999990000");
+    return c.esperar(function () { return c.texto("#dicaCupom").indexOf("já fez pedido") !== -1; }, 3000).then(function () {
+      c.digitar(c.el("#fTelefone"), "48 98888-7777");
+      // a consulta espera 300 ms depois da última tecla
+      return c.esperar(function () {
+        return consultas.some(function (u) { return u.indexOf("telefone=48988887777") !== -1; });
+      }, 3000);
+    }).then(function () { return c.dormir(50); }).then(function () {
+      contem(c.texto("#dicaCupom"), "Cupom aplicado");
+      igual(c.texto("#rsTotal"), "R$ 19,80");
+      contem(c.enviarValido(), "*Cupom:* PRIMEIRACOMPRA, 10% de desconto");
+    });
+  });
+
+  teste("Cupom", "telefone pela metade não consulta uso nem tira o desconto", function (c) {
+    var consultas = cupomComUso(c);
+    c.definir("calabresa", 4);
+    c.abrirGaveta();
+    c.digitar(c.el("#fCupom"), "PRIMEIRACOMPRA");
+    c.digitar(c.el("#fTelefone"), "48999");
+    return c.esperar(function () { return c.texto("#dicaCupom").indexOf("Cupom aplicado") !== -1; }, 3000).then(function () {
+      return c.dormir(500);
+    }).then(function () {
+      ok(!consultas.some(function (u) { return u.indexOf("telefone=") !== -1; }), "não devia consultar com número incompleto");
+      igual(c.texto("#rsTotal"), "R$ 19,80");
+    });
+  });
+
   teste("Cupom", "a lista de cupons não aparece no código do site", function (c) {
     return Promise.all(["/app.js", "/regras.js"].map(function (u) {
       return fetch(u).then(function (r) { return r.text(); });
@@ -925,7 +1043,7 @@
     c.definir("calabresa", 4);
     c.definir("queijo", 2);
     c.abrirGaveta();
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     var r = enviarEspiando(c);
     igual(r.aberturas.length, 1, "o WhatsApp deveria abrir no mesmo clique");
     var posts = postsDe(r);
@@ -946,7 +1064,7 @@
   teste("Gravação", "a observação do sabor e a geral vão no corpo", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     c.el("#fObs").value = "tocar a campainha";
     c.digitar(c.el(".obs-item"), "sem cebola");
     var corpo = JSON.parse(postsDe(enviarEspiando(c))[0].opcoes.body);
@@ -958,7 +1076,7 @@
     c.win.Date.now = function () { return new c.win.Date("2026-10-21T10:00:00").getTime(); };
     c.definir("calabresa", 4);
     c.abrirGaveta();
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     var ponto = c.el("#fPonto"), data = c.el("#fData");
     ponto.value = "1";   // Itacorubi
     ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
@@ -978,7 +1096,7 @@
     c.win.fetch = function () { return Promise.reject(new TypeError("sem rede")); };
     c.definir("calabresa", 4);
     c.abrirGaveta();
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     var original = c.win.open;
     c.win.open = function (u) { abriu.push(u); return null; };
     c.el("#btnEnviar").click();
@@ -992,7 +1110,7 @@
   teste("Gravação", "reenviar o mesmo pedido repete o id; pedido diferente ganha id novo", function (c) {
     c.definir("calabresa", 4);
     c.abrirGaveta();
-    c.el("#fNome").value = "Breno";
+    c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
     var a = JSON.parse(postsDe(enviarEspiando(c))[0].opcoes.body).id_envio;
     return c.dormir(2100).then(function () {
       // o WhatsApp não abriu e o cliente clicou de novo: mesma mensagem, mesmo id, o servidor não duplica
@@ -1046,7 +1164,7 @@
       escolherData(c, "2026-10-23");
       var dica = c.texto("#dicaData");
       igual(dica, "Esse dia já está cheio, chegamos no limite de produção. Peça pra segunda, 26/10/2026, que ainda tem vaga no Itacorubi.");
-      c.el("#fNome").value = "Breno";
+      c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
       igual(c.enviar(), null, "dia lotado não pode enviar");
       ok(c.el("#aviso").classList.contains("on"), "o aviso deveria aparecer");
       contem(c.texto("#aviso"), "limite de produção");
@@ -1076,7 +1194,7 @@
       ponto.value = "1";   // Itacorubi
       ponto.dispatchEvent(new c.win.Event("change", { bubbles: true }));
       escolherData(c, "2026-10-23");
-      c.el("#fNome").value = "Breno";
+      c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
       igual(consultas[consultas.length - 1], 4, "a consulta leva o tamanho do pedido");
       igual(c.texto("#dicaData").indexOf("cheio"), -1, "com 4 o dia ainda tem vaga");
       c.definir("calabresa", 8);
@@ -1098,7 +1216,7 @@
       var dica = c.texto("#dicaData");
       contem(dica, "Nesse dia não tem retirada.");
       contem(dica, "A mais próxima no Itacorubi é sexta, 23/10/2026.");
-      c.el("#fNome").value = "Breno";
+      c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
       igual(c.enviar(), null);
       escolherData(c, "2026-10-27");
       ok(c.enviar() !== null, "outro dia deveria enviar");
@@ -1111,7 +1229,7 @@
       igual(c.texto("#aviso").trim(), "Os pedidos estão pausados por enquanto. Fala com a gente no WhatsApp.");
       ok(c.el("#aviso").offsetHeight > 0, "o aviso precisa estar visível");
       ok(c.doc.querySelectorAll('a[href^="https://wa.me/"]').length > 0, "os outros links do WhatsApp seguem na página");
-      c.el("#fNome").value = "Breno";
+      c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
       igual(c.enviar(), null, "pausado não pode enviar nem por clique forçado");
     });
   });
@@ -1121,7 +1239,7 @@
       escolherData(c, "2026-10-23");
       ok(c.texto("#dicaData").indexOf("cheio") === -1, "sem agenda não há dia lotado");
       ok(!c.el("#btnEnviar").disabled);
-      c.el("#fNome").value = "Breno";
+      c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
       ok(c.enviar() !== null, "deveria enviar");
     });
   });
@@ -1701,7 +1819,7 @@
 
   teste("Produção", "a frase de privacidade aparece perto do botão", function (c) {
     c.abrirGaveta();
-    var frase = "Seu nome e o pedido ficam guardados com a gente só pra preparar a encomenda.";
+    var frase = "Seu nome, seu telefone e o pedido ficam guardados com a gente só pra preparar a encomenda e conferir o uso dos cupons.";
     var pe = c.el("#btnEnviar").closest(".gaveta-pe");
     contem(pe.textContent, frase);
     var nota = Array.prototype.filter.call(pe.querySelectorAll("p"), function (p) { return p.textContent.indexOf(frase) !== -1; })[0];
@@ -1799,7 +1917,7 @@
     c.abrirGaveta();
     c.digitar(c.el("#fCupom"), "PRIMEIRACOMPRA");
     return c.esperar(function () { return c.texto("#dicaCupom").indexOf("Cupom aplicado") !== -1; }, 4000).then(function () {
-      c.el("#fNome").value = "Breno";
+      c.el("#fNome").value = "Breno"; c.el("#fTelefone").value = "48999990000";
       contem(c.enviarValido(), "PRIMEIRACOMPRA");
       return comEsperas(c, { cupom: 50, parado: 1e9 });
     }).then(function (n) {

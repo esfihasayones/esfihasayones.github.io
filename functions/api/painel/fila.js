@@ -1,6 +1,7 @@
 import { isoBrasilia, MAX_DIAS_RETIRADA } from "../../../public/regras.js";
 import { dataIsoValida } from "../../_lib/pedido.js";
 import { serializar, erro, resposta, COLUNAS_PEDIDO } from "../../_lib/painel.js";
+import { SO_PRIMEIRA_COMPRA } from "../../_lib/cupons.js";
 
 const DIA_MS = 86400000;
 const somaDias = (dia, n) => new Date(Date.parse(dia + "T12:00:00Z") + n * DIA_MS).toISOString().slice(0, 10);
@@ -12,17 +13,33 @@ const ATRASO_DIAS = 14;
 // "Ana  Souza" e "ana souza" são o mesmo nome; acento também não conta.
 const nomeChave = (n) => String(n || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/\s+/g, " ").trim();
 
-// O site não sabe quem já comprou. Pedido com cupom de um nome que já tem
-// pedido antes (aguardando ou confirmado) ganha cupom_repetido, e o painel
-// avisa pra conferir no WhatsApp. Nome igual não prova nada, só chama atenção.
+// Pedido com cupom de quem já pediu antes ganha cupom_repetido, e o painel
+// avisa. Pelo telefone (cupom_repetido_por = "telefone") é certeiro: o mesmo
+// número já gastou esse cupom, ou já pediu e o cupom é de primeira compra.
+// Sem bater pelo telefone, vale o nome (sem acento, caixa e espaço extra):
+// nome igual não prova nada, só chama atenção pra conferir no WhatsApp.
 function marcarCupomRepetido(listas, anteriores) {
-  const primeiro = new Map();
+  const primeiroNome = new Map(), porTelefone = new Map();
   for (const r of anteriores) {
     const k = nomeChave(r.nome);
-    if (!primeiro.has(k) || r.id < primeiro.get(k)) primeiro.set(k, r.id);
+    if (!primeiroNome.has(k) || r.id < primeiroNome.get(k)) primeiroNome.set(k, r.id);
+    if (r.telefone) {
+      if (!porTelefone.has(r.telefone)) porTelefone.set(r.telefone, []);
+      porTelefone.get(r.telefone).push(r);
+    }
   }
   for (const lista of listas) for (const p of lista) {
-    if (p.cupom) p.cupom_repetido = primeiro.get(nomeChave(p.nome)) < p.id;
+    if (!p.cupom) continue;
+    const primeira = SO_PRIMEIRA_COMPRA.includes(p.cupom);
+    const antes = (porTelefone.get(p.telefone) || []).filter((r) => r.id < p.id && (primeira || r.cupom === p.cupom));
+    if (p.telefone && antes.length) {
+      p.cupom_repetido = true;
+      p.cupom_repetido_por = "telefone";
+      p.cupom_repetido_pedido = Math.min(...antes.map((r) => r.id));
+    } else {
+      p.cupom_repetido = primeiroNome.get(nomeChave(p.nome)) < p.id;
+      if (p.cupom_repetido) p.cupom_repetido_por = "nome";
+    }
   }
 }
 
@@ -46,7 +63,7 @@ export async function onRequestGet({ request, env }) {
     env.DB.prepare(
       "SELECT " + COLUNAS_PEDIDO + " FROM pedidos WHERE status = 'confirmado' AND entregue = 1 AND (retirada BETWEEN ? AND ? OR (pago = 0 AND retirada BETWEEN ? AND ?)) ORDER BY retirada DESC, id")
       .bind(dia, somaDias(dia, MAX_DIAS_RETIRADA + 1), somaDias(dia, -ATRASO_DIAS), dia),
-    env.DB.prepare("SELECT id, nome FROM pedidos WHERE status IN ('aguardando','confirmado')"),
+    env.DB.prepare("SELECT id, nome, telefone, cupom FROM pedidos WHERE status IN ('aguardando','confirmado')"),
   ]);
   const corpo = {
     dia,

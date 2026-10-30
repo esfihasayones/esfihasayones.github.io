@@ -169,6 +169,7 @@ main{padding:18px 22px 60px;max-width:1000px}
     /* Preenche o mínimo e envia; estoura se a validação barrar. */
     c.enviarValido = function(){
       if (!doc.getElementById("fNome").value) doc.getElementById("fNome").value = "Breno";
+      if (!doc.getElementById("fTelefone").value) doc.getElementById("fTelefone").value = "48999990000";
       var msg = c.enviar();
       if (!msg) throw new Error("o envio foi barrado: " + c.texto("#aviso"));
       return msg;

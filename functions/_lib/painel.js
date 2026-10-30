@@ -1,4 +1,4 @@
-import { SABORES } from "../../public/regras.js";
+import { SABORES, telefoneLimpo } from "../../public/regras.js";
 import { cupomDe } from "./cupons.js";
 import { validarItens, precificar, dataIsoValida, texto, limpar } from "./pedido.js";
 
@@ -26,7 +26,7 @@ function montadasDe(r, itens) {
 export function serializar(r) {
   const itens = JSON.parse(r.itens);
   return {
-    id: r.id, status: r.status, motivo: r.motivo, origem: r.origem, nome: r.nome,
+    id: r.id, status: r.status, motivo: r.motivo, origem: r.origem, nome: r.nome, telefone: r.telefone || null,
     itens, montadas: montadasDe(r, itens), qtd: r.qtd, total_centavos: r.total_centavos,
     cupom: r.cupom, desconto_centavos: r.desconto_centavos, valor_manual: !!r.valor_manual,
     ponto: r.ponto, retirada: r.retirada, janela: r.janela, obs: r.obs,
@@ -62,6 +62,13 @@ export function validarCampos(bruto) {
   if ("nome" in c) {
     if (!texto(c.nome, 60, 1)) return { erro: "nome inválido" };
     f.nome = c.nome.trim();
+  }
+  if ("telefone" in c) {
+    if (c.telefone === null || c.telefone === "") f.telefone = null;
+    else {
+      f.telefone = telefoneLimpo(c.telefone);
+      if (!f.telefone) return { erro: "telefone inválido" };
+    }
   }
   if ("itens" in c) {
     const v = validarItens(c.itens);

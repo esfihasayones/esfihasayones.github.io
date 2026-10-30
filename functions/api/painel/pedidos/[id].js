@@ -3,7 +3,7 @@ import { validarCampos, montar, serializar, mudancas, erro, resposta, lerJson, C
 import { lerAgenda } from "../../../_lib/agenda.js";
 import { isoBrasilia } from "../../../../public/regras.js";
 
-const EDITAVEIS = ["status", "pago", "pagamento", "entregue", "nome", "itens", "ponto", "retirada", "janela", "obs", "cupom",
+const EDITAVEIS = ["status", "pago", "pagamento", "entregue", "nome", "telefone", "itens", "ponto", "retirada", "janela", "obs", "cupom",
   "qtd", "unit_centavos", "total_centavos", "desconto_centavos", "valor_manual", "motivo"];
 
 export async function onRequestPatch({ request, env, params }) {
