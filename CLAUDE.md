@@ -251,6 +251,22 @@ rascunhos e não valem.
 Pendente: publicar de novo pra margem de 6 mm (f61744d) chegar à página de
 impressão do painel; ver o primeiro pedido real ganhar o DHR e a primeira troca.
 
+### Lista de compras (30/10/2026, protótipo)
+
+Peça de portfólio pro trainee de IA da Softplan (Futures, inscrição até
+13/11/2026). `node ops/compras.mjs calabresa=12 carne=10 [--json]` calcula os
+ingredientes e acha o mais barato no Bistek, Giassi e Angeloni, pela busca
+pública da loja VTEX deles (`/api/catalog_system/pub/products/search`, JSON
+com preço, preço "de", marca, foto e link; não é API oficial). Receita em
+`functions/_lib/receitas.js` é ESTIMADA, sem o dono: trocar pelas quantidades
+dele. Achar o produto certo é por palavra (`exige`, `proibe`, `inicio`) e erra
+fácil (manjericão já casou com vinagre); o próximo passo é a IA escolher. A
+data de fim da promoção não vem no JSON (o `PriceValidUntil` é técnico); vem
+no encarte do Tiendeo, em imagem. Imperatriz não tem catálogo com preço
+(manda pro iFood); Fort não é VTEX. Testes em `tests/api/compras.test.mjs`
+(não precisam de servidor). Ideia depois: virar aba no painel com a produção
+do dia.
+
 ### Pagamento (22/10/2026)
 
 Pix na chave dele e cartão na retirada pelo Tap do Mercado Pago (celular
