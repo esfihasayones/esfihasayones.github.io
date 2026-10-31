@@ -54,6 +54,17 @@ test("melhorCom prefere menos mercados quando o total empata", () => {
   assert.deepEqual(melhorCom(empate, 2).mercados, ["X"]);
 });
 
+test("empate nunca manda a mais um mercado", () => {
+  // Achado da revisão: X e Y empatam na farinha e só Y tem sal. Ir só ao Y custa o mesmo.
+  const l = planejar({ farinha: 1000, sal: 1000 }, { farinha: [of("X", 100), of("Y", 100)], sal: [of("Y", 50)] });
+  assert.deepEqual(melhorCom(l, 2).mercados, ["Y"]);
+  assert.deepEqual(melhorCom(l, 9).mercados, ["Y"]);
+  assert.deepEqual(opcoesDeCompra(l).map((o) => [o.rotulo, o.mercados.join("+"), o.total]), [["1 mercado", "Y", 150]]);
+  // Um par empata com um mercado só: fica o mercado só.
+  const l2 = planejar({ a: 1000, b: 1000 }, { a: [of("X", 5), of("Z", 5)], b: [of("Y", 5), of("Z", 5)] });
+  assert.deepEqual(melhorCom(l2, 2).mercados, ["Z"]);
+});
+
 test("melhorCom com tudo faltando devolve null", () => {
   assert.equal(melhorCom(planejar({ a: 1 }, {}), 3), null);
 });

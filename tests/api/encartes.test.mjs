@@ -2,7 +2,7 @@
 // local, recortes e a oferta que sai de cada um. Sem rede.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { listaEncartes, validosHoje, recortes, ofertaDoRecorte, tituloForaDoPeriodo, mesesNoTitulo } from "../../functions/_lib/encartes.js";
+import { listaEncartes, validosHoje, recortes, ofertaDoRecorte, tituloForaDoPeriodo, mesesNoTitulo, anosNoTitulo, nomeDoMercado } from "../../functions/_lib/encartes.js";
 
 const paginaNext = (dados) => `<html><body><script id="__NEXT_DATA__" type="application/json">${JSON.stringify(dados)}</script></body></html>`;
 const encarte = (id, extra = {}) => ({
@@ -22,6 +22,20 @@ test("listaEncartes lê os encartes de qualquer ponto do JSON, sem repetir", () 
     ["2", "Mercado 2", "2026-10-29", "2026-11-04", false],
     ["3", "Mercado 3", "2026-10-29", "2026-11-04", true],
   ]);
+});
+
+test("listaEncartes: começo é a validade, não a publicação; fim no horário de Brasília", () => {
+  // Caso real do Fort: publicado em 05/01, válido de 01/05 a 01/11.
+  const [e] = listaEncartes(paginaNext({ a: [encarte("1", { distance: "1", start_date: "2026-05-01T00:00:00.000Z", end_date: "2026-11-02T02:59:59.000Z",
+    settings: { time_zone: { publish_at_iso: "2026-01-05T10:09:03-03:00", unpublish_at_iso: "2026-11-01T23:59:59-03:00" } } })] }));
+  assert.deepEqual([e.inicio, e.fim], ["2026-05-01", "2026-11-01"]);
+});
+
+test("nomeDoMercado junta o nome do Tiendeo com o do site", () => {
+  assert.equal(nomeDoMercado("Bistek Supermercados"), "Bistek");
+  assert.equal(nomeDoMercado("Supermercados Imperatriz"), "Imperatriz");
+  assert.equal(nomeDoMercado(" Fort Atacadista "), "Fort Atacadista");
+  assert.equal(nomeDoMercado(null), null);
 });
 
 test("encarte que aparece como nacional e também com distância é local", () => {
@@ -62,6 +76,18 @@ test("mês citado no título fora do período derruba o encarte", () => {
   // "Mar", "Mais" e "Set" de vinho sem número perto não são mês.
   assert.deepEqual(mesesNoTitulo("Frutos do Mar e Mais ofertas, set de taças"), []);
   assert.deepEqual(mesesNoTitulo("LÂMINA SEMANAL"), []);
+  // Número perto de "Mar" e "dez" sem formato de data também não é mês.
+  assert.deepEqual(mesesNoTitulo("Frutos do Mar 2026"), []);
+  assert.deepEqual(mesesNoTitulo("Festival Frutos do Mar 3 dias"), []);
+  assert.deepEqual(mesesNoTitulo("Top 10 dez ofertas"), []);
+  assert.deepEqual(mesesNoTitulo("3 de mar"), [3]);
+  assert.deepEqual(mesesNoTitulo("30 de outubro a 4 de novembro"), [10, 11]);
+  // Ano citado fora do período derruba; o do período, não.
+  assert.deepEqual(anosNoTitulo("Ofertas de Outubro 2025"), [2025]);
+  assert.deepEqual(anosNoTitulo("05 a 11 JAN 26"), [2026]);
+  assert.equal(tituloForaDoPeriodo(e("Ofertas de Outubro 2025")), true);
+  assert.equal(tituloForaDoPeriodo(e("Black Friday 2026")), false);
+  assert.equal(tituloForaDoPeriodo(e("Encarte Assaí Atacadista 174639-572")), false);
   assert.deepEqual(mesesNoTitulo("LÂMINA RIO DE JANEIRO"), []);
 });
 
@@ -84,12 +110,26 @@ const enc = { id: "77", titulo: "Ofertas", fim: "2026-11-04", nacional: false };
 test("ofertaDoRecorte: embalagem com o peso lido pela IA", () => {
   const o = ofertaDoRecorte(rec({ preco: 299 }), { produto: "Farinha Araguaia 1kg", gramas: 1000, unidade: "embalagem" }, enc);
   assert.deepEqual([o.mercado, o.nome, o.gramas, o.granel, o.preco, o.porKg, o.link, o.encarte.fim, o.encarte.nacional],
-    ["Fort Atacadista (encarte)", "Farinha Araguaia 1kg", 1000, false, 299, 299, "https://www.tiendeo.com.br/Catalogos/77", "2026-11-04", false]);
+    ["Fort Atacadista", "Farinha Araguaia 1kg", 1000, false, 299, 299, "https://www.tiendeo.com.br/Catalogos/77", "2026-11-04", false]);
 });
 
 test("ofertaDoRecorte: preço por quilo vira granel de 100 g", () => {
   const o = ofertaDoRecorte(rec(), { gramas: 1000, unidade: "kg" }, enc);
   assert.deepEqual([o.gramas, o.granel, o.preco, o.porKg], [100, true, 258, 2580]);
+  // Sem arredondar o passo: R$ 39,95 o quilo fica 399,5 centavos a cada 100 g.
+  assert.equal(ofertaDoRecorte(rec({ preco: 3995 }), { unidade: "kg" }, enc).preco, 399.5);
+});
+
+test("ofertaDoRecorte: peso do título ganha do lido, e peso absurdo não passa", () => {
+  assert.equal(ofertaDoRecorte(rec({ titulo: "Queijo Mussarela 500g" }), { gramas: 5000 }, enc).gramas, 500);
+  assert.equal(ofertaDoRecorte(rec(), { gramas: 1e9 }, enc), null);
+  assert.equal(ofertaDoRecorte(rec(), { gramas: 0.2 }, enc), null);
+  assert.equal(ofertaDoRecorte(rec(), { gramas: 50000 }, enc).gramas, 50000);
+});
+
+test("ofertaDoRecorte: sem rede no recorte usa a do encarte; sem nenhuma, não vira oferta", () => {
+  assert.equal(ofertaDoRecorte(rec({ mercado: null }), { gramas: 200 }, { ...enc, mercado: "Bistek Supermercados" }).mercado, "Bistek");
+  assert.equal(ofertaDoRecorte(rec({ mercado: null }), { gramas: 200 }, enc), null);
 });
 
 test("ofertaDoRecorte: preço do Tiendeo vale mais que o lido; o lido só cobre a falta", () => {

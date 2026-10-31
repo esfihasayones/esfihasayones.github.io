@@ -3,7 +3,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { insumos, INGREDIENTES, MASSA, RECHEIOS } from "../../functions/_lib/receitas.js";
-import { combina, pesoGramas, ofertas, melhor, buscar } from "../../functions/_lib/mercados.js";
+import { combina, pesoGramas, ofertas, melhor, buscar, custoPara } from "../../functions/_lib/mercados.js";
 
 const MERCADO = { id: "teste", nome: "Teste", site: "https://mercado.invalido" };
 const produto = (nome, preco, extra = {}) => ({
@@ -24,6 +24,9 @@ test("insumos soma massa e recheio de cada sabor", () => {
 
 test("insumos recusa sabor sem receita e ignora quantidade zero", () => {
   assert.throws(() => insumos({ frango: 3 }), /sem receita/);
+  // Propriedade herdada de objeto não é sabor.
+  assert.throws(() => insumos({ toString: 5 }), /sem receita/);
+  assert.throws(() => insumos({ constructor: 1 }), /sem receita/);
   assert.deepEqual(insumos({ carne: 0 }), {});
 });
 
@@ -39,6 +42,15 @@ test("pesoGramas lê o peso do nome", () => {
   assert.equal(pesoGramas("Fermento Kit 3x 10g"), 30);
   assert.equal(pesoGramas("Tomate Kg"), 1000);
   assert.equal(pesoGramas("Cebola Roxa"), null);
+  // Ponto de milhar, quantidade depois do peso e unidade por extenso.
+  assert.equal(pesoGramas("Açúcar União 1.000g"), 1000);
+  assert.equal(pesoGramas("Farinha 1.5kg"), 1500);
+  assert.equal(pesoGramas("Fermento 10g com 3 unidades"), 30);
+  assert.equal(pesoGramas("Sal 1kg c/ 2"), 2000);
+  assert.equal(pesoGramas("Leite 1L x 12"), 12000);
+  assert.equal(pesoGramas("Requeijão 200g Tradicional"), 200);
+  assert.equal(pesoGramas("500 gramas"), 500);
+  assert.equal(pesoGramas("1 quilo"), 1000);
 });
 
 test("combina separa o ingrediente do que a busca traz junto", () => {
@@ -52,6 +64,16 @@ test("combina separa o ingrediente do que a busca traz junto", () => {
   assert.ok(!combina("Salsicha Hot Dog 500g", INGREDIENTES.sal));
   assert.ok(!combina("Farinha de Trigo Sem Glúten 1kg", INGREDIENTES.farinha));
   assert.ok(!combina("Tempero Manjericão e Orégano 60g", INGREDIENTES.manjericao));
+  // Tempero não é a coisa: pimenta calabresa, cebola em pó, farinha com fermento.
+  assert.ok(!combina("Pimenta Calabresa Kitano 15g", cal));
+  assert.ok(!combina("Molho de Pimenta Calabresa 150ml", cal));
+  assert.ok(!combina("Cebola Em Pó Chelli Envelope 15g", INGREDIENTES.cebola));
+  assert.ok(combina("Cebola kg", INGREDIENTES.cebola));
+  assert.ok(!combina("Farinha de Trigo com Fermento 1kg", INGREDIENTES.farinha));
+  // Carne moída no masculino também vale; frango moído não.
+  assert.ok(combina("Patinho Moído kg", INGREDIENTES.carne));
+  assert.ok(combina("Acém Moído 500g", INGREDIENTES.carne));
+  assert.ok(!combina("Frango Moído 500g", INGREDIENTES.carne));
   assert.ok(!combina("Vinagre com Manjericão 500ml", INGREDIENTES.manjericao));
   assert.ok(!combina("Mistura para Arroz Tomate com Manjericão 16g", INGREDIENTES.manjericao));
   assert.ok(combina("Manjericão Kitano Pacote 7g", INGREDIENTES.manjericao));
@@ -81,6 +103,11 @@ test("melhor escolhe o mais barato pra quantidade pedida, com embalagem fechada"
   // 4,5 kg: o de 5 kg (R$ 15) ganha de cinco de 1 kg (R$ 20).
   assert.deepEqual([melhor([pequena, grande], 4500).nome, melhor([pequena, grande], 4500).unidades], ["Farinha 5kg", 1]);
   assert.equal(melhor([], 100), null);
+});
+
+test("custoPara arredonda só o total quando o passo tem fração de centavo", () => {
+  // R$ 39,95 o quilo em passos de 100 g: 26 passos = 2,6 kg = R$ 103,87, não 26 x R$ 4,00.
+  assert.deepEqual(custoPara({ gramas: 100, preco: 399.5 }, 2600), { unidades: 26, centavos: 10387 });
 });
 
 test("buscar monta a URL da busca e devolve só o que combina", async () => {

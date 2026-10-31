@@ -251,21 +251,45 @@ rascunhos e não valem.
 Pendente: publicar de novo pra margem de 6 mm (f61744d) chegar à página de
 impressão do painel; ver o primeiro pedido real ganhar o DHR e a primeira troca.
 
-### Lista de compras (30/10/2026, protótipo)
+### Lista de compras (30 e 31/10/2026, protótipo)
 
 Peça de portfólio pro trainee de IA da Softplan (Futures, inscrição até
-13/11/2026). `node ops/compras.mjs calabresa=12 carne=10 [--json]` calcula os
-ingredientes e acha o mais barato no Bistek, Giassi e Angeloni, pela busca
-pública da loja VTEX deles (`/api/catalog_system/pub/products/search`, JSON
-com preço, preço "de", marca, foto e link; não é API oficial). Receita em
-`functions/_lib/receitas.js` é ESTIMADA, sem o dono: trocar pelas quantidades
-dele. Achar o produto certo é por palavra (`exige`, `proibe`, `inicio`) e erra
-fácil (manjericão já casou com vinagre); o próximo passo é a IA escolher. A
-data de fim da promoção não vem no JSON (o `PriceValidUntil` é técnico); vem
-no encarte do Tiendeo, em imagem. Imperatriz não tem catálogo com preço
-(manda pro iFood); Fort não é VTEX. Testes em `tests/api/compras.test.mjs`
-(não precisam de servidor). Ideia depois: virar aba no painel com a produção
-do dia.
+13/11/2026). `node ops/compras.mjs calabresa=12 carne=10 --html compras.html`
+soma os ingredientes (receita ESTIMADA em `functions/_lib/receitas.js`, sem o
+dono: trocar pelas quantidades dele) e acha onde comprar. Gera página pra usar
+no celular dentro do mercado: opções de 1 mercado, 2 e o mais barato, roteiro
+por mercado e caixa pra marcar o que pegou (guardado no aparelho). Fora da web:
+roda na máquina dele, não no Cloudflare.
+
+Fontes:
+- Sites de Bistek, Giassi e Angeloni pela busca pública VTEX
+  (`/api/catalog_system/pub/products/search`, `functions/_lib/mercados.js`).
+  Granel tem `Price` por quilo em passos de `unitMultiplier` (conferido no
+  carrinho do Giassi).
+- Encartes de Florianópolis no Tiendeo (`functions/_lib/encartes.js`): o JSON
+  `__NEXT_DATA__` da página de cada rede traz os encartes, e o do encarte traz
+  os produtos recortados (`flyerGibs`) com nome e preço, sem peso. Encarte
+  nacional (sem `distance`, como a "LÂMINA RIO DE JANEIRO" do Carrefour e os
+  do Assaí) só entra com `--nacionais`. O começo da validade é o `start_date`,
+  não o `publish_at`. Título com mês ou ano fora do período derruba o encarte
+  (o Fort "05 a 11 JAN 26" vinha marcado como válido de maio a novembro).
+- A IA (`ops/leitor-encarte.mjs`) lê peso, condição (clube, app) e, se faltar,
+  preço na imagem de cada produto de encarte que casa com um ingrediente. Usa
+  o `claude -p` da assinatura dele, em lotes de 25, só com Read e só dentro da
+  pasta dos recortes (testado: ler fora é negado). Leituras guardadas em
+  `~/.cache/esfihas-compras/leituras.json`. O peso escrito no título ganha do
+  lido; peso fora de 1 g a 50 kg é descartado.
+
+Achar o produto certo é por palavra (`exige`, `proibe`, `inicio` em
+`receitas.js`) e já errou com pimenta calabresa, cebola em pó e manjericão em
+vinagre; cada caso virou teste. Empate de preço nunca manda a mais um
+mercado. Testes: `tests/api/compras*.test.mjs`, `encartes`, `leitor-encarte`
+(sem servidor nem rede) e `node tests/compras-pagina-navegador.cjs chromium`
+(e firefox). Revisão independente em 31/10 achou 11 defeitos, todos
+corrigidos com teste; teste de mutação pega tudo menos duas mutações
+equivalentes. Não feito: preço de cada loja do Atacadão (o JSON dá o nacional),
+Fort/Koch/Hippo pelo site (sistema oSuper, preço só depois de escolher a loja).
+Projeto irmão pra qualquer pessoa: `~/Documents/brenisio/lista-de-mercado/`.
 
 ### Pagamento (22/10/2026)
 

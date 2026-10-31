@@ -25,17 +25,18 @@ function* subconjuntos(lista, k, inicio = 0, atual = []) {
 
 // O jeito mais barato de comprar tudo o que dá pra comprar indo a no máximo
 // `k` mercados. Ingrediente que nenhum mercado tem não entra na conta (vai em
-// `faltam`). Empate de total vai pra combinação com menos mercados e, depois,
-// pela ordem alfabética, pra sair sempre igual. Null quando nenhuma
-// combinação de até `k` cobre tudo.
+// `faltam`). Procura de 1 mercado pra cima e só troca por total menor, então
+// empate fica com menos mercados e, no mesmo número, com a primeira
+// combinação em ordem alfabética. Chegou no menor total possível (o mais
+// barato de cada item), para: com mais mercados não tem como melhorar.
+// Null quando nenhuma combinação de até `k` cobre tudo.
 export function melhorCom(linhas, k) {
   const compraveis = linhas.filter((l) => l.opcoes.length);
   if (!compraveis.length) return null;
   const mercados = [...new Set(compraveis.flatMap((l) => l.opcoes.map((o) => o.mercado)))].sort();
+  const minimo = compraveis.reduce((s, l) => s + l.opcoes[0].centavos, 0);
   let achada = null;
-  // Sem limite de mercados, é o mais barato de cada item: não precisa buscar.
-  const ns = k >= mercados.length ? [mercados.length] : Array.from({ length: k }, (_, i) => i + 1);
-  for (const n of ns) {
+  for (let n = 1; n <= Math.min(k, mercados.length) && !(achada && achada.total === minimo); n++) {
     for (const conjunto of subconjuntos(mercados, n)) {
       const dentro = new Set(conjunto);
       const itens = [];
@@ -47,12 +48,8 @@ export function melhorCom(linhas, k) {
         itens.push({ ingrediente: l.ingrediente, nome: l.nome, gramas: l.gramas, oferta: o });
         total += o.centavos;
       }
-      if (!cobre) continue;
-      // Mercado do conjunto que acabou sem item não conta como ida.
-      const usados = [...new Set(itens.map((i) => i.oferta.mercado))].sort();
-      if (!achada || total < achada.total || (total === achada.total && usados.length < achada.mercados.length)) {
-        achada = { mercados: usados, total, itens };
-      }
+      if (!cobre || (achada && total >= achada.total)) continue;
+      achada = { mercados: [...new Set(itens.map((i) => i.oferta.mercado))].sort(), total, itens };
     }
   }
   if (!achada) return null;
@@ -60,13 +57,14 @@ export function melhorCom(linhas, k) {
 }
 
 // As opções que aparecem pra quem vai comprar: 1 mercado, 2 mercados e o
-// mais barato de todos, sem repetir a mesma combinação.
+// mais barato de todos. Opção que não sai mais barata que uma anterior (com
+// menos mercados) não aparece: não vale ir a mais um lugar pelo mesmo preço.
 export function opcoesDeCompra(linhas) {
   const todos = new Set(linhas.flatMap((l) => l.opcoes.map((o) => o.mercado))).size;
   const lista = [];
   for (const k of [1, 2, todos]) {
     const p = k ? melhorCom(linhas, k) : null;
-    if (!p || lista.some((x) => x.mercados.join("|") === p.mercados.join("|"))) continue;
+    if (!p || lista.some((x) => x.total <= p.total)) continue;
     const n = p.mercados.length;
     lista.push({ rotulo: n === 1 ? "1 mercado" : n === 2 && k === 2 ? "2 mercados" : "Mais barato", ...p });
   }

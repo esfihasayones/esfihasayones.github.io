@@ -6,13 +6,16 @@ const peso = (g) => (g >= 1000 ? (g / 1000).toFixed(2).replace(".", ",").replace
 const dataBR = (iso) => iso.slice(8, 10) + "/" + iso.slice(5, 7);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
+// Só link e foto http(s): o que vem dos mercados não pode virar javascript:.
+const url = (u) => (/^https?:\/\//i.test(String(u || "")) ? String(u) : null);
+
 // O que comprar daquela oferta: "3x" pra embalagem, peso pro granel.
 export const quanto = (o) => (o.granel ? peso(o.unidades * o.gramas) : `${o.unidades}x`);
 
 function selos(o) {
   return [
     o.promocao ? `<span class="selo">promoção, era ${reais(o.promocao * o.unidades)}</span>` : "",
-    o.encarte ? `<span class="selo selo-claro">encarte até ${dataBR(o.encarte.fim)}</span>` : "",
+    o.encarte ? `<span class="selo selo-claro">${o.encarte.fim ? `encarte até ${dataBR(o.encarte.fim)}` : "encarte"}</span>` : "",
     o.encarte?.nacional ? `<span class="selo selo-alerta">encarte nacional, confira na loja</span>` : "",
     o.condicao ? `<span class="selo selo-claro">${esc(o.condicao)}</span>` : "",
   ].join("");
@@ -23,7 +26,7 @@ function item(i, linha, idOpcao) {
   const id = `${idOpcao}-${i.ingrediente}`;
   const outros = linha.opcoes.map((x) =>
     `<li${x === o ? ' class="atual"' : ""}><span>${esc(x.mercado)}</span><span>${reais(x.centavos)}</span></li>`).join("");
-  const foto = o.imagem ? `<img src="${esc(o.imagem)}" alt="" loading="lazy" width="56" height="56">` : `<span class="sem-foto" aria-hidden="true"></span>`;
+  const foto = url(o.imagem) ? `<img src="${esc(url(o.imagem))}" alt="" loading="lazy" width="56" height="56">` : `<span class="sem-foto" aria-hidden="true"></span>`;
   return `<li class="item">
   <input type="checkbox" id="${esc(id)}" data-chave="${esc(i.ingrediente)}">
   <label for="${esc(id)}" class="item-corpo">
@@ -37,7 +40,7 @@ function item(i, linha, idOpcao) {
   </label>
   <details class="comparar"><summary>Comparar ${linha.opcoes.length > 1 ? `com ${linha.opcoes.length - 1} mercado${linha.opcoes.length > 2 ? "s" : ""}` : "e abrir"}</summary>
     <ul>${outros}</ul>
-    ${o.link ? `<a href="${esc(o.link)}" target="_blank" rel="noopener">Ver no ${o.encarte ? "encarte" : "site"}</a>` : ""}
+    ${url(o.link) ? `<a href="${esc(url(o.link))}" target="_blank" rel="noopener">Ver no ${o.encarte ? "encarte" : "site"}</a>` : ""}
   </details>
 </li>`;
 }
@@ -69,8 +72,10 @@ export function pagina(dados, roteiroDe) {
   const regras = opcoes.map((_, n) =>
     `#r${n}:checked~.paineis .p${n}{display:block}#r${n}:checked~.abas label[for=r${n}]{background:var(--tinta);color:var(--fundo);border-color:var(--tinta)}#r${n}:focus-visible~.abas label[for=r${n}]{outline:3px solid var(--foco);outline-offset:2px}`).join("");
 
-  const listaEncartes = encartes.length ? `<details class="rodape-bloco"><summary>${encartes.length} encarte${encartes.length > 1 ? "s" : ""} lido${encartes.length > 1 ? "s" : ""}</summary><ul>${
-    encartes.map((e) => `<li><span>${esc(e.mercado)}: ${esc(e.titulo)}</span><span>até ${dataBR(e.fim)}</span></li>`).join("")}</ul></details>` : "";
+  // Só os encartes que deram algum ingrediente da lista; o resto é contado.
+  const uteis = encartes.filter((e) => e.ofertas === undefined || e.ofertas > 0);
+  const listaEncartes = encartes.length ? `<details class="rodape-bloco"><summary>${encartes.length} encarte${encartes.length > 1 ? "s" : ""} consultado${encartes.length > 1 ? "s" : ""}, ${uteis.length} com ingrediente da lista</summary><ul>${
+    uteis.map((e) => `<li><span>${esc(e.mercado)}: ${esc(e.titulo)}</span><span>até ${dataBR(e.fim)}</span></li>`).join("")}</ul></details>` : "";
   const listaErros = erros.length ? `<details class="rodape-bloco"><summary>${erros.length} consulta${erros.length > 1 ? "s" : ""} não respondeu</summary><ul>${
     erros.map((e) => `<li>${esc(e)}</li>`).join("")}</ul></details>` : "";
 
@@ -123,16 +128,16 @@ h1{font-size:clamp(1.4rem,5vw,1.9rem);line-height:1.15;margin:0}
 .item input:checked+.item-corpo .item-nome{text-decoration:line-through}
 .item input:focus-visible{outline:3px solid var(--foco);outline-offset:2px}
 .comparar{padding:0 12px 10px 50px;font-size:.9rem}
-.comparar summary{cursor:pointer;color:var(--suave);min-height:32px;display:flex;align-items:center}
+.comparar summary{cursor:pointer;color:var(--suave);min-height:44px;display:flex;align-items:center}
 .comparar ul{list-style:none;padding:0;margin:4px 0 8px}
 .comparar li{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-top:1px dashed var(--linha)}
 .comparar li.atual{font-weight:600}
-.comparar a{color:var(--tinta)}
+.comparar a{color:var(--tinta);display:inline-flex;align-items:center;min-height:44px}
 .aviso{background:var(--alerta-fundo);color:var(--alerta);border-radius:10px;padding:10px 12px}
 .notas{margin-top:24px;font-size:.9rem;color:var(--suave)}
 .notas p{margin:6px 0}
 .rodape-bloco{margin-top:10px}
-.rodape-bloco summary{cursor:pointer;min-height:32px;display:flex;align-items:center}
+.rodape-bloco summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
 .rodape-bloco ul{list-style:none;padding:0;margin:4px 0}
 .rodape-bloco li{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-top:1px dashed var(--linha);overflow-wrap:anywhere}
 @media (max-width:420px){
@@ -173,7 +178,7 @@ ${opcoes.map((op, n) => painel(op, n, linhasPorIng, roteiroDe)).join("\n")}
 </main>
 <script>
 (function () {
-  var chave = "compras-${esc(hoje)}-${nEsfihas}";
+  var chave = ${JSON.stringify("compras-" + hoje + "-" + Object.entries(itens).filter(([, n]) => n > 0).map(([s, n]) => s + n).sort().join("-")).replace(/</g, "\\u003c")};
   var marcados = {};
   try { marcados = JSON.parse(localStorage.getItem(chave) || "{}"); } catch (e) {}
   var caixas = [].slice.call(document.querySelectorAll(".item input"));

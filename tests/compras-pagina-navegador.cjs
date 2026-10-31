@@ -30,10 +30,14 @@ const ok = (cond, msg) => { if (!cond) falhas.push(msg); };
         .filter((e) => { const r = e.getBoundingClientRect(); return r.width && r.right > innerWidth + 0.5; })
         .map((e) => e.className || e.tagName));
       ok(!fora.length, `${largura}px: passa da tela: ${fora.slice(0, 3).join(", ")}`);
-      // Alvo de toque: aba e linha do item com pelo menos 44 px.
-      const pequenos = await p.evaluate(() => [...document.querySelectorAll(".aba, .painel:not([style*=none]) .item-corpo")]
-        .filter((e) => e.offsetParent && e.getBoundingClientRect().height < 44).length);
-      ok(!pequenos, `${largura}px: ${pequenos} alvo(s) de toque menores que 44 px`);
+      // Alvo de toque: aba, linha do item, "Comparar" e rodapé com pelo menos 44 px,
+      // medidos só no que está na tela (painel escondido tem altura zero).
+      const pequenos = await p.evaluate(() => [...document.querySelectorAll(".aba, .item-corpo, .comparar summary, .rodape-bloco summary")]
+        .filter((e) => { const r = e.getBoundingClientRect(); return r.height > 0 && r.height < 44; })
+        .map((e) => e.className || e.tagName));
+      ok(!pequenos.length, `${largura}px: alvo de toque menor que 44 px: ${pequenos.slice(0, 3).join(", ")}`);
+      const visiveis = await p.evaluate(() => [...document.querySelectorAll(".item-corpo")].filter((e) => e.getBoundingClientRect().height > 0).length);
+      ok(visiveis > 0, `${largura}px: nenhum item na tela`);
       await p.close();
     }
 
@@ -61,7 +65,12 @@ const ok = (cond, msg) => { if (!cond) falhas.push(msg); };
     await p.reload();
     ok(await p.locator(`.p0 .item input[data-chave="${chave}"]`).isChecked(), "marcação volta depois de recarregar");
 
-    // Teclado: Tab chega nos rádios e as setas trocam de opção.
+    // Teclado: Tab chega nos rádios (primeira parada da página) e as setas trocam de opção.
+    await p.reload();
+    await p.keyboard.press("Tab");
+    const focado = await p.evaluate(() => document.activeElement && document.activeElement.className);
+    ok(focado === "radio", "o primeiro Tab devia cair na escolha de opção, caiu em: " + focado);
+    await p.evaluate(() => document.getElementById("r0").click());
     await p.locator("#r0").focus();
     await p.keyboard.press("ArrowDown");
     const porTeclado = await visivel();

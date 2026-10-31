@@ -27,7 +27,10 @@ test("página mostra cada opção, o roteiro e os avisos", () => {
   assert.match(h, /promoção, era R\$ 3,69/);
   assert.match(h, /encarte nacional, confira na loja/);
   assert.match(h, /A IA leu o peso de 1 produto na imagem do encarte/);
-  assert.match(h, /1 encarte lido/);
+  assert.match(h, /1 encarte consultado, 1 com ingrediente da lista/);
+  const varios = pagina(dadosDeExemplo({ encartes: [{ mercado: "Fort", titulo: "Ofertas", fim: "2026-11-01", ofertas: 2 }, { mercado: "Bistek", titulo: "Flores", fim: "2026-12-31", ofertas: 0 }] }), roteiro);
+  assert.match(varios, /2 encartes consultados, 1 com ingrediente da lista/);
+  assert.doesNotMatch(varios, /Flores/);
 });
 
 test("página escapa o que vem dos mercados", () => {
@@ -38,6 +41,15 @@ test("página escapa o que vem dos mercados", () => {
   const h2 = pagina(ruim, roteiro);
   assert.doesNotMatch(h2, /<img src=x/);
   assert.doesNotMatch(h2, /<script>alert/);
+  // Link e foto que não são http(s) não entram (o exemplo do Giassi tem foto javascript:).
+  assert.doesNotMatch(h, /javascript:/);
+});
+
+test("marcação guardada é por lista: mesmo dia e mesmo total com outros sabores não divide", () => {
+  const a = pagina(dadosDeExemplo({ itens: { calabresa: 12 } }), roteiro).match(/var chave = (.*);/)[1];
+  const b = pagina(dadosDeExemplo({ itens: { carne: 12 } }), roteiro).match(/var chave = (.*);/)[1];
+  assert.notEqual(a, b);
+  assert.equal(JSON.parse(a), "compras-2026-10-31-calabresa12");
 });
 
 test("página abre na opção de 2 mercados quando existe, senão na primeira", () => {

@@ -8,7 +8,7 @@ import { planejar, opcoesDeCompra } from "../../functions/_lib/compras.js";
 
 const of = (m, preco, gramas, nome, x = {}) => ({
   mercado: m, nome, marca: null, gramas, granel: false, preco, porKg: Math.round(preco / gramas * 1000),
-  link: "https://x/" + encodeURIComponent(m), imagem: null, promocao: null, ...x,
+  link: "https://x/" + encodeURIComponent(m), imagem: m === "Giassi" ? "javascript:alert(1)" : null, promocao: null, ...x,
 });
 
 export function dadosDeExemplo(extra = {}) {
@@ -18,10 +18,10 @@ export function dadosDeExemplo(extra = {}) {
     mucarela: [
       of("Giassi", 2330, 1000, "Muçarela Della Vita 1kg"),
       of("Angeloni", 2500, 1000, "Muçarela Conaprole 1kg"),
-      of("Fort Atacadista (encarte)", 258, 100, "Mussarela <b>Tirol</b> \"peça\"", { granel: true, encarte: encarte("2026-11-01"), condicao: "Clube Mais" }),
+      of("Fort Atacadista", 258, 100, "Mussarela <b>Tirol</b> \"peça\"", { granel: true, encarte: encarte("2026-11-01"), condicao: "Clube Mais" }),
     ],
     oregano: [of("Angeloni", 219, 3, "Orégano 3g"), of("Giassi", 250, 7, "Orégano 7g")],
-    sal: [of("Giassi", 178, 1000, "Sal Zizo 1kg"), of("Atacadão (encarte)", 150, 1000, "Sal Cisne 1kg", { encarte: { ...encarte("2026-11-03"), nacional: true } })],
+    sal: [of("Giassi", 178, 1000, "Sal Zizo 1kg"), of("Atacadão", 150, 1000, "Sal Cisne 1kg", { encarte: { ...encarte("2026-11-03"), nacional: true } })],
   }, { farinha: "Farinha de trigo", mucarela: "Muçarela", oregano: "Orégano", sal: "Sal", ovo: "Ovo" });
   return {
     hoje: "2026-10-31", itens: { calabresa: 12, carne: 0, queijo: 12 }, linhas, opcoes: opcoesDeCompra(linhas),

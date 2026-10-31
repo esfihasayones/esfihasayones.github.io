@@ -16,24 +16,28 @@ import { planejar, opcoesDeCompra, roteiro } from "../functions/_lib/compras.js"
 import { lerRecortes } from "./leitor-encarte.mjs";
 import { pagina, quanto } from "./compras-pagina.mjs";
 
-const USO = "Uso: node ops/compras.mjs calabresa=12 carne=10 [--html arquivo] [--json] [--sem-encartes] [--nacionais]";
+const USO = "Uso: node ops/compras.mjs calabresa=12 carne=10 [--html arquivo.html] [--json] [--sem-encartes] [--nacionais]";
+const OPCOES = ["--json", "--sem-encartes", "--nacionais", "--html"];
+const sair = (msg) => { console.error(msg); process.exit(1); };
 const args = process.argv.slice(2);
 const emJson = args.includes("--json");
 const semEncartes = args.includes("--sem-encartes");
 const nacionais = args.includes("--nacionais");
-const html = args.includes("--html") ? args[args.indexOf("--html") + 1] : null;
+const iHtml = args.indexOf("--html");
+const html = iHtml >= 0 ? args[iHtml + 1] : null;
+if (iHtml >= 0 && (!html || html.startsWith("--") || html.includes("="))) sair("Depois de --html vem o nome do arquivo, como compras.html.\n" + USO);
 const itens = {};
-for (const a of args.filter((a) => a.includes("="))) {
+for (const [i, a] of args.entries()) {
+  if (i === iHtml + 1 && iHtml >= 0) continue;
+  if (a.startsWith("--")) { if (!OPCOES.includes(a)) sair(`Opção desconhecida: ${a}.\n${USO}`); continue; }
   const [sabor, n] = a.split("=");
+  if (n === undefined) sair(`Não entendi "${a}": use sabor=quantidade.\n${USO}`);
+  if (!Object.hasOwn(RECHEIOS, sabor)) sair(`Sabor desconhecido: ${sabor}. Sabores: ${Object.keys(RECHEIOS).join(", ")}.`);
   const qtd = Number(n);
-  if (!RECHEIOS[sabor]) { console.error(`Sabor desconhecido: ${sabor}. Sabores: ${Object.keys(RECHEIOS).join(", ")}.`); process.exit(1); }
-  if (!Number.isInteger(qtd) || qtd < 0 || qtd > 2000) { console.error(`Quantidade inválida pra ${sabor}: ${n}.`); process.exit(1); }
+  if (n.trim() === "" || !Number.isInteger(qtd) || qtd < 0 || qtd > 2000) sair(`Quantidade inválida pra ${sabor}: "${n}". Use um número de 0 a 2000.`);
   itens[sabor] = qtd;
 }
-if (!Object.values(itens).some((n) => n > 0) || (args.includes("--html") && (!html || html.startsWith("--")))) {
-  console.error(USO);
-  process.exit(1);
-}
+if (!Object.values(itens).some((n) => n > 0)) sair(USO);
 
 const precisa = insumos(itens);
 const ings = Object.keys(precisa);
@@ -59,8 +63,8 @@ await Promise.all(MERCADOS.map(async (m) => {
 }));
 
 // Encartes: junta os de supermercado de Florianópolis que valem hoje, pega os
-// recortes que casam com algum ingrediente e manda pra IA só os que não dizem
-// o peso no título.
+// recortes que casam com algum ingrediente e manda todos pra IA: além do peso,
+// ela lê a condição do preço (clube, app), que o Tiendeo não traz.
 const encartesUsados = [];
 let lidosPelaIA = 0;
 if (!semEncartes) {
@@ -82,15 +86,16 @@ if (!semEncartes) {
       const r = await fetch(`${TIENDEO}/Catalogos/${e.id}`, UA());
       if (!r.ok) throw new Error("HTTP " + r.status);
       const recs = recortes(await r.text()).filter((rec) => rec.encarte === e.id);
-      encartesUsados.push({ ...e, produtos: recs.length });
-      for (const rec of recs) for (const ing of ings) if (combina(rec.titulo, INGREDIENTES[ing])) casados.push({ rec, ing, e });
+      const usado = { ...e, produtos: recs.length, ofertas: 0 };
+      encartesUsados.push(usado);
+      for (const rec of recs) for (const ing of ings) if (combina(rec.titulo, INGREDIENTES[ing])) casados.push({ rec, ing, e: usado });
     } catch (err) { erros.push(`encarte ${e.mercado} "${e.titulo}": ${err.message}`); }
   }
-  const semPeso = [...new Map(casados.filter((c) => !pesoGramas(c.rec.titulo)).map((c) => [c.rec.id, c.rec])).values()];
+  const paraLer = [...new Map(casados.map((c) => [c.rec.id, c.rec])).values()];
   let leituras = {};
-  if (semPeso.length) {
-    log(`A IA vai ler ${semPeso.length} produto(s) de encarte (os já lidos ficam guardados)...`);
-    try { leituras = await lerRecortes(semPeso); }
+  if (paraLer.length) {
+    log(`Conferindo ${paraLer.length} produto(s) de encarte; a IA lê só os que ainda não foram lidos...`);
+    try { leituras = await lerRecortes(paraLer); }
     catch (err) { erros.push("leitura dos encartes pela IA: " + err.message); }
   }
   for (const { rec, ing, e } of casados) {
@@ -101,6 +106,7 @@ if (!semEncartes) {
     const o = ofertaDoRecorte(rec, lida || { gramas: pesoGramas(rec.titulo), unidade: "embalagem" }, e);
     if (!o) continue;
     if (lida) { o.lidoPelaIA = true; lidosPelaIA++; }
+    e.ofertas++;
     ofertas[ing].push(o);
   }
 }
@@ -128,13 +134,15 @@ if (emJson) {
     if (op.faltam.length) console.log(`  Não achei: ${op.faltam.join(", ")}`);
   }
   if (!opcoes.length) console.log("\nNão achei nenhum ingrediente.");
-  if (encartesUsados.length) console.log(`\nEncartes lidos: ${encartesUsados.map((e) => `${e.mercado} "${e.titulo}" até ${dataBR(e.fim)}`).join("; ")}`);
+  const comOferta = encartesUsados.filter((e) => e.ofertas);
+  if (encartesUsados.length) console.log(`\n${encartesUsados.length} encartes consultados; com ingrediente da lista: ${comOferta.map((e) => `${e.mercado} "${e.titulo}" até ${dataBR(e.fim)}`).join("; ") || "nenhum"}`);
   console.log("\nReceita estimada. O total conta a embalagem fechada; sobra pra próxima produção.");
   if (erros.length) console.log("\nNão consegui consultar:\n  " + erros.join("\n  "));
 }
 
-if (html) {
-  if (!opcoes.length) { console.error("Sem nenhuma oferta, não gravei a página."); process.exit(1); }
+if (html && opcoes.length) {
   await writeFile(html, pagina(resultado, roteiro));
   log(`Página gravada em ${html}`);
 }
+// Sem nenhuma oferta (rede fora, sites mudaram) é falha, não lista vazia.
+if (!opcoes.length) sair(html ? "Não achei nenhuma oferta; não gravei a página." : "Não achei nenhuma oferta.");

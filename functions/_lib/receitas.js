@@ -15,19 +15,19 @@ export const RECHEIOS = {
 // valendo qualquer uma), e com `inicio` o nome começa pelo primeiro; `proibe` descarta o que a busca traz junto (pizza
 // pronta quando se procura calabresa, por exemplo). Tudo sem acento.
 export const INGREDIENTES = {
-  farinha: { nome: "Farinha de trigo", busca: "farinha de trigo", exige: ["farinha", "trigo"], proibe: ["integral", "bolo", "pastel", "rosca", "temperada", "empanar", "sem gluten"] },
+  farinha: { nome: "Farinha de trigo", busca: "farinha de trigo", exige: ["farinha", "trigo"], proibe: ["integral", "bolo", "pastel", "rosca", "temperada", "empanar", "sem gluten", "fermento", "fermentada"] },
   oleo: { nome: "Óleo de soja", busca: "oleo de soja", exige: ["oleo", "soja"], proibe: ["spray", "composto"] },
   acucar: { nome: "Açúcar", busca: "acucar refinado", exige: ["acucar"], proibe: ["mascavo", "demerara", "confeiteiro", "light", "organico", "cristal"] },
   sal: { nome: "Sal", busca: "sal refinado", exige: ["sal"], proibe: ["grosso", "rosa", "temperado", "light", "parrilla", "batata", "biscoito", "amendoim", "salgad", "salsicha"] },
   fermento: { nome: "Fermento biológico seco", busca: "fermento biologico seco", exige: ["fermento", "biologico"], proibe: ["fresco", "quimico"] },
-  calabresa: { nome: "Linguiça calabresa", busca: "linguica calabresa", exige: ["calabresa"], proibe: ["pizza", "lasanha", "pastel", "esfiha", "salgad", "torta", "pao", "frango", "fatiada", "cubos"] },
-  carne: { nome: "Carne moída", busca: "carne moida", exige: ["moida"], proibe: ["frango", "suina", "soja", "hamburguer", "almondega", "congelad", "pronta", "temperada"] },
+  calabresa: { nome: "Linguiça calabresa", busca: "linguica calabresa", exige: ["calabresa"], proibe: ["pimenta", "molho", "tempero", "pizza", "lasanha", "pastel", "esfiha", "salgad", "torta", "pao", "frango", "fatiada", "cubos"] },
+  carne: { nome: "Carne moída", busca: "carne moida", exige: ["moida|moido"], proibe: ["frango", "suina", "soja", "hamburguer", "almondega", "congelad", "pronta", "temperada"] },
   mucarela: { nome: "Muçarela", busca: "queijo mussarela", exige: ["mussarela|mucarela|muzzarela|mozzarella"], proibe: ["pizza", "bufala", "palito", "empanad", "light", "ralad", "lasanha", "pao", "sand", "zero", "bolinha"] },
   requeijao: { nome: "Requeijão", busca: "requeijao cremoso", exige: ["requeijao"], proibe: ["light", "zero", "pizza", "biscoito", "pao", "salgad", "sabor", "cheddar"] },
   ricota: { nome: "Ricota", busca: "ricota", exige: ["ricota"], proibe: ["light", "temperada", "defumada"] },
   molho: { nome: "Molho de tomate", busca: "molho de tomate", exige: ["molho", "tomate"], proibe: ["ketchup", "pizza pronta", "picante"] },
   tomate: { nome: "Tomate", busca: "tomate", inicio: true, exige: ["tomate"], proibe: ["molho", "extrato", "seco", "pelado", "cereja", "grape", "polpa", "ketchup", "passata", "sardinha", "atum", "suco", "semente", "pizza", "pate"] },
-  cebola: { nome: "Cebola", busca: "cebola", inicio: true, exige: ["cebola"], proibe: ["frita", "desidratada", "creme", "sopa", "conserva", "salgad", "batata", "flocos", "anel", "picles", "biscoito", "salsa"] },
+  cebola: { nome: "Cebola", busca: "cebola", inicio: true, exige: ["cebola"], proibe: ["em po", "frita", "desidratada", "creme", "sopa", "conserva", "salgad", "batata", "flocos", "anel", "picles", "biscoito", "salsa"] },
   oregano: { nome: "Orégano", busca: "oregano", inicio: true, exige: ["oregano"], proibe: ["azeite", "molho", "batata", "biscoito"] },
   manjericao: { nome: "Manjericão", busca: "manjericao", inicio: true, exige: ["manjericao"], proibe: ["molho", "pesto", "azeite", "batata", "biscoito", "semente", "vaso"] },
 };
@@ -40,7 +40,7 @@ export function insumos(itens) {
     for (const [ing, g] of Object.entries(receita)) total[ing] = (total[ing] || 0) + g * n;
   };
   for (const [sabor, n] of Object.entries(itens)) {
-    if (!RECHEIOS[sabor]) throw new Error("sabor sem receita: " + sabor);
+    if (!Object.hasOwn(RECHEIOS, sabor)) throw new Error("sabor sem receita: " + sabor);
     if (!(n > 0)) continue;
     somar(MASSA, n);
     somar(RECHEIOS[sabor], n);

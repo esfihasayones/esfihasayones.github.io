@@ -24,15 +24,24 @@ export function combina(nomeProduto, ing) {
 }
 
 // Peso da embalagem em gramas pelo nome ("Farinha 5kg", "Kit 2x 400g",
-// "Óleo 900ml"), ou null quando não dá pra saber.
+// "Óleo 900ml", "Açúcar 1.000g", "Fermento 10g com 3 unidades",
+// "Leite 1L x 12", "500 gramas"), ou null quando não dá pra saber.
+const UNIDADE = "(kg|quilos?|g|gr|grs|gramas?|l|lt|litros?|ml)";
 export function pesoGramas(nome) {
-  const n = semAcento(nome).replace(/(\d),(\d)/g, "$1.$2");
-  const multi = n.match(/(\d+)\s*x\s*(\d+(?:\.\d+)?)\s*(kg|g|gr|grs|l|lt|ml)\b/);
-  const um = [...n.matchAll(/(\d+(?:\.\d+)?)\s*(kg|g|gr|grs|l|lt|ml)\b/g)].pop();
-  const m = multi ? [null, multi[2], multi[3]] : um;
+  const n = semAcento(nome)
+    .replace(/(\d)\.(\d{3})(?=\s*(?:g|gr|grs|gramas?|ml)\b)/g, "$1$2") // 1.000g: ponto de milhar
+    .replace(/(\d),(\d)/g, "$1.$2");
+  const antes = n.match(new RegExp(`(\\d+)\\s*x\\s*(\\d+(?:\\.\\d+)?)\\s*${UNIDADE}\\b`));
+  const um = [...n.matchAll(new RegExp(`(\\d+(?:\\.\\d+)?)\\s*${UNIDADE}\\b`, "g"))].pop();
+  const m = antes ? { valor: antes[2], unidade: antes[3], vezes: Number(antes[1]) } : um ? { valor: um[1], unidade: um[2], vezes: 1, fim: um.index + um[0].length } : null;
   if (!m) return /\bkg$/.test(n.trim()) ? 1000 : null;
-  const valor = Number(m[1]) * (multi ? Number(multi[1]) : 1);
-  return /^(kg|l|lt)$/.test(m[2]) ? valor * 1000 : valor;
+  if (!antes) {
+    // Quantidade depois do peso: "x 12", "c/ 3", "com 3 unidades".
+    const depois = n.slice(m.fim).match(/^\s*(?:x\s*(\d+)\b|(?:c\/|com)\s*(\d+)\s*(?:un|unid|unidades|envelopes?|saches?|sachets?)?\b)/);
+    if (depois) m.vezes = Number(depois[1] || depois[2]);
+  }
+  const valor = Number(m.valor) * m.vezes;
+  return /^(kg|quilos?|l|lt|litros?)$/.test(m.unidade) ? valor * 1000 : valor;
 }
 
 // Ofertas de um produto da busca VTEX, uma por SKU com estoque. Produto
@@ -62,10 +71,11 @@ export function ofertas(produto, mercado) {
 }
 
 // Quanto custa levar `gramas` com essa oferta: embalagem fechada, então
-// arredonda pra cima (no granel, em passos).
+// arredonda pra cima (no granel, em passos). O preço do passo pode ter fração
+// de centavo (encarte por quilo em passos de 100 g): arredonda só no total.
 export function custoPara(oferta, gramas) {
   const unidades = Math.ceil(gramas / oferta.gramas);
-  return { unidades, centavos: unidades * oferta.preco };
+  return { unidades, centavos: Math.round(unidades * oferta.preco) };
 }
 
 // A oferta que sai mais barata pra levar `gramas`; empate vai pro menor preço
