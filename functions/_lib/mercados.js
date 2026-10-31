@@ -50,7 +50,7 @@ export function ofertas(produto, mercado) {
     const preco = granel ? o.Price * item.unitMultiplier : o.Price;
     const precoDe = granel ? o.ListPrice * item.unitMultiplier : o.ListPrice;
     lista.push({
-      mercado: mercado.id, nome, marca: produto.brand || null, gramas, granel,
+      mercado: mercado.nome, nome, marca: produto.brand || null, gramas, granel,
       preco: Math.round(preco * 100), // centavos por embalagem (ou por passo do granel)
       promocao: precoDe > preco + 0.005 ? Math.round(precoDe * 100) : null,
       porKg: Math.round((preco / gramas) * 1000 * 100),
